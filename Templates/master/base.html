@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <title>{% block title %} Islington marketplace {% endblock %}</title>
+    {%load static%}
+    <link rel="stylesheet" href="{%static 'css/style.css'%}">
+
+</head>
+
+<body>
+    <nav>
+        <a href="{% url 'home' %}">Home</a> |
+        <a href="{% url 'products' %}">Products</a> |
+        <a href="{% url 'blog' %}">Blog</a>
+    </nav>
+    <h1>Welcome to the marketplace</h1>
+
+
+
+
+
+    {% block content %}
+
+
+    {% endblock %}
+</body>
+
+</html>

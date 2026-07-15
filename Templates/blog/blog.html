@@ -1,0 +1,23 @@
+{% extends 'master/base.html' %}
+
+{% block title %}Blog Posts{% endblock %}
+
+{% block content %}
+<h2>Blog Posts</h2>
+
+<div class="blog-list">
+    {% for p in post %}
+    <div class="post">
+        <h3><a href="{% url 'blog_detail' p.id %}">{{ p.title }}</a></h3>
+        <p><strong>Category:</strong> {{ p.category.name }}</p>
+        <p>{{ p.content|truncatewords:30 }}</p>
+        <p><small>Published: {{ p.created_at|date:"F d, Y" }}</small></p>
+    </div>
+    <hr>
+    {% empty %}
+    <p>No blog posts found.</p>
+    {% endfor %}
+</div>
+
+<p><a href="{% url 'home' %}">Back to Homepage</a></p>
+{% endblock %}

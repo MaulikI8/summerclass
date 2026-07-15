@@ -1,0 +1,19 @@
+{% extends 'master/base.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="post-detail">
+    <h2>{{ post.title }}</h2>
+    <p><strong>Category:</strong> {{ post.category.name }}</p>
+    <p><small>Published on {{ post.created_at|date:"F d, Y" }} | Last updated: {{ post.updated_at|date:"F d, Y" }}</small></p>
+    
+    <div class="post-content">
+        {{ post.content|linebreaks }}
+    </div>
+</div>
+
+<hr>
+<p><a href="{% url 'blog' %}">Back to Blog</a></p>
+<p><a href="{% url 'home' %}">Back to Homepage</a></p>
+{% endblock %}

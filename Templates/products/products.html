@@ -1,0 +1,25 @@
+{% extends 'master/base.html' %}
+
+{% block title %}This is product list{% endblock %}
+
+{% block content %}
+<h2>This is product page</h2>
+
+<div class="products-list">
+    {% for prod in product %}
+    <div class="product">
+        <a href="{% url 'product_detail' prod.id %}">
+            <h3>{{ prod.name }}</h3>
+            <p><strong>Category:</strong> {{ prod.category.name }}</p>
+            <p><strong>Description:</strong> {{ prod.description }}</p>
+            <p><strong>Price:</strong> RS {{ prod.price }}</p>
+            <p><strong>Stock:</strong> {{ prod.stock }}</p>
+        </a>
+    </div>
+    {% empty %}
+    <p>No products available.</p>
+    {% endfor %}
+</div>
+
+<p><a href="{% url 'home' %}">Back to Homepage</a></p>
+{% endblock %}
