@@ -1,113 +1,141 @@
 {% extends 'master/base.html' %}
 {% load static %}
 
-{% block title %}Islington College Marketplace | ING Group{% endblock %}
+{% block title %}Islington Marketplace | Student-to-Student Campus Store{% endblock %}
 
 {% block content %}
-<!-- ========================= HERO SECTION (Official Islington Theme) ========================= -->
-<section class="islington-hero-banner py-5 position-relative overflow-hidden text-center text-white">
-  <div class="container position-relative py-5">
-    <div class="d-inline-flex align-items-center justify-content-center gap-3 mb-4 p-2 px-4 rounded-pill bg-white bg-opacity-15 backdrop-blur border border-white border-opacity-25 shadow-sm">
-      <img src="{% static 'images/favicon.svg' %}" alt="Islington Shield" style="height: 28px;">
-      <span class="small fw-bold text-uppercase tracking-wider">Islington College • ING Group Network</span>
-    </div>
-
-    <h1 class="display-4 fw-extrabold text-white text-uppercase mb-2 tracking-tight">
-      DEVELOPING INDUSTRY READY GRADUATES
-    </h1>
-    <p class="fs-5 text-white-50 text-uppercase fw-semibold mb-4 tracking-widest">
-      SINCE 1996 • OFFICIAL STUDENT MARKETPLACE
-    </p>
-
-    <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-      <a href="{% url 'products' %}" class="btn btn-light btn-lg px-4 py-3 rounded-pill fw-bold shadow-lg text-primary">
-        <i class="fas fa-shopping-bag text-primary me-2"></i> Browse Student Store
-      </a>
-      <a href="{% url 'user_profile' %}?tab=add" class="btn btn-outline-light btn-lg px-4 py-3 rounded-pill fw-bold shadow-sm">
-        <i class="fas fa-plus-circle me-2"></i> Post Listing Free
-      </a>
+<!-- ========================= HERO BANNER (Islington Marketplace Theme) ========================= -->
+<section class="section-intro padding-y-sm py-4">
+  <div class="container">
+    <div class="hero-carousel-wrap">
+      <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner">
+          {% for banner in banners %}
+          <!-- Dynamic Slide {{ forloop.counter }} -->
+          <div class="carousel-item {% if forloop.first %}active{% endif %}">
+            <div class="hero-slide-card" style="background: linear-gradient(135deg, #131E54 0%, #1B2A72 55%, #1FA2D6 100%);">
+              <div class="hero-glow-blob top-right"></div>
+              <div class="hero-glow-blob bottom-left"></div>
+              <div class="row align-items-center w-100 g-4">
+                <div class="col-lg-8 col-md-10">
+                  <div class="hero-content">
+                    {% if banner.badge_text %}
+                    <span class="badge px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm" style="background-color: #70B838; color: #fff;">
+                      <i class="fas fa-check-circle me-1"></i> {{ banner.badge_text }}
+                    </span>
+                    {% endif %}
+                    <h1 class="hero-title text-white fw-bold mb-3">{{ banner.title }}</h1>
+                    <p class="hero-lead text-white-50 fs-5 mb-4">{{ banner.subtitle }}</p>
+                    <div class="hero-actions d-flex gap-3 flex-wrap">
+                      <a href="{{ banner.primary_btn_url|default:'/products/' }}" class="btn btn-light btn-lg px-4 py-2 rounded-pill fw-bold text-primary shadow-sm">
+                        <i class="fas fa-shopping-bag me-1 text-primary"></i> {{ banner.primary_btn_text|default:'Browse Store' }}
+                      </a>
+                      <a href="{{ banner.secondary_btn_url|default:'/profile/?tab=add' }}" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill fw-bold">
+                        <i class="fas fa-plus-circle me-1"></i> {{ banner.secondary_btn_text|default:'Post Item' }}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <!-- Default Marketplace Slide -->
+          <div class="carousel-item active">
+            <div class="hero-slide-card rounded-4 p-5 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #131E54 0%, #1B2A72 55%, #1FA2D6 100%); min-height: 320px; display: flex; align-items: center;">
+              <div class="hero-glow-blob top-right"></div>
+              <div class="hero-glow-blob bottom-left"></div>
+              <div class="row align-items-center w-100 g-4">
+                <div class="col-lg-8 col-md-10">
+                  <div class="hero-content">
+                    <span class="badge px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm" style="background-color: #70B838; color: #fff;">
+                      <i class="fas fa-store me-1"></i> Islington Student Marketplace
+                    </span>
+                    <h1 class="hero-title display-5 fw-extrabold text-white mb-3">Buy &amp; Sell With Fellow Students</h1>
+                    <p class="hero-lead text-white-50 fs-5 mb-4">
+                      Discover affordable textbooks, computing gear, electronics, project components, and student crafts directly on campus.
+                    </p>
+                    <div class="hero-actions d-flex gap-3 flex-wrap">
+                      <a href="{% url 'products' %}" class="btn btn-light btn-lg px-4 py-2 rounded-pill fw-bold text-primary shadow-sm">
+                        <i class="fas fa-shopping-bag me-1 text-primary"></i> Browse Store
+                      </a>
+                      <a href="{% url 'user_profile' %}?tab=add" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill fw-bold">
+                        <i class="fas fa-plus-circle me-1"></i> Post Item for Sale
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ========================= IT FACULTY DEPARTMENTS (Official Color Bands) ========================= -->
-<section class="py-5 bg-white border-bottom">
+<!-- ========================= SECTION CATEGORIES SHOWCASE ========================= -->
+<section class="py-4 bg-white border-top border-bottom">
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <div>
-        <h4 class="fw-bold mb-1 text-dark">Faculty &amp; Degree Specializations</h4>
-        <p class="text-muted small mb-0">Explore textbooks, hardware kits, and projects by major</p>
+        <h4 class="fw-bold mb-1 text-dark">Shop by Category</h4>
+        <p class="text-muted small mb-0">Browse student items organized by department and category</p>
       </div>
-      <span class="badge px-3 py-2 rounded-pill fw-semibold text-white" style="background-color: #1B2A72;">BSc (Hons) IT Degrees</span>
+      <a href="{% url 'products' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">All Categories</a>
     </div>
 
     <div class="row g-3">
-      <!-- Computing (Orange) -->
-      <div class="col-lg-3 col-md-6 col-sm-6">
-        <a href="{% url 'products' %}?category=Computing" class="faculty-card d-block text-decoration-none rounded-4 overflow-hidden shadow-sm" style="background-color: #E06D37;">
-          <div class="p-4 text-white">
-            <span class="badge bg-black bg-opacity-25 text-uppercase small mb-2">BSc (Hons)</span>
-            <h5 class="fw-bold text-white mb-3">Computing</h5>
-            <div class="d-flex align-items-center justify-content-between text-white-50 small">
-              <span>Programming &amp; Software</span>
-              <i class="fas fa-arrow-right text-white"></i>
-            </div>
+      {% for cat in categories %}
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <a href="{% url 'products' %}?category={{ cat.name }}" class="card border rounded-3 p-3 text-decoration-none bg-light text-dark h-100 d-flex flex-row align-items-center gap-3 category-item-card transition">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 text-white" style="width: 44px; height: 44px; background: #1B2A72;">
+            <i class="fas fa-tag"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark">{{ cat.name }}</h6>
+            <small class="text-muted">Explore items</small>
           </div>
         </a>
       </div>
-
-      <!-- Networking & Security (Red) -->
-      <div class="col-lg-3 col-md-6 col-sm-6">
-        <a href="{% url 'products' %}?category=Electronics" class="faculty-card d-block text-decoration-none rounded-4 overflow-hidden shadow-sm" style="background-color: #C83834;">
-          <div class="p-4 text-white">
-            <span class="badge bg-black bg-opacity-25 text-uppercase small mb-2">BSc (Hons)</span>
-            <h5 class="fw-bold text-white mb-3">Computer Networking &amp; Security</h5>
-            <div class="d-flex align-items-center justify-content-between text-white-50 small">
-              <span>Hardware &amp; Security</span>
-              <i class="fas fa-arrow-right text-white"></i>
-            </div>
-          </div>
+      {% empty %}
+      <div class="col-md-3 col-6">
+        <a href="{% url 'products' %}" class="card border rounded-3 p-3 text-decoration-none bg-light text-dark">
+          <h6 class="fw-bold mb-0">Textbooks</h6>
+          <small class="text-muted">Explore</small>
         </a>
       </div>
-
-      <!-- Multimedia (Green) -->
-      <div class="col-lg-3 col-md-6 col-sm-6">
-        <a href="{% url 'products' %}?category=Multimedia" class="faculty-card d-block text-decoration-none rounded-4 overflow-hidden shadow-sm" style="background-color: #336B3D;">
-          <div class="p-4 text-white">
-            <span class="badge bg-black bg-opacity-25 text-uppercase small mb-2">BSc (Hons)</span>
-            <h5 class="fw-bold text-white mb-3">Multimedia Technologies</h5>
-            <div class="d-flex align-items-center justify-content-between text-white-50 small">
-              <span>Design &amp; Media Gear</span>
-              <i class="fas fa-arrow-right text-white"></i>
-            </div>
-          </div>
+      <div class="col-md-3 col-6">
+        <a href="{% url 'products' %}" class="card border rounded-3 p-3 text-decoration-none bg-light text-dark">
+          <h6 class="fw-bold mb-0">Electronics &amp; Gadgets</h6>
+          <small class="text-muted">Explore</small>
         </a>
       </div>
-
-      <!-- AI (Teal) -->
-      <div class="col-lg-3 col-md-6 col-sm-6">
-        <a href="{% url 'products' %}?category=AI" class="faculty-card d-block text-decoration-none rounded-4 overflow-hidden shadow-sm" style="background-color: #0D8A7D;">
-          <div class="p-4 text-white">
-            <span class="badge bg-black bg-opacity-25 text-uppercase small mb-2">BSc (Hons)</span>
-            <h5 class="fw-bold text-white mb-3">Artificial Intelligence</h5>
-            <div class="d-flex align-items-center justify-content-between text-white-50 small">
-              <span>ML &amp; Data Science</span>
-              <i class="fas fa-arrow-right text-white"></i>
-            </div>
-          </div>
+      <div class="col-md-3 col-6">
+        <a href="{% url 'products' %}" class="card border rounded-3 p-3 text-decoration-none bg-light text-dark">
+          <h6 class="fw-bold mb-0">Stationery &amp; Supplies</h6>
+          <small class="text-muted">Explore</small>
         </a>
       </div>
+      <div class="col-md-3 col-6">
+        <a href="{% url 'products' %}" class="card border rounded-3 p-3 text-decoration-none bg-light text-dark">
+          <h6 class="fw-bold mb-0">Student Projects</h6>
+          <small class="text-muted">Explore</small>
+        </a>
+      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
 
-<!-- ========================= SECTION POPULAR PRODUCTS ========================= -->
+<!-- ========================= SECTION RECENT PRODUCTS ========================= -->
 <section class="section-name padding-y-sm py-5 bg-light" id="popularProductsSection">
   <div class="container">
     <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
       <div>
         <h3 class="section-title mb-1 text-dark fw-bold">Recent Student Listings</h3>
-        <p class="section-subtitle mb-0 text-muted">Verified items listed by peers at Islington College</p>
+        <p class="section-subtitle mb-0 text-muted">Verified items available for direct collection at Islington College</p>
       </div>
       <a href="{% url 'products' %}" class="btn btn-outline-primary rounded-pill px-4 fw-semibold small">
         View All Items ({{ total_products|default:products|length }}) <i class="fas fa-arrow-right ms-1"></i>
@@ -118,7 +146,7 @@
     <div class="row g-4" id="productGridContainer">
       {% for product in products %}
       <div class="col-lg-3 col-md-4 col-sm-6 product-card-col">
-        <div class="card card-product-grid shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="card card-product-grid shadow-sm border-0 rounded-4 overflow-hidden bg-white h-100">
           <!-- Image Wrap -->
           <a href="{% url 'product_detail' product.id %}" class="img-wrap position-relative bg-white text-center p-3" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
             {% if product.product_image %}
@@ -127,32 +155,34 @@
               <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" style="max-height: 180px; max-width: 100%; object-fit: contain;" loading="lazy" />
             {% endif %}
 
-            <!-- Category Overlay Badge -->
+            <!-- Category Badge -->
             <span class="card-category-badge position-absolute top-0 start-0 m-3 badge rounded-pill px-3 py-1 text-white" style="background-color: #1B2A72;">
               {{ product.category.name }}
             </span>
           </a>
 
           <!-- Info Body -->
-          <figcaption class="info-wrap p-3 bg-white">
-            <a href="{% url 'product_detail' product.id %}" class="title text-dark fw-bold text-decoration-none d-block text-truncate mb-1" title="{{ product.name }}">
-              {{ product.name }}
-            </a>
+          <figcaption class="info-wrap p-3 d-flex flex-column justify-content-between flex-grow-1">
+            <div>
+              <a href="{% url 'product_detail' product.id %}" class="title text-dark fw-bold text-decoration-none d-block text-truncate mb-1" title="{{ product.name }}">
+                {{ product.name }}
+              </a>
 
-            <div class="d-flex align-items-baseline justify-content-between mb-2">
-              <span class="price fs-5 fw-bold text-primary">Rs. {{ product.price|floatformat:2 }}</span>
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small">In Stock</span>
+              <div class="d-flex align-items-baseline justify-content-between mb-2">
+                <span class="price fs-5 fw-bold" style="color: #1B2A72;">Rs. {{ product.price|floatformat:2 }}</span>
+                <span class="badge rounded-pill px-2 py-1 small" style="background-color: #F0FDF4; color: #70B838; border: 1px solid #70B838;">In Stock</span>
+              </div>
+
+              <p class="card-desc text-muted small text-truncate mb-3">{{ product.description|default:"Verified student listing." }}</p>
             </div>
 
-            <p class="card-desc text-muted small text-truncate mb-3">{{ product.description|default:"Verified student listing." }}</p>
-
             <!-- Card Action Bar -->
-            <div class="card-action-bar d-flex gap-2">
+            <div class="card-action-bar d-flex gap-2 pt-2 border-top">
               <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-primary btn-sm flex-grow-1 rounded-pill fw-semibold">
                 View Item
               </a>
               {% if product.stock > 0 %}
-              <button type="button" class="btn btn-primary btn-sm rounded-circle px-2" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
+              <button type="button" class="btn btn-sm rounded-circle text-white px-2" style="background-color: #70B838;" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
                 <i class="fas fa-shopping-cart"></i>
               </button>
               {% endif %}
@@ -164,7 +194,7 @@
       <div class="col-12 text-center py-5 bg-white rounded-4 border shadow-sm">
         <i class="fas fa-box-open display-4 text-muted mb-3 d-block"></i>
         <h5 class="fw-bold text-dark">No products listed yet</h5>
-        <p class="text-muted small">Be the first to list a textbook, computing hardware, or project kit.</p>
+        <p class="text-muted small">Be the first to list a textbook, electronics, or student project.</p>
         <a href="{% url 'user_profile' %}?tab=add" class="btn btn-primary rounded-pill px-4">Post First Listing</a>
       </div>
       {% endfor %}
@@ -178,12 +208,12 @@
     <div class="row g-4">
       <div class="col-lg-3 col-md-6">
         <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border">
-          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 46px; height: 46px; font-size: 1.2rem; background-color: #1B2A72 !important;">
+          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 text-white" style="width: 46px; height: 46px; font-size: 1.2rem; background-color: #1B2A72;">
             <i class="fas fa-user-check"></i>
           </div>
           <div>
             <h6 class="fw-bold mb-0 text-dark">Verified Students</h6>
-            <small class="text-muted">Islington &amp; ING network</small>
+            <small class="text-muted">Islington student community</small>
           </div>
         </div>
       </div>
