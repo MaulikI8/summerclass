@@ -56,9 +56,9 @@
       <!-- Main header bar -->
       <section class="header-main">
         <div class="container">
-          <div class="row align-items-center g-3">
+          <div class="row align-items-center g-2 g-md-3">
             <!-- Brand Logo -->
-            <div class="col-lg-3 col-md-3 col-6">
+            <div class="col-6 col-md-3 col-lg-3">
               <a href="{% url 'home' %}" class="brand-wrap text-decoration-none d-flex align-items-center gap-2">
                 {% if site_setting.logo %}
                 <img class="logo" src="{{ site_setting.logo.url }}" alt="{{ site_setting.site_title|default:'Islington Marketplace' }}" />
@@ -68,70 +68,23 @@
                 </div>
                 <div class="d-flex flex-column leading-none">
                   <span class="fs-4 fw-bold text-primary" style="line-height: 1.1;">Islington<span class="text-dark">Market</span></span>
-                  <small class="text-muted" style="font-size: 0.68rem; letter-spacing: 0.05em;">STUDENT COMMERCE</small>
+                  <small class="text-muted d-none d-sm-block" style="font-size: 0.68rem; letter-spacing: 0.05em;">STUDENT COMMERCE</small>
                 </div>
                 {% endif %}
               </a>
             </div>
 
-            <!-- Categories Dropdown & Nav Links -->
-            <div class="col-lg-auto col-md-auto col-6 order-2 order-md-1 d-flex align-items-center gap-2">
-              <div class="category-wrap dropdown">
-                <button
-                  type="button"
-                  class="btn btn-primary dropdown-toggle d-flex align-items-center gap-2"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <i class="fas fa-bars"></i>
-                  <span>Categories</span>
-                </button>
-                <div class="dropdown-menu shadow-lg border-0 mt-2 p-2" style="min-width: 220px; border-radius: 12px;">
-                  <a class="dropdown-item py-2 fw-semibold rounded" href="{% url 'products' %}">
-                    <i class="fas fa-th-large me-2 text-primary"></i> All Products
-                  </a>
-                  <hr class="my-1">
-                  {% for cat in categories %}
-                  <a class="dropdown-item py-2 rounded text-secondary" href="{% url 'products' %}?category={{ cat.name }}">
-                    <i class="fas fa-tag me-2 text-muted small"></i> {{ cat.name }}
-                  </a>
-                  {% empty %}
-                  <a class="dropdown-item py-2 rounded text-secondary" href="{% url 'products' %}">Electronics</a>
-                  <a class="dropdown-item py-2 rounded text-secondary" href="{% url 'products' %}">Textbooks</a>
-                  {% endfor %}
-                </div>
-              </div>
-              <a href="{% url 'products' %}" class="btn btn-nav-link d-none d-sm-inline-flex">Store</a>
-              <a href="{% url 'blog' %}" class="btn btn-nav-link d-none d-sm-inline-flex">Blogs</a>
-            </div>
-
-            <!-- Modern Search Bar -->
-            <div class="col-lg col-md-12 col-12 order-3 order-lg-2">
-              <form action="{% url 'products' %}" method="GET" class="search-wrapper">
-                <input
-                  type="text"
-                  name="q"
-                  class="form-control"
-                  placeholder="Search textbooks, gadgets, projects..."
-                  aria-label="Search"
-                />
-                <button class="search-btn" type="submit" title="Search">
-                  <i class="fas fa-search"></i>
-                </button>
-              </form>
-            </div>
-
-            <!-- Profile Menu & Cart Widgets -->
-            <div class="col-lg-auto col-md-auto col-12 order-1 order-lg-3 ms-auto">
-              <div class="d-flex justify-content-end align-items-center gap-3">
+            <!-- Profile Menu, Bell & Cart Widgets (Top Right on Mobile) -->
+            <div class="col-6 col-md-auto col-lg-auto order-1 order-lg-3 ms-auto">
+              <div class="d-flex justify-content-end align-items-center gap-2 gap-sm-3">
                 {% if user.is_authenticated %}
                 <!-- Dedicated Profile Dropdown -->
                 <div class="dropdown">
-                  <button class="btn btn-light border rounded-pill px-3 py-2 d-flex align-items-center gap-2 dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <button class="btn btn-light border rounded-pill px-2 px-sm-3 py-1 py-sm-2 d-flex align-items-center gap-2 dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 26px; height: 26px; font-size: 0.8rem;">
                       <i class="fas fa-user"></i>
                     </div>
-                    <span class="small fw-bold text-dark">{{ user.first_name|default:user.username }}</span>
+                    <span class="small fw-bold text-dark d-none d-sm-inline">{{ user.first_name|default:user.username }}</span>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2" style="min-width: 200px; border-radius: 12px;">
                     <li><h6 class="dropdown-header text-muted small pb-1">Signed in as <strong>{{ user.username }}</strong></h6></li>
@@ -165,9 +118,9 @@
                   </div>
                 </div>
                 {% else %}
-                <div class="d-flex align-items-center gap-2">
-                  <a href="{% url 'student_login' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 fw-semibold">Sign In</a>
-                  <a href="{% url 'student_register' %}" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-semibold">Register</a>
+                <div class="d-flex align-items-center gap-1 gap-sm-2">
+                  <a href="{% url 'student_login' %}" class="btn btn-outline-primary btn-sm rounded-pill px-2 px-sm-3 py-1 fw-semibold" style="font-size: 0.82rem;">Sign In</a>
+                  <a href="{% url 'student_register' %}" class="btn btn-primary btn-sm rounded-pill px-2 px-sm-3 py-1 fw-semibold d-none d-sm-inline-flex" style="font-size: 0.82rem;">Register</a>
                 </div>
                 {% endif %}
 
@@ -179,6 +132,54 @@
                   <span class="badge bg-primary widget-badge" id="cartCountBadge">0</span>
                 </a>
               </div>
+            </div>
+
+            <!-- Categories Dropdown & Nav Links (Inline on Desktop, Compact on Mobile) -->
+            <div class="col-auto col-md-auto col-lg-auto order-3 order-lg-1 d-flex align-items-center gap-2">
+              <div class="category-wrap dropdown">
+                <button
+                  type="button"
+                  class="btn btn-primary dropdown-toggle d-flex align-items-center gap-1 gap-sm-2"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  style="padding: 0.55rem 0.9rem;"
+                >
+                  <i class="fas fa-bars"></i>
+                  <span class="d-none d-sm-inline">Categories</span>
+                </button>
+                <div class="dropdown-menu shadow-lg border-0 mt-2 p-2" style="min-width: 220px; border-radius: 12px;">
+                  <a class="dropdown-item py-2 fw-semibold rounded" href="{% url 'products' %}">
+                    <i class="fas fa-th-large me-2 text-primary"></i> All Products
+                  </a>
+                  <hr class="my-1">
+                  {% for cat in categories %}
+                  <a class="dropdown-item py-2 rounded text-secondary" href="{% url 'products' %}?category={{ cat.name }}">
+                    <i class="fas fa-tag me-2 text-muted small"></i> {{ cat.name }}
+                  </a>
+                  {% empty %}
+                  <a class="dropdown-item py-2 rounded text-secondary" href="{% url 'products' %}">Electronics</a>
+                  <a class="dropdown-item py-2 rounded text-secondary" href="{% url 'products' %}">Textbooks</a>
+                  {% endfor %}
+                </div>
+              </div>
+              <a href="{% url 'products' %}" class="btn btn-nav-link d-none d-md-inline-flex">Store</a>
+              <a href="{% url 'blog' %}" class="btn btn-nav-link d-none d-md-inline-flex">Blogs</a>
+            </div>
+
+            <!-- Modern Search Bar -->
+            <div class="col col-md col-lg order-2 order-lg-2">
+              <form action="{% url 'products' %}" method="GET" class="search-wrapper">
+                <input
+                  type="text"
+                  name="q"
+                  class="form-control"
+                  placeholder="Search textbooks, gadgets..."
+                  aria-label="Search"
+                />
+                <button class="search-btn" type="submit" title="Search">
+                  <i class="fas fa-search"></i>
+                </button>
+              </form>
             </div>
           </div>
         </div>
