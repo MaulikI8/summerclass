@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 from products.models import Product, Category as ProductCategory
 from blog.models import Post
 from sitesetting.models import Banner, Notification
@@ -48,8 +49,9 @@ def student_login(request):
     if request.user.is_authenticated: return redirect('user_profile')
     if request.method == 'POST':
         u = authenticate(request, username=request.POST.get('username', '').strip(), password=request.POST.get('password', ''))
-        if u: login(request, u); messages.success(request, f"Welcome back, {u.first_name or u.username}!"); return redirect('user_profile')
-        messages.error(request, "Invalid username or password.")
+        if u:
+            login(request, u); messages.success(request, f"Welcome back, {u.first_name or u.username}!"); return redirect('user_profile')
+        messages.error(request, "Invalid student credentials or unverified account.")
     return render(request, 'profile/login.html')
 
 def student_register(request):
@@ -61,12 +63,27 @@ def student_register(request):
         elif User.objects.filter(username=u).exists(): messages.error(request, "Username taken.")
         elif User.objects.filter(email=em).exists(): messages.error(request, "Email already in use.")
         else:
-            usr = User.objects.create_user(username=u, email=em, password=pw, first_name=request.POST.get('first_name', '').strip(), last_name=request.POST.get('last_name', '').strip())
-            login(request, usr)
-            Notification.notify(usr, f'Welcome, {usr.first_name or usr.username}!', 'Start exploring or sell an item.', 'welcome', 'fa-hand-wave', '/profile/?tab=add')
-            EmailMicroservice.send_welcome_email(usr)
-            return redirect('user_profile')
+            usr = User.objects.create_user(username=u, email=em, password=pw, first_name=request.POST.get('first_name', '').strip(), last_name=request.POST.get('last_name', '').strip(), is_active=False)
+            token = TimestampSigner().sign(usr.username)
+            verify_url = request.build_absolute_uri(f'/verify-email/{token}/')
+            EmailMicroservice.send_verification_email(usr, verify_url)
+            messages.success(request, "Registration successful! Please check your email to verify your account.")
+            return redirect('student_login')
     return render(request, 'profile/register.html')
+
+def verify_email(request, token):
+    try:
+        username = TimestampSigner().unsign(token, max_age=86400)
+        user = User.objects.get(username=username)
+        user.is_active = True
+        user.save()
+        login(request, user)
+        Notification.notify(user, f'Welcome, {user.first_name or user.username}!', 'Account verified! Explore listings or start selling.', 'welcome', 'fa-check-circle', '/profile/')
+        messages.success(request, "Email verified successfully! Your account is now active.")
+        return redirect('user_profile')
+    except (BadSignature, SignatureExpired, User.DoesNotExist):
+        messages.error(request, "Invalid or expired verification link. Please sign up or request a new link.")
+        return redirect('student_login')
 
 def student_logout(request):
     logout(request); messages.success(request, "Logged out."); return redirect('home')

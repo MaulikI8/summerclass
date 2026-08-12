@@ -11,6 +11,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('login/', views.student_login, name='student_login'),
     path('register/', views.student_register, name='student_register'),
+    path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     path('logout/', views.student_logout, name='student_logout'),
     path('profile/', views.user_profile, name='user_profile'),
     path('api/notifications/', site_views.api_notifications, name='api_notifications'),

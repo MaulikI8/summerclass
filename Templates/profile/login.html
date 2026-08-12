@@ -20,8 +20,8 @@
           {% if messages %}
           <div class="mb-3">
             {% for msg in messages %}
-            <div class="alert alert-danger py-2 small rounded-3 border-0 d-flex align-items-center gap-2">
-              <i class="fa fa-exclamation-circle"></i>
+            <div class="alert {% if msg.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 small rounded-3 border-0 d-flex align-items-center gap-2">
+              <i class="fa {% if msg.tags == 'error' %}fa-exclamation-circle text-danger{% else %}fa-check-circle text-success{% endif %}"></i>
               <span>{{ msg }}</span>
             </div>
             {% endfor %}
