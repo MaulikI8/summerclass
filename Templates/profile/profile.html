@@ -325,6 +325,7 @@
                       <th>Category</th>
                       <th>Price</th>
                       <th>Stock</th>
+                      <th>Review Status</th>
                       <th style="width: 140px;">Actions</th>
                     </tr>
                   </thead>
@@ -354,6 +355,15 @@
                         <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">{{ prod.stock }} In Stock</span>
                         {% else %}
                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Sold Out</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if prod.is_approved and prod.status %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill"><i class="fa fa-check-circle me-1"></i> Live</span>
+                        {% elif not prod.is_approved %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill" title="Under review by college admin"><i class="fa fa-clock me-1"></i> Pending Review</span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Hidden</span>
                         {% endif %}
                       </td>
                       <td>

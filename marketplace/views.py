@@ -12,7 +12,7 @@ from sitesetting.models import Banner, Notification
 from utils.email_microservice import EmailMicroservice
 
 def home(request):
-    p = Product.objects.select_related('category').filter(status=True).order_by('-created_at') or Product.objects.select_related('category').all().order_by('-created_at')
+    p = Product.objects.select_related('category').filter(status=True, is_approved=True).order_by('-created_at')
     b = Post.objects.select_related('category').filter(status=True).order_by('-created_at')[:3]
     # Check and permanently close finished auctions
     for a in Auction.objects.filter(is_active=True, end_time__lte=timezone.now()):
@@ -43,11 +43,11 @@ def home(request):
             if a.product.user:
                 Notification.notify(a.product.user, f"Auction Closed for {a.title}!", f"Item won by {a.highest_bidder.username} at Rs. {a.current_bid:.2f}.", 'auction_ended', 'fa-check-circle', '/profile/?tab=orders')
 
-    auctions = Auction.objects.filter(is_active=True, end_time__gt=timezone.now()).select_related('product', 'product__category', 'highest_bidder', 'product__user').order_by('end_time')
+    auctions = Auction.objects.filter(is_active=True, end_time__gt=timezone.now(), product__is_approved=True).select_related('product', 'product__category', 'highest_bidder', 'product__user').order_by('end_time')
     return render(request, 'home/home1.html', {
         'banners': Banner.objects.filter(is_active=True), 'products': p, 'featured_products': p[:8],
         'categories': ProductCategory.objects.all(), 'blogs': b, 'latest_blogs': b, 'auctions': auctions,
-        'total_products': Product.objects.count(), 'total_categories': ProductCategory.objects.count(), 'total_blogs': Post.objects.count()
+        'total_products': Product.objects.filter(is_approved=True).count(), 'total_categories': ProductCategory.objects.count(), 'total_blogs': Post.objects.count()
     })
 
 def start_auction(request, product_id):
@@ -172,23 +172,38 @@ def user_profile(request):
             u.first_name, u.last_name, u.email = post.get('first_name', u.first_name), post.get('last_name', u.last_name), post.get('email', u.email)
             u.save(); messages.success(request, "Profile updated!")
         elif act == 'add_product' and post.get('name') and post.get('category') and post.get('price'):
-            p = Product.objects.create(user=u, name=post['name'].strip(), category_id=post['category'], price=float(post['price']), stock=int(post.get('stock') or 1), description=post.get('description', '').strip(), product_image=request.FILES.get('product_image'), status=True)
-            if post.get('start_as_auction') == '1':
-                a = Auction.objects.create(
-                    product=p,
-                    title=f'24h Auction: {p.name}',
-                    starting_bid=float(post.get('starting_bid') or p.price),
-                    current_bid=float(post.get('starting_bid') or p.price),
-                    end_time=timezone.now() + timedelta(days=1),
-                    is_active=True
-                )
-                auction_url = request.build_absolute_uri('/#liveBiddingSection')
-                EmailMicroservice.send_new_auction_broadcast(a, auction_url)
-                Notification.notify_all(f'🔥 24h Live Auction: {p.name}', f'{u.first_name or u.username} started an auction for "{p.name}"!', 'auction_start', 'fa-gavel', '/#liveBiddingSection', exclude_user=u)
-            Notification.notify(u, f'Listing "{p.name}" is live!', f'Rs. {p.price}', 'product_listed', 'fa-check-circle', f'/products/{p.id}/')
-            Notification.notify_all(f'New: {p.name}', f'{u.first_name or u.username} listed "{p.name}" for Rs. {p.price}.', 'product_listed', 'fa-box-open', f'/products/{p.id}/', exclude_user=u)
-            EmailMicroservice.send_product_listed_email(u, p)
-            messages.success(request, f'"{p.name}" published successfully!')
+            is_staff_user = u.is_superuser or u.is_staff
+            p = Product.objects.create(
+                user=u,
+                name=post['name'].strip(),
+                category_id=post['category'],
+                price=float(post['price']),
+                stock=int(post.get('stock') or 1),
+                description=post.get('description', '').strip(),
+                product_image=request.FILES.get('product_image'),
+                status=True if is_staff_user else False,
+                is_approved=True if is_staff_user else False
+            )
+            if is_staff_user:
+                if post.get('start_as_auction') == '1':
+                    a = Auction.objects.create(
+                        product=p,
+                        title=f'24h Auction: {p.name}',
+                        starting_bid=float(post.get('starting_bid') or p.price),
+                        current_bid=float(post.get('starting_bid') or p.price),
+                        end_time=timezone.now() + timedelta(days=1),
+                        is_active=True
+                    )
+                    auction_url = request.build_absolute_uri('/#liveBiddingSection')
+                    EmailMicroservice.send_new_auction_broadcast(a, auction_url)
+                    Notification.notify_all(f'🔥 24h Live Auction: {p.name}', f'{u.first_name or u.username} started an auction for "{p.name}"!', 'auction_start', 'fa-gavel', '/#liveBiddingSection', exclude_user=u)
+                Notification.notify(u, f'Listing "{p.name}" is live!', f'Rs. {p.price}', 'product_listed', 'fa-check-circle', f'/products/{p.id}/')
+                Notification.notify_all(f'New: {p.name}', f'{u.first_name or u.username} listed "{p.name}" for Rs. {p.price}.', 'product_listed', 'fa-box-open', f'/products/{p.id}/', exclude_user=u)
+                EmailMicroservice.send_product_listed_email(u, p)
+                messages.success(request, f'"{p.name}" published successfully and is now live on the store!')
+            else:
+                Notification.notify(u, f'Listing Submitted for Review: {p.name}', f'Your listing "{p.name}" is under review by college admin and will appear on the store once approved.', 'product_pending', 'fa-clock', '/profile/?tab=products')
+                messages.success(request, f'Listing "{p.name}" submitted! It is currently under review by admin and will appear publicly once approved.')
         elif act == 'edit_product':
             p = get_object_or_404(Product, id=post.get('product_id'))
             if p.user == u or u.is_superuser:

@@ -17,7 +17,9 @@ class Product(models.Model):
     price = models.FloatField()
     description = models.TextField()
     stock = models.IntegerField(default=1)
-    status = models.BooleanField(default=True)
+    status = models.BooleanField(default=True, help_text="Public visibility on store")
+    is_approved = models.BooleanField(default=True, verbose_name="Approved by Admin", help_text="Designates whether this listing is approved by admin.")
+    rejection_reason = models.TextField(blank=True, null=True, help_text="Optional feedback if rejected by admin.")
     product_image = models.ImageField(upload_to='products/', blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -27,6 +29,12 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self): return self.name
+
+class PendingProductReview(Product):
+    class Meta:
+        proxy = True
+        verbose_name = "Pending Product Review"
+        verbose_name_plural = "Pending Product Reviews (Moderation Hub)"
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
