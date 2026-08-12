@@ -5,48 +5,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap');
 
 /* --- Design Tokens & Variables --- */
-/* --- Islington College & ING Group Design Tokens --- */
 :root {
-    --primary: #1B2A72;              /* Islington Navy Blue */
-    --primary-hover: #131E54;
-    --primary-dark: #0D163D;
-    --primary-light: #EEF2FF;
-    --primary-subtle: #E0E7FF;
-    
-    --islington-navy: #1B2A72;
-    --islington-navy-dark: #131E54;
-    --islington-red: #D9232D;        /* Islington Brand Red */
-    --islington-red-hover: #B91C24;
-    --islington-red-light: #FEF2F2;
-    
-    --ing-green: #70B838;            /* ING Group Signature Green */
-    --ing-green-hover: #5D9D2D;
-    --ing-green-light: #F0FDF4;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-dark: #1e40af;
+    --primary-light: #eff6ff;
+    --primary-subtle: #dbeafe;
+    --primary-gradient: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
+    --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --success-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    --purple-gradient: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%);
+    --hero-dark-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%);
 
-    /* Faculty Accent Colors */
-    --faculty-computing: #E06D37;    /* Computing Orange */
-    --faculty-security: #C83834;     /* Networking Red */
-    --faculty-multimedia: #336B3D;   /* Multimedia Green */
-    --faculty-ai: #0D8A7D;           /* AI Teal */
-
-    /* Gradients */
-    --primary-gradient: linear-gradient(135deg, #131E54 0%, #1B2A72 60%, #253B94 100%);
-    --accent-gradient: linear-gradient(135deg, #D9232D 0%, #B91C24 100%);
-    --ing-gradient: linear-gradient(135deg, #70B838 0%, #5D9D2D 100%);
-    --sky-hero-gradient: linear-gradient(135deg, #1B2A72 0%, #1FA2D6 100%);
-    --sky-light-gradient: linear-gradient(180deg, #E0F2FE 0%, #F0F9FF 100%);
-    --hero-dark-gradient: linear-gradient(135deg, #0D163D 0%, #1B2A72 60%, #1FA2D6 100%);
+    --bg-body: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-elevated: #ffffff;
     
-    --bg-body: #F8FAFC;
-    --bg-surface: #FFFFFF;
-    --bg-surface-elevated: #FFFFFF;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
     
-    --text-main: #0F172A;
-    --text-muted: #64748B;
-    --text-light: #94A3B8;
-    
-    --border-color: #E2E8F0;
-    --border-light: #F1F5F9;
+    --border-color: #e2e8f0;
+    --border-light: #f1f5f9;
     
     --radius-sm: 8px;
     --radius-md: 12px;
@@ -60,7 +40,7 @@
     --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
     --shadow-md: 0 8px 20px rgba(15, 23, 42, 0.07);
     --shadow-lg: 0 16px 36px rgba(15, 23, 42, 0.1);
-    --shadow-glow: 0 8px 24px rgba(27, 42, 114, 0.25);
+    --shadow-glow: 0 8px 24px rgba(37, 99, 235, 0.25);
     --shadow-card-hover: 0 20px 35px -4px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
     
     --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
@@ -260,69 +240,6 @@ a:hover {
 .search-wrapper .search-btn:hover {
     background: var(--primary-hover);
     transform: scale(1.05);
-}
-
-/* --- Official Islington Navy Sub-Navbar --- */
-.islington-sub-navbar {
-    background-color: var(--islington-navy);
-    box-shadow: 0 4px 12px rgba(19, 30, 84, 0.18);
-}
-
-.islington-nav-link {
-    color: #ffffff;
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    padding: 0.5rem 0.9rem;
-    border-radius: var(--radius-sm);
-    text-decoration: none;
-    transition: all var(--transition-fast);
-    display: inline-flex;
-    align-items: center;
-}
-
-.islington-nav-link:hover,
-.islington-nav-link:focus {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.14);
-}
-
-.islington-nav-link.islington-post-btn {
-    background-color: var(--ing-green);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(112, 184, 56, 0.35);
-}
-
-.islington-nav-link.islington-post-btn:hover {
-    background-color: var(--ing-green-hover);
-    color: #ffffff;
-    transform: translateY(-1px);
-}
-
-/* --- Official Islington Hero Banner --- */
-.islington-hero-banner {
-    background: linear-gradient(135deg, #131E54 0%, #1B2A72 50%, #1FA2D6 100%);
-    position: relative;
-}
-
-.islington-hero-banner::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 80% 20%, rgba(31, 162, 214, 0.3) 0%, transparent 60%);
-    pointer-events: none;
-}
-
-.faculty-card {
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.faculty-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md) !important;
 }
 
 /* --- Header Action Widgets --- */

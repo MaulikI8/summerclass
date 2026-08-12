@@ -1,22 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <!-- Shield Border & Background -->
-  <path d="M10 5 H90 V60 C90 85 50 100 50 100 C50 100 10 85 10 60 Z" fill="#1B2A72" stroke="#1B2A72" stroke-width="2"/>
-  <!-- Top Right & Bottom Left White Quadrants -->
-  <rect x="50" y="5" width="40" height="42" fill="#FFFFFF"/>
-  <rect x="10" y="47" width="40" height="38" fill="#FFFFFF"/>
-  <!-- Red Cross -->
-  <rect x="42" y="5" width="16" height="92" fill="#D9232D"/>
-  <rect x="10" y="40" width="80" height="15" fill="#D9232D"/>
-  <!-- Crown (Top Left) -->
-  <path d="M22 28 L27 34 L35 22 L43 34 L48 28 L46 38 H24 Z" fill="#FFFFFF"/>
-  <!-- Lion (Top Right) -->
-  <path d="M62 20 C64 18 68 18 70 20 C72 23 75 22 78 24 C75 26 73 28 75 31 C72 32 68 30 65 33 C63 35 60 33 60 30 C60 26 60 23 62 20 Z" fill="#D9232D"/>
-  <!-- Gear (Bottom Left) -->
-  <circle cx="30" cy="65" r="10" stroke="#1B2A72" stroke-width="3" fill="none"/>
-  <circle cx="30" cy="65" r="4" fill="#1B2A72"/>
-  <!-- Book (Bottom Right) -->
-  <path d="M62 60 C68 58 75 60 78 62 V78 C75 76 68 74 62 76 Z M62 60 C56 58 49 60 46 62 V78 C49 76 56 74 62 76 Z" fill="#FFFFFF" stroke="#1B2A72" stroke-width="1.5"/>
-  <!-- Center Emblem -->
-  <rect x="44" y="42" width="12" height="11" fill="#1B2A72"/>
-  <circle cx="50" cy="47.5" r="3.5" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3167eb"/>
+      <stop offset="100%" stop-color="#1e3c72"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#g)"/>
+  <path d="M22 10h-2c0-2.21-1.79-4-4-4s-4 1.79-4 4H10c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V12c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 14H10V12h12v10z" fill="#ffffff"/>
 </svg>

@@ -1,11 +1,11 @@
 {% extends 'master/base.html' %}
 {% load static %}
 
-{% block title %}Islington Marketplace | Student-to-Student Campus Store{% endblock %}
+{% block title %}Islington Marketplace | Campus Shopping & Student Trade{% endblock %}
 
 {% block content %}
-<!-- ========================= HERO BANNER (Islington Marketplace Theme) ========================= -->
-<section class="section-intro padding-y-sm py-4">
+<!-- ========================= SECTION BANNER CAROUSEL ========================= -->
+<section class="section-intro padding-y-sm">
   <div class="container">
     <div class="hero-carousel-wrap">
       <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
@@ -13,54 +13,95 @@
           {% for banner in banners %}
           <!-- Dynamic Slide {{ forloop.counter }} -->
           <div class="carousel-item {% if forloop.first %}active{% endif %}">
-            <div class="hero-slide-card" style="background: linear-gradient(135deg, #131E54 0%, #1B2A72 55%, #1FA2D6 100%);">
+            <div class="hero-slide-card {{ banner.theme_color|default:'slide-blue' }}" {% if banner.banner_image %}style="background-image: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.85)), url('{{ banner.banner_image.url }}'); background-size: cover; background-position: center;"{% endif %}>
               <div class="hero-glow-blob top-right"></div>
               <div class="hero-glow-blob bottom-left"></div>
               <div class="row align-items-center w-100 g-4">
                 <div class="col-lg-8 col-md-10">
                   <div class="hero-content">
                     {% if banner.badge_text %}
-                    <span class="badge px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm" style="background-color: #70B838; color: #fff;">
-                      <i class="fas fa-check-circle me-1"></i> {{ banner.badge_text }}
+                    <span class="hero-badge {% if banner.theme_color == 'slide-green' %}badge-emerald{% else %}badge-amber{% endif %}">
+                      <i class="fa {{ banner.badge_icon|default:'fa-graduation-cap' }}"></i> {{ banner.badge_text }}
                     </span>
                     {% endif %}
-                    <h1 class="hero-title text-white fw-bold mb-3">{{ banner.title }}</h1>
-                    <p class="hero-lead text-white-50 fs-5 mb-4">{{ banner.subtitle }}</p>
-                    <div class="hero-actions d-flex gap-3 flex-wrap">
-                      <a href="{{ banner.primary_btn_url|default:'/products/' }}" class="btn btn-light btn-lg px-4 py-2 rounded-pill fw-bold text-primary shadow-sm">
-                        <i class="fas fa-shopping-bag me-1 text-primary"></i> {{ banner.primary_btn_text|default:'Browse Store' }}
+                    <h1 class="hero-title">{{ banner.title }}</h1>
+                    <p class="hero-lead">{{ banner.subtitle }}</p>
+                    <div class="hero-actions">
+                      {% if banner.primary_btn_text %}
+                      <a href="{{ banner.primary_btn_url|default:'/products/' }}" class="hero-btn-primary">
+                        <i class="fa fa-shopping-bag text-primary"></i> {{ banner.primary_btn_text }}
                       </a>
-                      <a href="{{ banner.secondary_btn_url|default:'/profile/?tab=add' }}" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill fw-bold">
-                        <i class="fas fa-plus-circle me-1"></i> {{ banner.secondary_btn_text|default:'Post Item' }}
+                      {% endif %}
+                      {% if banner.secondary_btn_text %}
+                      <a href="{{ banner.secondary_btn_url|default:'/profile/?tab=add' }}" class="hero-btn-outline">
+                        <i class="fa fa-plus-circle"></i> {{ banner.secondary_btn_text }}
                       </a>
+                      {% endif %}
                     </div>
                   </div>
+                </div>
+                <div class="col-lg-4 d-none d-lg-block">
+                  {% if banner.banner_image %}
+                  <div class="text-center position-relative">
+                    <div class="p-2 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 shadow-lg overflow-hidden" style="backdrop-filter: blur(12px);">
+                      <img src="{{ banner.banner_image.url }}" alt="{{ banner.title }}" class="img-fluid rounded-3" style="max-height: 260px; width: 100%; object-fit: cover;">
+                    </div>
+                  </div>
+                  {% else %}
+                  <div class="hero-floating-card text-white">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                      <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                        <i class="fa fa-shield-alt"></i>
+                      </div>
+                      <div>
+                        <h6 class="fw-bold mb-0 text-white">100% Peer Verified</h6>
+                        <small class="text-white-50">Islington Student Network</small>
+                      </div>
+                    </div>
+                    <div class="border-top border-white border-opacity-25 pt-3 d-flex justify-content-between text-center">
+                      <div>
+                        <div class="fs-4 fw-bold text-white">{{ products|length }}</div>
+                        <small class="text-white-50">Active Items</small>
+                      </div>
+                      <div class="border-end border-white border-opacity-25"></div>
+                      <div>
+                        <div class="fs-4 fw-bold text-warning">0%</div>
+                        <small class="text-white-50">Commission</small>
+                      </div>
+                      <div class="border-end border-white border-opacity-25"></div>
+                      <div>
+                        <div class="fs-4 fw-bold text-white">Campus</div>
+                        <small class="text-white-50">Handover</small>
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
                 </div>
               </div>
             </div>
           </div>
           {% empty %}
-          <!-- Default Marketplace Slide -->
+          <!-- Fallback default slide if no banners in database -->
           <div class="carousel-item active">
-            <div class="hero-slide-card rounded-4 p-5 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #131E54 0%, #1B2A72 55%, #1FA2D6 100%); min-height: 320px; display: flex; align-items: center;">
+            <div class="hero-slide-card slide-blue">
               <div class="hero-glow-blob top-right"></div>
               <div class="hero-glow-blob bottom-left"></div>
               <div class="row align-items-center w-100 g-4">
                 <div class="col-lg-8 col-md-10">
                   <div class="hero-content">
-                    <span class="badge px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm" style="background-color: #70B838; color: #fff;">
-                      <i class="fas fa-store me-1"></i> Islington Student Marketplace
+                    <span class="hero-badge badge-amber">
+                      <i class="fa fa-graduation-cap"></i> Official Student Hub
                     </span>
-                    <h1 class="hero-title display-5 fw-extrabold text-white mb-3">Buy &amp; Sell With Fellow Students</h1>
-                    <p class="hero-lead text-white-50 fs-5 mb-4">
-                      Discover affordable textbooks, computing gear, electronics, project components, and student crafts directly on campus.
+                    <h1 class="hero-title">Welcome to Islington Marketplace</h1>
+                    <p class="hero-lead">
+                      Discover verified textbooks, computing gear, electronics, and college essentials at student prices.
                     </p>
-                    <div class="hero-actions d-flex gap-3 flex-wrap">
-                      <a href="{% url 'products' %}" class="btn btn-light btn-lg px-4 py-2 rounded-pill fw-bold text-primary shadow-sm">
-                        <i class="fas fa-shopping-bag me-1 text-primary"></i> Browse Store
+                    <div class="hero-actions">
+                      <a href="{% url 'products' %}" class="hero-btn-primary">
+                        <i class="fa fa-shopping-bag text-primary"></i> Explore Store
                       </a>
-                      <a href="{% url 'user_profile' %}?tab=add" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill fw-bold">
-                        <i class="fas fa-plus-circle me-1"></i> Post Item for Sale
+                      <a href="{% url 'user_profile' %}?tab=add" class="hero-btn-outline">
+                        <i class="fa fa-plus-circle"></i> Sell an Item
                       </a>
                     </div>
                   </div>
@@ -70,120 +111,122 @@
           </div>
           {% endfor %}
         </div>
+
+        <!-- Sleek Floating Carousel Controls -->
+        <a class="hero-carousel-control prev" href="#bannerCarousel" role="button" data-bs-slide="prev" title="Previous Slide">
+          <i class="fa fa-chevron-left"></i>
+        </a>
+        <a class="hero-carousel-control next" href="#bannerCarousel" role="button" data-bs-slide="next" title="Next Slide">
+          <i class="fa fa-chevron-right"></i>
+        </a>
       </div>
     </div>
   </div>
 </section>
+<!-- ========================= SECTION BANNER CAROUSEL END// ========================= -->
 
-<!-- ========================= SECTION CATEGORIES SHOWCASE ========================= -->
-<section class="py-4 bg-white border-top border-bottom">
+<!-- ========================= SECTION POPULAR PRODUCTS ========================= -->
+<section class="section-name padding-y-sm" id="popularProductsSection">
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2">
       <div>
-        <h4 class="fw-bold mb-1 text-dark">Shop by Category</h4>
-        <p class="text-muted small mb-0">Browse student items organized by department and category</p>
-      </div>
-      <a href="{% url 'products' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">All Categories</a>
-    </div>
-
-    <div class="row g-3">
-      {% for cat in categories %}
-      <div class="col-lg-3 col-md-4 col-sm-6">
-        <a href="{% url 'products' %}?category={{ cat.name }}" class="card border rounded-3 p-3 text-decoration-none bg-light text-dark h-100 d-flex flex-row align-items-center gap-3 category-item-card transition">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 text-white" style="width: 44px; height: 44px; background: #1B2A72;">
-            <i class="fas fa-tag"></i>
-          </div>
-          <div>
-            <h6 class="fw-bold mb-0 text-dark">{{ cat.name }}</h6>
-            <small class="text-muted">Explore items</small>
-          </div>
-        </a>
-      </div>
-      {% empty %}
-      <div class="col-md-3 col-6">
-        <a href="{% url 'products' %}" class="card border rounded-3 p-3 text-decoration-none bg-light text-dark">
-          <h6 class="fw-bold mb-0">Textbooks</h6>
-          <small class="text-muted">Explore</small>
-        </a>
-      </div>
-      <div class="col-md-3 col-6">
-        <a href="{% url 'products' %}" class="card border rounded-3 p-3 text-decoration-none bg-light text-dark">
-          <h6 class="fw-bold mb-0">Electronics &amp; Gadgets</h6>
-          <small class="text-muted">Explore</small>
-        </a>
-      </div>
-      <div class="col-md-3 col-6">
-        <a href="{% url 'products' %}" class="card border rounded-3 p-3 text-decoration-none bg-light text-dark">
-          <h6 class="fw-bold mb-0">Stationery &amp; Supplies</h6>
-          <small class="text-muted">Explore</small>
-        </a>
-      </div>
-      <div class="col-md-3 col-6">
-        <a href="{% url 'products' %}" class="card border rounded-3 p-3 text-decoration-none bg-light text-dark">
-          <h6 class="fw-bold mb-0">Student Projects</h6>
-          <small class="text-muted">Explore</small>
-        </a>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<!-- ========================= SECTION RECENT PRODUCTS ========================= -->
-<section class="section-name padding-y-sm py-5 bg-light" id="popularProductsSection">
-  <div class="container">
-    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-      <div>
-        <h3 class="section-title mb-1 text-dark fw-bold">Recent Student Listings</h3>
-        <p class="section-subtitle mb-0 text-muted">Verified items available for direct collection at Islington College</p>
+        <h3 class="section-title mb-1">Popular Products</h3>
+        <p class="section-subtitle mb-0">Verified listings from fellow students on campus.</p>
       </div>
       <a href="{% url 'products' %}" class="btn btn-outline-primary rounded-pill px-4 fw-semibold small">
-        View All Items ({{ total_products|default:products|length }}) <i class="fas fa-arrow-right ms-1"></i>
+        See All Products <i class="fa fa-arrow-right ms-1"></i>
       </a>
     </header>
+
+    <!-- Category Filter Chips Bar -->
+    <div class="filter-chips-bar mb-4" id="categoryFilterBar">
+      <button type="button" class="filter-chip active" data-cat="all" onclick="filterByCat('all', this)">
+        <i class="fa fa-layer-group"></i> All Products ({{ products|length }})
+      </button>
+      {% for cat in categories %}
+      <button type="button" class="filter-chip" data-cat="{{ cat.name|lower }}" onclick="filterByCat('{{ cat.name|lower }}', this)">
+        <i class="fa fa-tag text-muted"></i> {{ cat.name }}
+      </button>
+      {% endfor %}
+      <button type="button" class="filter-chip" data-cat="instock" onclick="filterByCat('instock', this)">
+        <i class="fa fa-check-circle text-success"></i> In Stock Only
+      </button>
+    </div>
 
     <!-- Products Grid -->
     <div class="row g-4" id="productGridContainer">
       {% for product in products %}
-      <div class="col-lg-3 col-md-4 col-sm-6 product-card-col">
-        <div class="card card-product-grid shadow-sm border-0 rounded-4 overflow-hidden bg-white h-100">
+      <div class="col-lg-3 col-md-4 col-sm-6 product-card-col" 
+           data-id="{{ product.id }}"
+           data-title="{{ product.name|lower }}"
+           data-category="{{ product.category.name|lower }}"
+           data-price="{{ product.price }}"
+           data-instock="{% if product.stock > 0 %}true{% else %}false{% endif %}">
+        <div class="card card-product-grid">
           <!-- Image Wrap -->
-          <a href="{% url 'product_detail' product.id %}" class="img-wrap position-relative bg-white text-center p-3" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+          <a href="{% url 'product_detail' product.id %}" class="img-wrap">
             {% if product.product_image %}
-              <img src="{{ product.product_image.url }}" alt="{{ product.name }}" style="max-height: 180px; max-width: 100%; object-fit: contain;" loading="lazy" />
+              <img src="{{ product.product_image.url }}" alt="{{ product.name }}" loading="lazy" />
             {% else %}
-              <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" style="max-height: 180px; max-width: 100%; object-fit: contain;" loading="lazy" />
+              <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" loading="lazy" />
             {% endif %}
 
-            <!-- Category Badge -->
-            <span class="card-category-badge position-absolute top-0 start-0 m-3 badge rounded-pill px-3 py-1 text-white" style="background-color: #1B2A72;">
+            <!-- Category Overlay Badge -->
+            <span class="card-category-badge">
               {{ product.category.name }}
             </span>
+
+            <!-- Stock Status Badge -->
+            {% if product.stock > 0 %}
+            <span class="card-stock-badge in-stock">
+              <i class="fa fa-check-circle"></i> In Stock ({{ product.stock }})
+            </span>
+            {% else %}
+            <span class="card-stock-badge out-of-stock">
+              <i class="fa fa-times-circle"></i> Sold Out
+            </span>
+            {% endif %}
           </a>
 
+          <!-- Floating Wishlist Button -->
+          <button type="button" 
+                  class="card-wishlist-btn wishlist-toggle-btn" 
+                  data-id="{{ product.id }}"
+                  title="Save to Wishlist"
+                  onclick="toggleWishlist('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}', '{{ product.category.name|escapejs }}')">
+            <i class="far fa-heart"></i>
+          </button>
+
           <!-- Info Body -->
-          <figcaption class="info-wrap p-3 d-flex flex-column justify-content-between flex-grow-1">
-            <div>
-              <a href="{% url 'product_detail' product.id %}" class="title text-dark fw-bold text-decoration-none d-block text-truncate mb-1" title="{{ product.name }}">
-                {{ product.name }}
-              </a>
+          <figcaption class="info-wrap">
+            <a href="{% url 'product_detail' product.id %}" class="title" title="{{ product.name }}">
+              {{ product.name }}
+            </a>
 
-              <div class="d-flex align-items-baseline justify-content-between mb-2">
-                <span class="price fs-5 fw-bold" style="color: #1B2A72;">Rs. {{ product.price|floatformat:2 }}</span>
-                <span class="badge rounded-pill px-2 py-1 small" style="background-color: #F0FDF4; color: #70B838; border: 1px solid #70B838;">In Stock</span>
-              </div>
-
-              <p class="card-desc text-muted small text-truncate mb-3">{{ product.description|default:"Verified student listing." }}</p>
+            <div class="d-flex align-items-baseline justify-content-between mt-1">
+              <span class="price">Rs. {{ product.price|floatformat:2 }}</span>
             </div>
 
+            <!-- Star Rating Display -->
+            <div class="rating-star">
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star-o"></i>
+              <span class="rating-score">4.0</span>
+            </div>
+
+            <p class="card-desc">{{ product.description|default:"Verified student listing." }}</p>
+
             <!-- Card Action Bar -->
-            <div class="card-action-bar d-flex gap-2 pt-2 border-top">
-              <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-primary btn-sm flex-grow-1 rounded-pill fw-semibold">
+            <div class="card-action-bar">
+              <a href="{% url 'product_detail' product.id %}" class="btn-card-primary text-decoration-none">
                 View Item
               </a>
               {% if product.stock > 0 %}
-              <button type="button" class="btn btn-sm rounded-circle text-white px-2" style="background-color: #70B838;" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
-                <i class="fas fa-shopping-cart"></i>
+              <button type="button" class="btn-card-icon" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
+                <i class="fas fa-shopping-cart text-primary"></i>
               </button>
               {% endif %}
             </div>
@@ -191,47 +234,148 @@
         </div>
       </div>
       {% empty %}
-      <div class="col-12 text-center py-5 bg-white rounded-4 border shadow-sm">
-        <i class="fas fa-box-open display-4 text-muted mb-3 d-block"></i>
-        <h5 class="fw-bold text-dark">No products listed yet</h5>
-        <p class="text-muted small">Be the first to list a textbook, electronics, or student project.</p>
+      <div class="col-12 text-center py-5 bg-white rounded border">
+        <i class="fa fa-box-open display-4 text-muted mb-3 d-block"></i>
+        <h5 class="fw-bold">No products listed yet</h5>
+        <p class="text-muted small">Be the first to list a textbook, gadget, or student gear.</p>
         <a href="{% url 'user_profile' %}?tab=add" class="btn btn-primary rounded-pill px-4">Post First Listing</a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Empty filtered state -->
+    <div id="filterEmptyMessage" class="text-center py-5 d-none bg-white rounded-3 border mt-4 shadow-sm">
+      <i class="fa fa-search text-muted display-4 d-block mb-3"></i>
+      <h5 class="fw-bold text-dark">No products found</h5>
+      <p class="text-muted small">No items match your selected filter criteria.</p>
+      <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-2 px-4" onclick="filterByCat('all', document.querySelector('#categoryFilterBar button'))">
+        Show All Products
+      </button>
+    </div>
+  </div>
+</section>
+<!-- ========================= SECTION POPULAR PRODUCTS END// ========================= -->
+
+<!-- ========================= SECTION CATEGORIES SHOWCASE ========================= -->
+<section class="section-name padding-y-sm bg-light py-5 border-top border-bottom">
+  <div class="container">
+    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h3 class="section-title mb-1">Explore Categories</h3>
+        <p class="section-subtitle mb-0">Browse by category to find textbooks, electronics, and stationery.</p>
+      </div>
+    </header>
+
+    <div class="row g-4">
+      {% for cat in categories %}
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <a href="{% url 'products' %}?category={{ cat.name }}" class="category-showcase-card">
+          {% if cat.category_image %}
+          <div class="category-img-box">
+            <img src="{{ cat.category_image.url }}" alt="{{ cat.name }}" />
+          </div>
+          {% else %}
+          <div class="category-icon-box">
+            <i class="fa fa-th-large"></i>
+          </div>
+          {% endif %}
+          <div class="cat-name">{{ cat.name }}</div>
+          <div class="cat-count">Explore Category <i class="fa fa-arrow-right ms-1 small"></i></div>
+        </a>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="card p-4 text-center text-muted bg-white border">
+          <p class="mb-0">No categories created yet.</p>
+        </div>
       </div>
       {% endfor %}
     </div>
   </div>
 </section>
+<!-- ========================= SECTION CATEGORIES END// ========================= -->
 
-<!-- ========================= TRUST PILLARS ========================= -->
-<section class="py-5 bg-white border-top">
+<!-- ========================= SECTION OUR BLOGS ========================= -->
+<section class="section-name padding-y-sm py-5">
   <div class="container">
+    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h3 class="section-title mb-1">Campus Insights &amp; Guides</h3>
+        <p class="section-subtitle mb-0">Student advice, study tips, textbook recommendations, and news.</p>
+      </div>
+      <a href="{% url 'blog' %}" class="btn btn-outline-primary rounded-pill px-4 fw-semibold small">
+        View All Blogs <i class="fa fa-arrow-right ms-1"></i>
+      </a>
+    </header>
+
     <div class="row g-4">
+      {% for b in latest_blogs %}
+      <div class="col-lg-4 col-md-6">
+        <div class="card border rounded-3 shadow-sm h-100 bg-white overflow-hidden" style="transition: transform 0.2s ease, box-shadow 0.2s ease;">
+          <div class="card-body d-flex flex-column p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold" style="font-size: 0.72rem;">
+                {{ b.category.name|default:"Campus Life" }}
+              </span>
+              <small class="text-muted"><i class="far fa-calendar-alt me-1"></i>{{ b.created_at|date:"M d, Y" }}</small>
+            </div>
+            <h5 class="fw-bold mb-2">
+              <a href="{% url 'blog_detail' b.id %}" class="text-dark text-decoration-none">
+                {{ b.title }}
+              </a>
+            </h5>
+            <p class="text-muted small flex-grow-1" style="line-height: 1.6;">
+              {{ b.content|truncatewords:20 }}
+            </p>
+            <div class="pt-3 border-top mt-auto d-flex justify-content-between align-items-center">
+              <span class="text-muted small"><i class="far fa-clock me-1"></i>3 min read</span>
+              <a href="{% url 'blog_detail' b.id %}" class="text-primary fw-semibold small text-decoration-none">
+                Read Article <i class="fa fa-arrow-right ms-1"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-4 text-muted bg-white rounded border">
+        <p class="mb-0">No blog posts available. Check back soon!</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<!-- ========================= SECTION OUR BLOGS END// ========================= -->
+
+<!-- ========================= SECTION CAMPUS TRUST PILLARS ========================= -->
+<section class="section-name padding-y-sm bg-white py-5 border-top">
+  <div class="container">
+    <div class="row g-3">
       <div class="col-lg-3 col-md-6">
-        <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 text-white" style="width: 46px; height: 46px; font-size: 1.2rem; background-color: #1B2A72;">
-            <i class="fas fa-user-check"></i>
+        <div class="trust-pillar-card">
+          <div class="trust-icon-box icon-blue">
+            <i class="fa fa-user-shield"></i>
           </div>
           <div>
-            <h6 class="fw-bold mb-0 text-dark">Verified Students</h6>
+            <h6 class="fw-bold mb-0 text-dark">Verified Peers</h6>
             <small class="text-muted">Islington student community</small>
           </div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6">
-        <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 text-white" style="width: 46px; height: 46px; font-size: 1.2rem; background-color: #70B838;">
-            <i class="fas fa-map-marker-alt"></i>
+        <div class="trust-pillar-card">
+          <div class="trust-icon-box icon-green">
+            <i class="fa fa-map-marker-alt"></i>
           </div>
           <div>
-            <h6 class="fw-bold mb-0 text-dark">Direct Collection</h6>
+            <h6 class="fw-bold mb-0 text-dark">Direct College Pickup</h6>
             <small class="text-muted">Library &amp; cafeteria spots</small>
           </div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6">
-        <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 text-white" style="width: 46px; height: 46px; font-size: 1.2rem; background-color: #D9232D;">
-            <i class="fas fa-percentage"></i>
+        <div class="trust-pillar-card">
+          <div class="trust-icon-box icon-amber">
+            <i class="fa fa-percentage"></i>
           </div>
           <div>
             <h6 class="fw-bold mb-0 text-dark">0% Commission</h6>
@@ -240,12 +384,12 @@
         </div>
       </div>
       <div class="col-lg-3 col-md-6">
-        <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border">
-          <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 text-white" style="width: 46px; height: 46px; font-size: 1.2rem; background-color: #1FA2D6;">
-            <i class="fas fa-bolt"></i>
+        <div class="trust-pillar-card">
+          <div class="trust-icon-box icon-purple">
+            <i class="fa fa-bolt"></i>
           </div>
           <div>
-            <h6 class="fw-bold mb-0 text-dark">Instant Publish</h6>
+            <h6 class="fw-bold mb-0 text-dark">Instant Listings</h6>
             <small class="text-muted">List an item in 60 seconds</small>
           </div>
         </div>
@@ -253,4 +397,49 @@
     </div>
   </div>
 </section>
+<!-- ========================= SECTION TRUST PILLARS END// ========================= -->
+
+<!-- Interactive Client-side Script for Filtering -->
+<script>
+  function filterByCat(catName, btnElement) {
+    const chips = document.querySelectorAll('#categoryFilterBar .filter-chip');
+    chips.forEach(c => c.classList.remove('active'));
+    if (btnElement) {
+      btnElement.classList.add('active');
+    }
+
+    const items = document.querySelectorAll('#productGridContainer .product-card-col');
+    const emptyMsg = document.getElementById('filterEmptyMessage');
+    let visible = 0;
+
+    items.forEach(item => {
+      const itemCat = item.dataset.category || '';
+      const inStock = item.dataset.instock === 'true';
+
+      let match = false;
+      if (catName === 'all') {
+        match = true;
+      } else if (catName === 'instock') {
+        match = inStock;
+      } else {
+        match = itemCat.includes(catName);
+      }
+
+      if (match) {
+        item.classList.remove('d-none');
+        visible++;
+      } else {
+        item.classList.add('d-none');
+      }
+    });
+
+    if (emptyMsg) {
+      if (visible === 0 && items.length > 0) {
+        emptyMsg.classList.remove('d-none');
+      } else {
+        emptyMsg.classList.add('d-none');
+      }
+    }
+  }
+</script>
 {% endblock %}
