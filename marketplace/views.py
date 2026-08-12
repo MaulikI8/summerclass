@@ -10,6 +10,7 @@ from products.models import Product, Category as ProductCategory
 from blog.models import Post, Category as BlogCategory
 from pages.models import Page
 from sitesetting.models import SiteSetting, Banner, Notification
+from utils.email_microservice import EmailMicroservice
 
 def home(request):
     banners = Banner.objects.filter(is_active=True).order_by('order', '-created_at')
@@ -111,6 +112,8 @@ def user_profile(request):
                         link=f'/products/{new_product.id}/',
                         exclude_user=user,
                     )
+                    # Trigger Email Microservice (Async)
+                    EmailMicroservice.send_product_listed_email(user, new_product)
                     messages.success(request, f'"{new_product.name}" was successfully published to the marketplace!')
                     return redirect('user_profile')
                 except Exception as e:
@@ -209,6 +212,8 @@ def student_register(request):
                 icon='fa-hand-wave',
                 link='/profile/?tab=add',
             )
+            # Trigger Email Microservice (Async)
+            EmailMicroservice.send_welcome_email(user)
             messages.success(request, f"Welcome to Islington Marketplace, {user.first_name or user.username}!")
             return redirect('user_profile')
 

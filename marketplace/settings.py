@@ -129,3 +129,12 @@ STATICFILES_DIRS = [
 
 MEDIA_URL='/media/'
 MEDIA_ROOT=BASE_DIR / 'media'
+
+# ==============================================================================
+# EMAIL MICROSERVICE CONFIGURATION
+# ==============================================================================
+EMAIL_MICROSERVICE_URL = os.environ.get('EMAIL_MICROSERVICE_URL', 'https://api.resend.com/emails')
+EMAIL_MICROSERVICE_API_KEY = os.environ.get('EMAIL_MICROSERVICE_API_KEY', '')
+EMAIL_SENDER_NAME = "Islington Marketplace"
+EMAIL_SENDER_ADDRESS = "onboarding@resend.dev"
+EMAIL_MICROSERVICE_MOCK = os.environ.get('EMAIL_MICROSERVICE_MOCK', 'True').lower() in ('true', '1', 'yes')
