@@ -14,6 +14,7 @@ urlpatterns = [
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     path('checkout/', views.checkout, name='checkout'),
     path('checkout/success/<int:order_id>/', views.order_success, name='order_success'),
+    path('place-bid/<int:auction_id>/', views.place_bid, name='place_bid'),
     path('logout/', views.student_logout, name='student_logout'),
     path('profile/', views.user_profile, name='user_profile'),
     path('api/notifications/', site_views.api_notifications, name='api_notifications'),

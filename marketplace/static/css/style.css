@@ -1625,3 +1625,39 @@ ul.thumb li img:hover {
         right: -40px;
     }
 }
+
+/* --- Live Bidding & Auctions Styles --- */
+.live-indicator-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse-dot 1.2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+}
+
+.auction-card {
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    border: 1px solid var(--border-color) !important;
+}
+
+.auction-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md) !important;
+}
+
+.title-hover:hover {
+    color: var(--primary) !important;
+}
+

@@ -346,6 +346,118 @@
 </section>
 <!-- ========================= SECTION OUR BLOGS END// ========================= -->
 
+<!-- ========================= SECTION LIVE STUDENT BIDDING & AUCTIONS ========================= -->
+<section class="section-name py-5 bg-light border-top" id="liveBiddingSection">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <div class="d-inline-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-danger rounded-pill px-3 py-1 shadow-sm d-inline-flex align-items-center gap-2" style="font-size: 0.8rem; letter-spacing: 0.05em;">
+            <span class="live-indicator-dot"></span> LIVE AUCTIONS
+          </span>
+          <span class="text-muted small fw-semibold">Real-Time Peer Bidding</span>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">🔥 Live Student Bidding Hub</h3>
+        <p class="text-muted small mb-0">Place bids on textbooks, project kits, electronics, and rare items listed by student peers.</p>
+      </div>
+      <div>
+        <span class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-sm">
+          <i class="fas fa-gavel text-primary me-1"></i> {{ auctions|length }} Active Auction{{ auctions|length|pluralize }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Live Auction Cards Grid -->
+    <div class="row g-4">
+      {% for auction in auctions %}
+      <div class="col-lg-6 col-md-12">
+        <div class="card auction-card shadow-sm border-0 rounded-4 overflow-hidden bg-white h-100">
+          <div class="row g-0 h-100">
+            <!-- Image Column -->
+            <div class="col-sm-5 bg-light position-relative d-flex align-items-center justify-content-center p-3">
+              <a href="{% url 'product_detail' auction.product.id %}" class="d-block text-center w-100">
+                {% if auction.product.product_image %}
+                  <img src="{{ auction.product.product_image.url }}" alt="{{ auction.title }}" class="img-fluid rounded-3" style="max-height: 190px; object-fit: contain;">
+                {% else %}
+                  <img src="{% static 'images/default.jpg' %}" alt="{{ auction.title }}" class="img-fluid rounded-3" style="max-height: 190px; object-fit: contain;">
+                {% endif %}
+              </a>
+              <span class="position-absolute top-0 start-0 m-3 badge bg-dark bg-opacity-75 rounded-pill px-2 py-1 text-white small">
+                {{ auction.product.category.name }}
+              </span>
+            </div>
+
+            <!-- Content Column -->
+            <div class="col-sm-7 p-4 d-flex flex-column justify-content-between">
+              <div>
+                <!-- Countdown Timer -->
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="text-danger small fw-bold d-flex align-items-center gap-1">
+                    <i class="fas fa-stopwatch"></i> Ends in:
+                  </span>
+                  <div class="auction-countdown badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 font-monospace fw-bold" data-endtime="{{ auction.end_time|date:'c' }}">
+                    Calculating...
+                  </div>
+                </div>
+
+                <h5 class="fw-bold mb-1">
+                  <a href="{% url 'product_detail' auction.product.id %}" class="text-dark text-decoration-none title-hover">
+                    {{ auction.title }}
+                  </a>
+                </h5>
+                <p class="text-muted small mb-3 text-truncate">{{ auction.product.description|default:"Verified student item open for live bidding." }}</p>
+
+                <!-- Current Bid Stats Box -->
+                <div class="p-3 bg-light rounded-3 border mb-3">
+                  <div class="row align-items-center">
+                    <div class="col-6">
+                      <small class="text-muted d-block" style="font-size: 0.75rem;">Current Highest Bid</small>
+                      <span class="fs-4 fw-bold text-primary">Rs. {{ auction.current_bid|floatformat:2 }}</span>
+                    </div>
+                    <div class="col-6 text-end">
+                      <small class="text-muted d-block" style="font-size: 0.75rem;">Total Bids</small>
+                      <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1 rounded-pill">
+                        <i class="fas fa-users me-1"></i> {{ auction.bids_count }} bid{{ auction.bids_count|pluralize }}
+                      </span>
+                    </div>
+                  </div>
+                  {% if auction.highest_bidder %}
+                  <div class="mt-2 pt-2 border-top small text-muted d-flex align-items-center justify-content-between">
+                    <span>Highest Bidder:</span>
+                    <span class="fw-bold text-dark"><i class="fas fa-user-check text-success me-1"></i> {{ auction.highest_bidder.first_name|default:auction.highest_bidder.username }}</span>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Quick Bid Form -->
+              <form action="{% url 'place_bid' auction.id %}" method="POST" class="auction-bid-form">
+                {% csrf_token %}
+                <div class="input-group">
+                  <span class="input-group-text bg-white border-end-0 small text-muted fw-bold">Rs.</span>
+                  <input type="number" step="10" min="{{ auction.current_bid|add:10 }}" name="bid_amount" class="form-control border-start-0" placeholder="Min Rs. {{ auction.current_bid|add:10 }}" required>
+                  <button type="submit" class="btn btn-primary px-3 fw-bold">
+                    <i class="fas fa-gavel me-1"></i> Bid
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-5 bg-white rounded-4 border shadow-sm">
+        <i class="fas fa-gavel display-4 text-muted mb-3 d-block"></i>
+        <h5 class="fw-bold text-dark">No live auctions right now</h5>
+        <p class="text-muted small">Stay tuned! Student sellers can list their items for live bidding anytime.</p>
+        <a href="{% url 'products' %}" class="btn btn-outline-primary btn-sm rounded-pill px-4">Browse Marketplace Store</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<!-- ========================= SECTION LIVE AUCTIONS END// ========================= -->
+
 <!-- ========================= SECTION CAMPUS TRUST PILLARS ========================= -->
 <section class="section-name padding-y-sm bg-white py-5 border-top">
   <div class="container">
@@ -399,7 +511,7 @@
 </section>
 <!-- ========================= SECTION TRUST PILLARS END// ========================= -->
 
-<!-- Interactive Client-side Script for Filtering -->
+<!-- Interactive Client-side Script for Filtering & Live Timers -->
 <script>
   function filterByCat(catName, btnElement) {
     const chips = document.querySelectorAll('#categoryFilterBar .filter-chip');
@@ -441,5 +553,34 @@
       }
     }
   }
+
+  // Live Auction Realtime Countdown
+  function initAuctionTimers() {
+    const timers = document.querySelectorAll('.auction-countdown');
+    timers.forEach(t => {
+      const endStr = t.getAttribute('data-endtime');
+      if (!endStr) return;
+      const endTime = new Date(endStr).getTime();
+
+      function update() {
+        const now = new Date().getTime();
+        const diff = endTime - now;
+        if (diff <= 0) {
+          t.textContent = 'AUCTION ENDED';
+          t.className = 'auction-countdown badge bg-secondary text-white rounded-pill px-3 py-1';
+          return;
+        }
+        const hrs = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        t.textContent = `${hrs.toString().padStart(2, '0')}h : ${mins.toString().padStart(2, '0')}m : ${secs.toString().padStart(2, '0')}s`;
+      }
+      update();
+      setInterval(update, 1000);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initAuctionTimers);
 </script>
 {% endblock %}
+

@@ -2,6 +2,7 @@ import time
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from django.utils import timezone
 
 class Category(models.Model):
     name = models.CharField(max_length=225)
@@ -50,3 +51,25 @@ class OrderItem(models.Model):
     price = models.FloatField()
     quantity = models.PositiveIntegerField(default=1)
     def __str__(self): return f"{self.quantity}x {self.product_name}"
+
+class Auction(models.Model):
+    product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='auction')
+    title = models.CharField(max_length=200)
+    starting_bid = models.FloatField(default=100.0)
+    current_bid = models.FloatField(default=100.0)
+    highest_bidder = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='won_bids')
+    end_time = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta: ordering = ['end_time']
+    @property
+    def bids_count(self): return self.bids.count()
+    def __str__(self): return f"Auction: {self.title} (Current: Rs. {self.current_bid:.2f})"
+
+class Bid(models.Model):
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='bids')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='placed_bids')
+    amount = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta: ordering = ['-created_at']
+    def __str__(self): return f"{self.user.username} - Rs. {self.amount:.2f}"
