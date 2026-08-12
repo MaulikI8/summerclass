@@ -1,9 +1,10 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
-from products.models import Product, Category as ProductCategory
+from products.models import Product, Category as ProductCategory, Order, OrderItem
 from blog.models import Post
 from sitesetting.models import Banner, Notification
 from utils.email_microservice import EmailMicroservice
@@ -43,14 +44,51 @@ def user_profile(request):
         return redirect('user_profile')
 
     user_prods = Product.objects.filter(user=u).select_related('category').order_by('-created_at') if u.is_authenticated else Product.objects.select_related('category').all()[:6]
-    return render(request, 'profile/profile.html', {'profile_user': u, 'user_products': user_prods, 'categories': ProductCategory.objects.all()})
+    user_orders = Order.objects.filter(user=u).prefetch_related('items').order_by('-created_at') if u.is_authenticated else []
+    user_sales = OrderItem.objects.filter(product__user=u).select_related('order', 'product').order_by('-order__created_at') if u.is_authenticated else []
+    return render(request, 'profile/profile.html', {
+        'profile_user': u, 'user_products': user_prods, 'user_orders': user_orders, 'user_sales': user_sales, 'categories': ProductCategory.objects.all()
+    })
+
+def checkout(request):
+    if request.method == 'POST':
+        post = request.POST
+        try: cart = json.loads(post.get('cart_json', '[]'))
+        except Exception: cart = []
+        if not cart: messages.error(request, "Your shopping bag is empty."); return redirect('products')
+
+        order = Order.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            buyer_name=post.get('buyer_name', '').strip(), buyer_phone=post.get('buyer_phone', '').strip(),
+            buyer_email=post.get('buyer_email', '').strip(), meetup_location=post.get('meetup_location', 'Block C Library Lobby'),
+            meetup_time=post.get('meetup_time', 'Morning (10:00 AM - 12:00 PM)'), notes=post.get('notes', '').strip(),
+            payment_method=post.get('payment_method', 'esewa_sandbox'), payment_status='Paid (Online Sandbox)', order_status='confirmed'
+        )
+        total = 0.0
+        for item in cart:
+            pid, qty, pr = item.get('id'), int(item.get('quantity') or 1), float(item.get('price') or 0.0)
+            prod = Product.objects.filter(id=pid).first() if pid else None
+            OrderItem.objects.create(order=order, product=prod, product_name=item.get('name', 'Product'), price=pr, quantity=qty)
+            total += pr * qty
+            if prod and prod.user:
+                Notification.notify(prod.user, f'New Order #{order.id} for {prod.name}!', f'{order.buyer_name} ordered {qty}x {prod.name}. Meetup: {order.meetup_location}', 'order_placed', 'fa-receipt', f'/profile/?tab=orders')
+
+        order.total_amount = total; order.save()
+        if request.user.is_authenticated:
+            Notification.notify(request.user, f'Order #{order.id} Confirmed!', f'Total Rs. {total:.2f}. Meetup: {order.meetup_location}', 'order_placed', 'fa-check-circle', f'/profile/?tab=orders')
+
+        return redirect('order_success', order_id=order.id)
+    return render(request, 'profile/checkout.html')
+
+def order_success(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    return render(request, 'profile/order_success.html', {'order': order})
 
 def student_login(request):
     if request.user.is_authenticated: return redirect('user_profile')
     if request.method == 'POST':
         u = authenticate(request, username=request.POST.get('username', '').strip(), password=request.POST.get('password', ''))
-        if u:
-            login(request, u); messages.success(request, f"Welcome back, {u.first_name or u.username}!"); return redirect('user_profile')
+        if u: login(request, u); messages.success(request, f"Welcome back, {u.first_name or u.username}!"); return redirect('user_profile')
         messages.error(request, "Invalid student credentials or unverified account.")
     return render(request, 'profile/login.html')
 
@@ -75,14 +113,12 @@ def verify_email(request, token):
     try:
         username = TimestampSigner().unsign(token, max_age=86400)
         user = User.objects.get(username=username)
-        user.is_active = True
-        user.save()
-        login(request, user)
+        user.is_active = True; user.save(); login(request, user)
         Notification.notify(user, f'Welcome, {user.first_name or user.username}!', 'Account verified! Explore listings or start selling.', 'welcome', 'fa-check-circle', '/profile/')
         messages.success(request, "Email verified successfully! Your account is now active.")
         return redirect('user_profile')
     except (BadSignature, SignatureExpired, User.DoesNotExist):
-        messages.error(request, "Invalid or expired verification link. Please sign up or request a new link.")
+        messages.error(request, "Invalid or expired verification link.")
         return redirect('student_login')
 
 def student_logout(request):

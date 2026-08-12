@@ -194,11 +194,15 @@ function clearAllCart() {
 function handleCheckoutModal() {
     const items = getStoredCart();
     if (items.length === 0) {
-        showSiteToast('Please add items to your bag first!', false);
+        showSiteToast('Please add items to your shopping bag first!', false);
         return;
     }
-    showSiteToast('Campus meetup scheduled! Contact seller at Islington hub.', true);
-    clearAllCart();
+    const cartEl = document.getElementById('cartOffcanvas');
+    if (cartEl) {
+        const bsOffcanvas = bootstrap.Offcanvas.getInstance(cartEl);
+        if (bsOffcanvas) bsOffcanvas.hide();
+    }
+    window.location.href = '/checkout/';
 }
 
 function openQuickView(id, name, price, img, category, desc, stock, detailUrl) {

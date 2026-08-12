@@ -1,0 +1,215 @@
+{% extends 'master/base.html' %}
+{% load static %}
+
+{% block title %}Checkout & Campus Meetup | Islington Marketplace{% endblock %}
+
+{% block content %}
+<section class="section-content padding-y py-5 bg-light">
+  <div class="container">
+    <div class="row g-4 justify-content-center">
+      <div class="col-lg-7 col-md-12">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+          <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+            <div class="brand-icon-wrap" style="width: 44px; height: 44px; font-size: 1.2rem;">
+              <i class="fas fa-shopping-bag text-primary"></i>
+            </div>
+            <div>
+              <h4 class="fw-bold mb-0 text-dark">Checkout &amp; Campus Handover</h4>
+              <small class="text-muted">Direct student-to-student verified trade</small>
+            </div>
+          </div>
+
+          {% if messages %}
+          <div class="mb-3">
+            {% for msg in messages %}
+            <div class="alert {% if msg.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 small rounded-3 border-0 d-flex align-items-center gap-2">
+              <i class="fas {% if msg.tags == 'error' %}fa-exclamation-circle text-danger{% else %}fa-check-circle text-success{% endif %}"></i>
+              <span>{{ msg }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <form method="POST" action="{% url 'checkout' %}" id="checkoutForm" onsubmit="return handleCheckoutSubmit(event)">
+            {% csrf_token %}
+            <input type="hidden" name="cart_json" id="hiddenCartJson">
+
+            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-user-circle text-primary me-2"></i> 1. Student Contact Info</h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted">Full Name *</label>
+                <input type="text" name="buyer_name" class="form-control rounded-3" value="{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% endif %}" placeholder="e.g. Maulik Joshi" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted">Phone / WhatsApp *</label>
+                <input type="tel" name="buyer_phone" class="form-control rounded-3" placeholder="e.g. 9801234567" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold text-muted">College Email</label>
+                <input type="email" name="buyer_email" class="form-control rounded-3" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" placeholder="name@islington.edu.np">
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-map-marker-alt text-primary me-2"></i> 2. Campus Meetup Location</h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted">Designated Safe Spot *</label>
+                <select name="meetup_location" class="form-select rounded-3">
+                  <option value="Block C Library Lobby" selected>Block C Library Lobby (Recommended)</option>
+                  <option value="Ground Floor Cafeteria">Ground Floor Cafeteria</option>
+                  <option value="Block E IT Lab Ground Floor">Block E IT Lab Ground Floor</option>
+                  <option value="Central Courtyard">Central Courtyard</option>
+                  <option value="College Main Gate Reception">College Main Gate Reception</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted">Preferred Time Slot *</label>
+                <select name="meetup_time" class="form-select rounded-3">
+                  <option value="Morning (10:00 AM - 12:00 PM)" selected>Morning (10:00 AM - 12:00 PM)</option>
+                  <option value="Afternoon (1:00 PM - 3:00 PM)">Afternoon (1:00 PM - 3:00 PM)</option>
+                  <option value="Evening (4:00 PM - 6:00 PM)">Evening (4:00 PM - 6:00 PM)</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold text-muted">Meetup Notes / Instructions (Optional)</label>
+                <input type="text" name="notes" class="form-control rounded-3" placeholder="e.g. Look for the red hoodie near the stairs">
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-credit-card text-primary me-2"></i> 3. Payment Method</h6>
+            <div class="d-flex flex-column gap-2 mb-4">
+              <label class="payment-option-card d-flex align-items-center gap-3 p-3 rounded-3 border bg-white cursor-pointer">
+                <input type="radio" name="payment_method" value="esewa_sandbox" checked class="form-check-input mt-0">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success px-2 py-1">eSewa</span>
+                    <strong class="small text-dark">eSewa Online Payment (Sandbox Demo)</strong>
+                  </div>
+                  <small class="text-muted d-block">Instant simulated digital verification (eSewa ready)</small>
+                </div>
+              </label>
+
+              <label class="payment-option-card d-flex align-items-center gap-3 p-3 rounded-3 border bg-white cursor-pointer">
+                <input type="radio" name="payment_method" value="khalti_sandbox" class="form-check-input mt-0">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary px-2 py-1" style="background:#5c2d91 !important;">Khalti</span>
+                    <strong class="small text-dark">Khalti Wallet (Sandbox Demo)</strong>
+                  </div>
+                  <small class="text-muted d-block">Instant simulated wallet payment verification</small>
+                </div>
+              </label>
+
+              <label class="payment-option-card d-flex align-items-center gap-3 p-3 rounded-3 border bg-white cursor-pointer">
+                <input type="radio" name="payment_method" value="cash_meetup" class="form-check-input mt-0">
+                <div class="flex-grow-1">
+                  <strong class="small text-dark">Cash / QR Scan on Campus Handover</strong>
+                  <small class="text-muted d-block">Pay student seller physically when receiving the item</small>
+                </div>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm" id="placeOrderBtn">
+              <i class="fas fa-lock me-2"></i> Confirm Order &amp; Schedule Meetup
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Order Summary Card -->
+      <div class="col-lg-5 col-md-12">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 90px;">
+          <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom">Order Summary</h5>
+          
+          <div id="checkoutCartItemsContainer" class="d-flex flex-column gap-3 mb-3 overflow-auto" style="max-height: 280px;">
+            <!-- Rendered dynamically from localStorage cart -->
+          </div>
+
+          <div id="checkoutEmptyNotice" class="alert alert-warning py-3 small rounded-3 d-none">
+            <i class="fas fa-shopping-bag me-1"></i> Your shopping bag is currently empty. <a href="{% url 'products' %}" class="fw-bold">Browse items</a>
+          </div>
+
+          <div class="border-top pt-3 d-flex flex-column gap-2 small">
+            <div class="d-flex justify-content-between text-muted">
+              <span>Subtotal:</span>
+              <span class="fw-semibold text-dark" id="checkoutSubtotal">Rs. 0.00</span>
+            </div>
+            <div class="d-flex justify-content-between text-muted">
+              <span>Campus Delivery Fee:</span>
+              <span class="fw-semibold text-success">FREE (Campus Handover)</span>
+            </div>
+            <div class="d-flex justify-content-between fs-5 fw-bold text-dark border-top pt-2 mt-1">
+              <span>Total Payable:</span>
+              <span class="text-primary" id="checkoutTotal">Rs. 0.00</span>
+            </div>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 mt-3 border small text-muted">
+            <i class="fas fa-shield-alt text-success me-1"></i> <strong>Safe Student Commerce:</strong> All orders are protected. Both buyer and seller receive confirmation emails &amp; in-app alerts.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+function renderCheckoutPage() {
+    const itemsContainer = document.getElementById('checkoutCartItemsContainer');
+    const emptyNotice = document.getElementById('checkoutEmptyNotice');
+    const subtotalEl = document.getElementById('checkoutSubtotal');
+    const totalEl = document.getElementById('checkoutTotal');
+    const btn = document.getElementById('placeOrderBtn');
+    const hiddenJson = document.getElementById('hiddenCartJson');
+
+    if (!itemsContainer) return;
+
+    const cart = getStoredCart();
+    if (!cart || cart.length === 0) {
+        itemsContainer.innerHTML = '';
+        emptyNotice.classList.remove('d-none');
+        if (btn) btn.disabled = true;
+        if (subtotalEl) subtotalEl.textContent = 'Rs. 0.00';
+        if (totalEl) totalEl.textContent = 'Rs. 0.00';
+        return;
+    }
+
+    emptyNotice.classList.add('d-none');
+    if (btn) btn.disabled = false;
+
+    let total = 0;
+    itemsContainer.innerHTML = cart.map(item => {
+        const itemTotal = (parseFloat(item.price) || 0) * (item.quantity || 1);
+        total += itemTotal;
+        return `
+            <div class="d-flex align-items-center gap-3 pb-2 border-bottom">
+                <img src="${item.img || '/static/images/default.jpg'}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="${item.name}">
+                <div class="flex-grow-1 overflow-hidden">
+                    <div class="fw-semibold small text-truncate text-dark">${item.name}</div>
+                    <span class="text-muted small">Qty: ${item.quantity || 1} × Rs. ${parseFloat(item.price).toLocaleString()}</span>
+                </div>
+                <strong class="text-primary small">Rs. ${itemTotal.toLocaleString()}</strong>
+            </div>
+        `;
+    }).join('');
+
+    const formattedTotal = 'Rs. ' + total.toLocaleString('en-US', { minimumFractionDigits: 2 });
+    if (subtotalEl) subtotalEl.textContent = formattedTotal;
+    if (totalEl) totalEl.textContent = formattedTotal;
+    if (hiddenJson) hiddenJson.value = JSON.stringify(cart);
+}
+
+function handleCheckoutSubmit(e) {
+    const cart = getStoredCart();
+    if (!cart || cart.length === 0) {
+        e.preventDefault();
+        alert('Your shopping bag is empty! Add items to checkout.');
+        return false;
+    }
+    document.getElementById('hiddenCartJson').value = JSON.stringify(cart);
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', renderCheckoutPage);
+</script>
+{% endblock %}

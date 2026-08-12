@@ -270,14 +270,14 @@
             <div class="col-md-4">
               <div class="stat-card">
                 <div class="stat-title">My Orders</div>
-                <div class="stat-number">0</div>
+                <div class="stat-number text-primary">{{ user_orders|length }}</div>
                 <a href="javascript:void(0)" class="stat-link" onclick="switchDashboardTab('orders', document.getElementById('sidebarOrders'))">View Orders</a>
               </div>
             </div>
             <div class="col-md-4">
               <div class="stat-card">
                 <div class="stat-title">My Sales</div>
-                <div class="stat-number">0</div>
+                <div class="stat-number text-success">{{ user_sales|length }}</div>
                 <a href="javascript:void(0)" class="stat-link" onclick="switchDashboardTab('sales', document.getElementById('sidebarSales'))">View Sales</a>
               </div>
             </div>
@@ -465,13 +465,48 @@
         <!-- TAB: My Orders -->
         <div class="dashboard-tab-pane" id="tabOrders">
           <div class="dashboard-panel">
-            <div class="panel-header">
-              <h5>My Orders</h5>
+            <div class="panel-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">My Orders ({{ user_orders|length }})</h5>
+              <a href="{% url 'products' %}" class="btn btn-outline-primary btn-sm rounded-pill">Shop More</a>
             </div>
-            <div class="panel-body text-center py-5 text-muted">
-              <i class="fa fa-receipt" style="font-size: 2.5rem; display: block; margin-bottom: 12px;"></i>
-              <h6 class="fw-bold text-dark">No orders yet</h6>
-              <p class="small">Items you reserve or purchase will appear here.</p>
+            <div class="panel-body">
+              {% if user_orders %}
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Items</th>
+                      <th>Meetup Location</th>
+                      <th>Total</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for ord in user_orders %}
+                    <tr>
+                      <td><strong class="text-primary">#{{ ord.id }}</strong><br><small class="text-muted">{{ ord.created_at|date:"M d, Y" }}</small></td>
+                      <td>
+                        {% for item in ord.items.all %}
+                        <div class="small fw-semibold">{{ item.quantity }}x {{ item.product_name }}</div>
+                        {% endfor %}
+                      </td>
+                      <td class="small">{{ ord.meetup_location }}<br><span class="text-muted">{{ ord.meetup_time }}</span></td>
+                      <td><strong class="text-dark">Rs. {{ ord.total_amount|floatformat:2 }}</strong></td>
+                      <td><span class="badge bg-success-subtle text-success border border-success px-2 py-1 rounded-pill">{{ ord.order_status|title }}</span></td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <div class="text-center py-5 text-muted">
+                <i class="fas fa-receipt" style="font-size: 2.5rem; display: block; margin-bottom: 12px;"></i>
+                <h6 class="fw-bold text-dark">No orders yet</h6>
+                <p class="small">Items you order or checkout will appear here.</p>
+                <a href="{% url 'products' %}" class="btn btn-primary btn-sm rounded-pill px-4">Browse Campus Store</a>
+              </div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -479,13 +514,42 @@
         <!-- TAB: My Sales -->
         <div class="dashboard-tab-pane" id="tabSales">
           <div class="dashboard-panel">
-            <div class="panel-header">
-              <h5>My Sales</h5>
+            <div class="panel-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">My Sales ({{ user_sales|length }})</h5>
             </div>
-            <div class="panel-body text-center py-5 text-muted">
-              <i class="fa fa-chart-line" style="font-size: 2.5rem; display: block; margin-bottom: 12px;"></i>
-              <h6 class="fw-bold text-dark">No sales yet</h6>
-              <p class="small">When peers buy your items, sales will be tracked here.</p>
+            <div class="panel-body">
+              {% if user_sales %}
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Order Ref</th>
+                      <th>Item Sold</th>
+                      <th>Buyer Info</th>
+                      <th>Meetup Handover</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for sale in user_sales %}
+                    <tr>
+                      <td><strong class="text-primary">#{{ sale.order.id }}</strong><br><small class="text-muted">{{ sale.order.created_at|date:"M d, Y" }}</small></td>
+                      <td><strong class="text-dark">{{ sale.quantity }}x {{ sale.product_name }}</strong></td>
+                      <td class="small">{{ sale.order.buyer_name }}<br><span class="text-muted">{{ sale.order.buyer_phone }}</span></td>
+                      <td class="small">{{ sale.order.meetup_location }}<br><span class="text-muted">{{ sale.order.meetup_time }}</span></td>
+                      <td><strong class="text-success">Rs. {{ sale.price|floatformat:2 }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <div class="text-center py-5 text-muted">
+                <i class="fas fa-chart-line" style="font-size: 2.5rem; display: block; margin-bottom: 12px;"></i>
+                <h6 class="fw-bold text-dark">No sales yet</h6>
+                <p class="small">When peers buy your items, sales will be tracked here.</p>
+              </div>
+              {% endif %}
             </div>
           </div>
         </div>

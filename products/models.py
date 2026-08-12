@@ -26,3 +26,27 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self): return self.name
+
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+    buyer_name = models.CharField(max_length=150)
+    buyer_phone = models.CharField(max_length=50)
+    buyer_email = models.EmailField(blank=True, null=True)
+    meetup_location = models.CharField(max_length=150, default='Block C Library Lobby')
+    meetup_time = models.CharField(max_length=100, default='Morning (10:00 AM - 12:00 PM)')
+    notes = models.TextField(blank=True, default='')
+    total_amount = models.FloatField(default=0.0)
+    payment_method = models.CharField(max_length=50, default='esewa_sandbox')
+    payment_status = models.CharField(max_length=50, default='Paid (Online Sandbox)')
+    order_status = models.CharField(max_length=30, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta: ordering = ['-created_at']
+    def __str__(self): return f"Order #{self.id} - {self.buyer_name} (Rs. {self.total_amount:.2f})"
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
+    product_name = models.CharField(max_length=150)
+    price = models.FloatField()
+    quantity = models.PositiveIntegerField(default=1)
+    def __str__(self): return f"{self.quantity}x {self.product_name}"
