@@ -1,12 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
 from django.conf import settings
-from django.conf.urls.static import static
 from . import views
 from sitesetting import views as site_views
 from pages.views import page_detail
 
 urlpatterns = [
+    path('admin', lambda req: redirect('/admin/', permanent=False)),
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('login/', views.student_login, name='student_login'),
@@ -25,7 +26,7 @@ urlpatterns = [
     path('404/', views.custom_404, name='preview_404'),
     path('blogs/', include('blog.urls')),
     path('products/', include('products.urls')),
-    path('<slug:slug>/', page_detail, name='page_detail'),
+    path('page/<slug:slug>/', page_detail, name='page_detail'),
 ]
 
 from django.views.static import serve
