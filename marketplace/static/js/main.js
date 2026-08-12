@@ -362,14 +362,24 @@ const CHAT_STORAGE_KEY = 'islington_campus_chat_history';
 function getStoredChatMessages() {
     try {
         const stored = localStorage.getItem(CHAT_STORAGE_KEY);
-        if (stored) return JSON.parse(stored);
+        if (stored) {
+            let parsed = JSON.parse(stored);
+            // Sanitize legacy stored messages with admin links
+            parsed = parsed.map(m => {
+                if (m.text && m.text.includes('/admin/products/product/add/')) {
+                    m.text = m.text.replace(/\/admin\/products\/product\/add\//g, '/profile/?tab=add');
+                }
+                return m;
+            });
+            return parsed;
+        }
     } catch (e) { }
 
     return [
         {
             id: 1,
             sender: 'assistant',
-            text: 'Hello student! 👋 Welcome to Islington Marketplace. How can I help you today? You can ask about campus meetup spots, safe payments, or inquire about products.',
+            text: 'Hello student! 👋 Welcome to Islington Marketplace. How can I help you today? You can ask about campus meetup spots, safe payments, or how to sell an item.',
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
     ];
