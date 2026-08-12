@@ -2,7 +2,16 @@ import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-&!7=4y@z$eymqm#rhw6h1&%6=x*=q#=%49c$04j_w^=2iokbh8'
+
+# Load local .env if present
+env_file = BASE_DIR / '.env'
+if env_file.exists():
+    for line in env_file.read_text().splitlines():
+        if '=' in line and not line.startswith('#'):
+            k, v = line.split('=', 1)
+            os.environ.setdefault(k.strip(), v.strip())
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-&!7=4y@z$eymqm#rhw6h1&%6=x*=q#=%49c$04j_w^=2iokbh8')
 DEBUG = True
 ALLOWED_HOSTS = []
 
@@ -42,4 +51,4 @@ MEDIA_URL, MEDIA_ROOT = '/media/', BASE_DIR / 'media'
 EMAIL_MICROSERVICE_URL = os.environ.get('EMAIL_MICROSERVICE_URL', 'https://api.resend.com/emails')
 EMAIL_MICROSERVICE_API_KEY = os.environ.get('EMAIL_MICROSERVICE_API_KEY', '')
 EMAIL_SENDER_NAME, EMAIL_SENDER_ADDRESS = "Islington Marketplace", "onboarding@resend.dev"
-EMAIL_MICROSERVICE_MOCK = os.environ.get('EMAIL_MICROSERVICE_MOCK', 'True').lower() in ('true', '1', 'yes')
+EMAIL_MICROSERVICE_MOCK = os.environ.get('EMAIL_MICROSERVICE_MOCK', 'False').lower() in ('true', '1', 'yes')

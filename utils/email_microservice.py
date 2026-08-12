@@ -1,11 +1,10 @@
-import json, threading, urllib.request
+import json, threading, urllib.request, urllib.error
 from django.conf import settings
 
 class EmailMicroservice:
     @classmethod
     def _send(cls, p):
         k = getattr(settings, 'EMAIL_MICROSERVICE_API_KEY', '')
-        # Always log the email in console for instant testing
         print("\n" + "="*60 + f"\n[EMAIL MICROSERVICE DISPATCH]\nTo: {p.get('to')}\nSubject: {p.get('subject')}")
         if 'http' in p.get('html', ''):
             import re
@@ -13,24 +12,32 @@ class EmailMicroservice:
             if links: print(f"Action Link: {links[0]}")
         print("="*60 + "\n")
 
-        # If live API key is configured, perform external HTTP POST request
         if k and not getattr(settings, 'EMAIL_MICROSERVICE_MOCK', False):
             try:
                 req = urllib.request.Request(
                     getattr(settings, 'EMAIL_MICROSERVICE_URL', 'https://api.resend.com/emails'),
-                    data=json.dumps(p).encode(),
-                    headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {k}'},
+                    data=json.dumps(p).encode('utf-8'),
+                    headers={
+                        'Content-Type': 'application/json',
+                        'Authorization': f'Bearer {k}',
+                        'User-Agent': 'IslingtonMarketplace/1.0'
+                    },
                     method='POST'
                 )
                 with urllib.request.urlopen(req, timeout=10) as r:
-                    print(f"[EMAIL MICROSERVICE LIVE SUCCESS]: {r.status}")
+                    res_body = r.read().decode('utf-8')
+                    print(f"[EMAIL MICROSERVICE LIVE SUCCESS]: {r.status} | {res_body}")
+            except urllib.error.HTTPError as he:
+                err_data = he.read().decode('utf-8')
+                print(f"[EMAIL MICROSERVICE HTTP ERROR {he.code}]: {err_data}")
             except Exception as e:
-                print(f"[EMAIL MICROSERVICE LIVE ERROR]: {e}")
+                print(f"[EMAIL MICROSERVICE ERROR]: {e}")
 
     @classmethod
     def send_async(cls, to, sub, html):
         if not to: return
-        p = {'from': f"{getattr(settings, 'EMAIL_SENDER_NAME', 'Islington Marketplace')} <{getattr(settings, 'EMAIL_SENDER_ADDRESS', 'onboarding@resend.dev')}>", 'to': [to] if isinstance(to, str) else to, 'subject': sub, 'html': html}
+        sender = f"{getattr(settings, 'EMAIL_SENDER_NAME', 'Islington Marketplace')} <{getattr(settings, 'EMAIL_SENDER_ADDRESS', 'onboarding@resend.dev')}>"
+        p = {'from': sender, 'to': [to] if isinstance(to, str) else to, 'subject': sub, 'html': html}
         threading.Thread(target=cls._send, args=(p,), daemon=True).start()
 
     @classmethod
