@@ -14,11 +14,16 @@ from utils.email_microservice import EmailMicroservice
 def home(request):
     p = Product.objects.select_related('category').filter(status=True).order_by('-created_at') or Product.objects.select_related('category').all().order_by('-created_at')
     b = Post.objects.select_related('category').filter(status=True).order_by('-created_at')[:3]
-    # Check and auto-expire finished auctions
+    # Check and permanently close finished auctions
     for a in Auction.objects.filter(is_active=True, end_time__lte=timezone.now()):
         a.is_active = False
         a.save()
         if a.highest_bidder:
+            # Transfer item to winning student
+            a.product.stock = max(0, a.product.stock - 1)
+            if a.product.stock == 0: a.product.status = False
+            a.product.save()
+
             order = Order.objects.create(
                 user=a.highest_bidder,
                 buyer_name=a.highest_bidder.first_name or a.highest_bidder.username,
@@ -36,9 +41,9 @@ def home(request):
             EmailMicroservice.send_auction_won_notification(a.highest_bidder, a.product.user, a)
             Notification.notify(a.highest_bidder, f"🎉 You Won Auction: {a.title}!", f"Winning bid: Rs. {a.current_bid:.2f}. See your order in dashboard.", 'auction_won', 'fa-trophy', '/profile/?tab=orders')
             if a.product.user:
-                Notification.notify(a.product.user, f"Auction Ended for {a.title}!", f"Winner: {a.highest_bidder.username} at Rs. {a.current_bid:.2f}.", 'auction_ended', 'fa-check-circle', '/profile/?tab=orders')
+                Notification.notify(a.product.user, f"Auction Closed for {a.title}!", f"Item won by {a.highest_bidder.username} at Rs. {a.current_bid:.2f}.", 'auction_ended', 'fa-check-circle', '/profile/?tab=orders')
 
-    auctions = Auction.objects.filter(is_active=True).select_related('product', 'product__category', 'highest_bidder', 'product__user').order_by('end_time')
+    auctions = Auction.objects.filter(is_active=True, end_time__gt=timezone.now()).select_related('product', 'product__category', 'highest_bidder', 'product__user').order_by('end_time')
     return render(request, 'home/home1.html', {
         'banners': Banner.objects.filter(is_active=True), 'products': p, 'featured_products': p[:8],
         'categories': ProductCategory.objects.all(), 'blogs': b, 'latest_blogs': b, 'auctions': auctions,
@@ -92,8 +97,13 @@ def accept_auction_bid(request, auction_id):
         messages.error(request, "No bids have been placed yet to accept.")
         return redirect('home')
 
+    # Permanently close auction and decrement stock
     auction.is_active = False
     auction.save()
+
+    auction.product.stock = max(0, auction.product.stock - 1)
+    if auction.product.stock == 0: auction.product.status = False
+    auction.product.save()
 
     winner = auction.highest_bidder
     order = Order.objects.create(
@@ -115,7 +125,7 @@ def accept_auction_bid(request, auction_id):
     Notification.notify(winner, f"🎉 Seller Accepted Your Bid for {auction.title}!", f"Winning price: Rs. {auction.current_bid:.2f}. See details in My Orders.", 'auction_won', 'fa-trophy', '/profile/?tab=orders')
     Notification.notify(request.user, f"Auction Closed for {auction.title}", f"Accepted winning bid of Rs. {auction.current_bid:.2f} from {winner.username}.", 'auction_ended', 'fa-check-circle', '/profile/?tab=orders')
 
-    messages.success(request, f"Success! You accepted the highest bid of Rs. {auction.current_bid:.2f} from {winner.username}. Order created!")
+    messages.success(request, f"Success! You accepted the highest bid of Rs. {auction.current_bid:.2f} from {winner.username}. Auction closed permanently!")
     return redirect('home')
 
 def place_bid(request, auction_id):
