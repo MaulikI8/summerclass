@@ -20,6 +20,8 @@ if '*' not in ALLOWED_HOSTS:
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.onrender.com',
+    'https://maulikjoshi.com.np',
+    'https://*.maulikjoshi.com.np',
     'http://127.0.0.1',
     'http://localhost',
 ]
