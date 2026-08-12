@@ -179,49 +179,49 @@
       <div class="col-lg-3 col-md-4">
         <div class="dashboard-sidebar shadow-sm">
           <a href="javascript:void(0)" class="sidebar-item active" id="sidebarDashboard" onclick="switchDashboardTab('dashboard', this)">
-            <i class="fa fa-tachometer-alt"></i> Dashboard
+            <i class="fas fa-chart-pie"></i> Dashboard
           </a>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarProducts" onclick="switchDashboardTab('products', this)">
-            <i class="fa fa-box"></i> My Products
+            <i class="fas fa-boxes"></i> My Products
           </a>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarAddProduct" onclick="switchDashboardTab('addproduct', this)">
-            <i class="fa fa-plus-circle text-primary"></i> Post New Listing
+            <i class="fas fa-plus-circle text-primary"></i> Post New Listing
           </a>
           <div class="sidebar-divider"></div>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarOrders" onclick="switchDashboardTab('orders', this)">
-            <i class="fa fa-receipt"></i> My Orders
+            <i class="fas fa-receipt"></i> My Orders
           </a>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarSales" onclick="switchDashboardTab('sales', this)">
-            <i class="fa fa-chart-line"></i> My Sales
+            <i class="fas fa-chart-line"></i> My Sales
           </a>
           <div class="sidebar-divider"></div>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarSentReq" onclick="switchDashboardTab('sentreq', this)">
-            <i class="fa fa-paper-plane"></i> My Sent Requests
+            <i class="fas fa-paper-plane"></i> My Sent Requests
           </a>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarRecvReq" onclick="switchDashboardTab('recvreq', this)">
-            <i class="fa fa-inbox"></i> My Received Requests
+            <i class="fas fa-inbox"></i> My Received Requests
           </a>
           <div class="sidebar-divider"></div>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarMessages" onclick="switchDashboardTab('messages', this)">
-            <i class="fa fa-envelope"></i> Messages
+            <i class="fas fa-envelope"></i> Messages
           </a>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarSent" onclick="switchDashboardTab('sent', this)">
-            <i class="fa fa-share"></i> Sent
+            <i class="fas fa-share-square"></i> Sent
           </a>
           <div class="sidebar-divider"></div>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarEdit" onclick="switchDashboardTab('edit', this)">
-            <i class="fa fa-user-edit"></i> Edit Profile
+            <i class="fas fa-user-edit"></i> Edit Profile
           </a>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarPassword" onclick="switchDashboardTab('password', this)">
-            <i class="fa fa-key"></i> Change Password
+            <i class="fas fa-key"></i> Change Password
           </a>
           {% if profile_user.is_authenticated %}
           <a href="{% url 'student_logout' %}" class="sidebar-logout">
-            <i class="fa fa-power-off"></i> Log out
+            <i class="fas fa-power-off"></i> Log out
           </a>
           {% else %}
           <a href="{% url 'student_login' %}" class="sidebar-logout text-primary">
-            <i class="fa fa-sign-in-alt"></i> Student Sign In
+            <i class="fas fa-sign-in-alt"></i> Student Sign In
           </a>
           {% endif %}
         </div>
