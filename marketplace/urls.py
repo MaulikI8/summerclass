@@ -26,6 +26,14 @@ urlpatterns = [
     path('blogs/', include('blog.urls')),
     path('products/', include('products.urls')),
     path('<slug:slug>/', page_detail, name='page_detail'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+from django.views.static import serve
+from django.urls import re_path
+
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+]
 
 handler404 = 'marketplace.views.custom_404'
