@@ -77,15 +77,6 @@
             {% endif %}
           </a>
 
-          <!-- Floating Wishlist Button -->
-          <button type="button" 
-                  class="card-wishlist-btn wishlist-toggle-btn" 
-                  data-id="{{ product.id }}"
-                  title="Save to Wishlist"
-                  onclick="toggleWishlist('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}', '{{ product.category.name|escapejs }}')">
-            <i class="far fa-heart"></i>
-          </button>
-
           <!-- Info Wrap -->
           <figcaption class="info-wrap">
             <a href="{% url 'product_detail' product.id %}" class="title" title="{{ product.name }}">
@@ -94,30 +85,17 @@
 
             <div class="price">Rs. {{ product.price|floatformat:2 }}</div>
 
-            <!-- Star Rating Display -->
-            <div class="rating-star">
-              <i class="fa fa-star"></i>
-              <i class="fa fa-star"></i>
-              <i class="fa fa-star"></i>
-              <i class="fa fa-star"></i>
-              <i class="fa fa-star-o"></i>
-              <span class="rating-score">4.0</span>
-            </div>
-
-            <p class="card-desc">{{ product.description|default:"Verified campus student listing." }}</p>
+            <p class="card-desc">{{ product.description|default:"Verified student listing." }}</p>
 
             <div class="card-action-bar">
               <a href="{% url 'product_detail' product.id %}" class="btn-card-primary text-decoration-none">
-                View Details
+                View Item
               </a>
               {% if product.stock > 0 %}
-              <button type="button" class="btn-card-icon" onclick="toggleCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
-                <i class="fa fa-shopping-cart text-primary"></i>
+              <button type="button" class="btn-card-icon" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
+                <i class="fas fa-shopping-cart text-primary"></i>
               </button>
               {% endif %}
-              <button type="button" class="btn-card-icon" title="Quick View" onclick="openQuickView('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}', '{{ product.category.name|escapejs }}', '{{ product.description|escapejs }}', '{{ product.stock }}', '{% url 'product_detail' product.id %}')">
-                <i class="fa fa-eye text-muted"></i>
-              </button>
             </div>
           </figcaption>
         </div>

@@ -71,11 +71,11 @@ def checkout(request):
             OrderItem.objects.create(order=order, product=prod, product_name=item.get('name', 'Product'), price=pr, quantity=qty)
             total += pr * qty
             if prod and prod.user:
-                Notification.notify(prod.user, f'New Order #{order.id} for {prod.name}!', f'{order.buyer_name} ordered {qty}x {prod.name}. Meetup: {order.meetup_location}', 'order_placed', 'fa-receipt', f'/profile/?tab=orders')
+                Notification.notify(prod.user, f'New Order #{order.id} for {prod.name}!', f'{order.buyer_name} ordered {qty}x {prod.name}. Pickup: {order.meetup_location}', 'order_placed', 'fa-receipt', f'/profile/?tab=orders')
 
         order.total_amount = total; order.save()
         if request.user.is_authenticated:
-            Notification.notify(request.user, f'Order #{order.id} Confirmed!', f'Total Rs. {total:.2f}. Meetup: {order.meetup_location}', 'order_placed', 'fa-check-circle', f'/profile/?tab=orders')
+            Notification.notify(request.user, f'Order #{order.id} Confirmed!', f'Total Rs. {total:.2f}. Pickup: {order.meetup_location}', 'order_placed', 'fa-check-circle', f'/profile/?tab=orders')
 
         return redirect('order_success', order_id=order.id)
     return render(request, 'profile/checkout.html')

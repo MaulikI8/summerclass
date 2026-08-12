@@ -436,7 +436,7 @@
 
                 <div class="mb-3">
                   <label class="form-label">Item Description &amp; Condition</label>
-                  <textarea name="description" rows="4" class="form-control" placeholder="Mention item condition (e.g. Like New, No highlights), author/edition, and preferred campus meetup spot (e.g. Library Block C)." required></textarea>
+                  <textarea name="description" rows="4" class="form-control" placeholder="Mention item condition (e.g. Like New, No highlights), author/edition, and preferred collection point (e.g. Library Block C)." required></textarea>
                 </div>
 
                 <div class="mb-4">
@@ -854,6 +854,10 @@
       switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'));
     } else if (tab === 'products') {
       switchDashboardTab('products', document.getElementById('sidebarProducts'));
+    } else if (tab === 'orders') {
+      switchDashboardTab('orders', document.getElementById('sidebarOrders'));
+    } else if (tab === 'sales') {
+      switchDashboardTab('sales', document.getElementById('sidebarSales'));
     }
   });
 </script>

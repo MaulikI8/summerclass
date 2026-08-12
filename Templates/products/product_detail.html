@@ -105,34 +105,29 @@
               </p>
             </div>
 
-            <!-- Meetup Location Notice -->
-            <div class="p-3 bg-primary-subtle text-primary rounded-3 border border-primary-subtle mb-4">
-              <div class="d-flex align-items-center gap-2 mb-1 fw-bold small">
-                <i class="fa fa-map-marker-alt"></i>
-                <span>Campus Meetup Location</span>
+            <!-- Collection Spot Notice -->
+            <div class="p-3 bg-light text-dark rounded-3 border mb-4">
+              <div class="d-flex align-items-center gap-2 mb-1 fw-bold small text-primary">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Direct College Collection</span>
               </div>
-              <p class="small mb-0 text-dark opacity-75">Islington College Campus (Library / Cafeteria). Pay on spot via Cash, eSewa, or Khalti after inspection.</p>
+              <p class="small mb-0 text-muted">Islington College (Library / Cafeteria). Pay via Cash, eSewa, or Khalti upon collection.</p>
             </div>
 
             <!-- Action Buttons -->
             <div class="d-flex flex-wrap gap-2 pt-2">
               {% if product.stock > 0 %}
-              <button type="button" class="btn btn-primary btn-lg px-4 fw-semibold flex-grow-1 rounded-pill shadow-sm" onclick="toggleCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')">
-                <i class="fa fa-shopping-cart me-1"></i> Add to Bag
+              <button type="button" class="btn btn-primary btn-lg px-4 fw-semibold flex-grow-1 rounded-pill shadow-sm" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')">
+                <i class="fas fa-shopping-cart me-1"></i> Add to Bag
               </button>
+              <a href="{% url 'checkout' %}" class="btn btn-outline-primary btn-lg px-4 rounded-pill fw-semibold" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')">
+                Buy Now
+              </a>
               {% else %}
               <button type="button" class="btn btn-secondary btn-lg px-4 fw-semibold flex-grow-1 rounded-pill" disabled>
                 Sold Out
               </button>
               {% endif %}
-
-              <button type="button" class="btn btn-outline-primary btn-lg px-4 rounded-pill fw-semibold" onclick="openProductChat('{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Chat with Seller">
-                <i class="fa fa-comment-dots me-1"></i> Chat with Seller
-              </button>
-
-              <button type="button" class="btn btn-outline-danger btn-lg px-3 rounded-pill wishlist-toggle-btn" data-id="{{ product.id }}" title="Wishlist" onclick="toggleWishlist('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}', '{{ product.category.name|escapejs }}')">
-                <i class="far fa-heart"></i>
-              </button>
             </div>
           </article>
         </main>

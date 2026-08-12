@@ -20,7 +20,7 @@
           <div class="alert alert-success py-3 px-4 rounded-3 text-start small border-0 mb-4 d-flex align-items-center gap-3">
             <i class="fas fa-shield-alt fs-4 text-success flex-shrink-0"></i>
             <div>
-              <strong>Campus Handover Scheduled:</strong> Your order has been notified to the student seller(s). Both parties will meet at <strong>{{ order.meetup_location }}</strong> during <strong>{{ order.meetup_time }}</strong>.
+              <strong>Order Details Confirmed:</strong> Your order has been notified to the student seller(s). Collection Spot: <strong>{{ order.meetup_location }}</strong> during <strong>{{ order.meetup_time }}</strong>.
             </div>
           </div>
 
@@ -33,7 +33,7 @@
               <div class="col-6 text-end fw-semibold text-dark">{{ order.buyer_phone }}</div>
               <div class="col-6 text-muted">Payment Method:</div>
               <div class="col-6 text-end fw-bold text-success">{{ order.get_payment_method_display|default:order.payment_method }} ({{ order.payment_status }})</div>
-              <div class="col-6 text-muted">Meetup Spot:</div>
+              <div class="col-6 text-muted">Collection Spot:</div>
               <div class="col-6 text-end fw-semibold text-dark">{{ order.meetup_location }}</div>
               <div class="col-6 text-muted">Scheduled Time:</div>
               <div class="col-6 text-end fw-semibold text-dark">{{ order.meetup_time }}</div>
@@ -50,7 +50,7 @@
             </div>
 
             <div class="d-flex justify-content-between align-items-center pt-2 border-top fs-5 fw-bold text-dark">
-              <span>Total Paid:</span>
+              <span>Total:</span>
               <span class="text-primary">Rs. {{ order.total_amount|floatformat:2 }}</span>
             </div>
           </div>
@@ -70,7 +70,6 @@
 </section>
 
 <script>
-// Clear local storage cart once order is confirmed
 document.addEventListener('DOMContentLoaded', function() {
     clearAllCart();
 });

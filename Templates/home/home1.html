@@ -217,21 +217,18 @@
               <span class="rating-score">4.0</span>
             </div>
 
-            <p class="card-desc">{{ product.description|default:"Verified campus student listing." }}</p>
+            <p class="card-desc">{{ product.description|default:"Verified student listing." }}</p>
 
             <!-- Card Action Bar -->
             <div class="card-action-bar">
               <a href="{% url 'product_detail' product.id %}" class="btn-card-primary text-decoration-none">
-                View Details
+                View Item
               </a>
               {% if product.stock > 0 %}
-              <button type="button" class="btn-card-icon" onclick="toggleCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
-                <i class="fa fa-shopping-cart text-primary"></i>
+              <button type="button" class="btn-card-icon" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
+                <i class="fas fa-shopping-cart text-primary"></i>
               </button>
               {% endif %}
-              <button type="button" class="btn-card-icon" title="Quick View" onclick="openQuickView('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}', '{{ product.category.name|escapejs }}', '{{ product.description|escapejs }}', '{{ product.stock }}', '{% url 'product_detail' product.id %}')">
-                <i class="fa fa-eye text-muted"></i>
-              </button>
             </div>
           </figcaption>
         </div>
@@ -370,7 +367,7 @@
             <i class="fa fa-map-marker-alt"></i>
           </div>
           <div>
-            <h6 class="fw-bold mb-0 text-dark">Campus Meetup</h6>
+            <h6 class="fw-bold mb-0 text-dark">Direct College Pickup</h6>
             <small class="text-muted">Library &amp; cafeteria spots</small>
           </div>
         </div>
