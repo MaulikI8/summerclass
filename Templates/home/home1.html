@@ -5,7 +5,7 @@
 
 {% block content %}
 <!-- ========================= SECTION BANNER CAROUSEL ========================= -->
-<section class="section-intro padding-y-sm">
+<section class="section-intro padding-y-sm pb-0">
   <div class="container">
     <div class="hero-carousel-wrap">
       <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
@@ -70,8 +70,8 @@
                       </div>
                       <div class="border-end border-white border-opacity-25"></div>
                       <div>
-                        <div class="fs-4 fw-bold text-white">Campus</div>
-                        <small class="text-white-50">Handover</small>
+                        <div class="fs-4 fw-bold text-white">College</div>
+                        <small class="text-white-50">Pickup</small>
                       </div>
                     </div>
                   </div>
@@ -125,13 +125,57 @@
 </section>
 <!-- ========================= SECTION BANNER CAROUSEL END// ========================= -->
 
+<!-- ========================= MEANINGFUL SEPARATOR STRIP ========================= -->
+<div class="container">
+  <div class="meaningful-separator-strip shadow-sm">
+    <div class="row g-3 align-items-center">
+      <div class="col-lg-3 col-md-6 col-6">
+        <div class="feature-pill-item">
+          <div class="feature-pill-icon blue"><i class="fas fa-user-graduate"></i></div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">Verified Peers</h6>
+            <small class="text-muted d-none d-sm-block" style="font-size: 0.76rem;">Student-to-student trade</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 col-6">
+        <div class="feature-pill-item">
+          <div class="feature-pill-icon green"><i class="fas fa-map-marker-alt"></i></div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">Direct Pickup</h6>
+            <small class="text-muted d-none d-sm-block" style="font-size: 0.76rem;">Library &amp; cafeteria spots</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 col-6">
+        <div class="feature-pill-item">
+          <div class="feature-pill-icon amber"><i class="fas fa-percentage"></i></div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">0% Commission</h6>
+            <small class="text-muted d-none d-sm-block" style="font-size: 0.76rem;">Keep 100% of your money</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 col-6">
+        <div class="feature-pill-item">
+          <div class="feature-pill-icon purple"><i class="fas fa-gavel"></i></div>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">24h Live Bidding</h6>
+            <small class="text-muted d-none d-sm-block" style="font-size: 0.76rem;">Peer auction hub</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ========================= SECTION POPULAR PRODUCTS ========================= -->
-<section class="section-name padding-y-sm" id="popularProductsSection">
+<section class="section-name py-4" id="popularProductsSection">
   <div class="container">
-    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
       <div>
-        <h3 class="section-title mb-1">Popular Products</h3>
-        <p class="section-subtitle mb-0">Verified listings from fellow students on campus.</p>
+        <h3 class="section-title mb-1">Explore Student Listings</h3>
+        <p class="section-subtitle mb-0">Discover verified items listed by students on campus.</p>
       </div>
       <a href="{% url 'products' %}" class="btn btn-outline-primary rounded-pill px-4 fw-semibold small">
         See All Products <i class="fa fa-arrow-right ms-1"></i>
@@ -162,7 +206,7 @@
            data-category="{{ product.category.name|lower }}"
            data-price="{{ product.price }}"
            data-instock="{% if product.stock > 0 %}true{% else %}false{% endif %}">
-        <div class="card card-product-grid">
+        <div class="card card-product-grid shadow-sm">
           <!-- Image Wrap -->
           <a href="{% url 'product_detail' product.id %}" class="img-wrap">
             {% if product.product_image %}
@@ -188,15 +232,6 @@
             {% endif %}
           </a>
 
-          <!-- Floating Wishlist Button -->
-          <button type="button" 
-                  class="card-wishlist-btn wishlist-toggle-btn" 
-                  data-id="{{ product.id }}"
-                  title="Save to Wishlist"
-                  onclick="toggleWishlist('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}', '{{ product.category.name|escapejs }}')">
-            <i class="far fa-heart"></i>
-          </button>
-
           <!-- Info Body -->
           <figcaption class="info-wrap">
             <a href="{% url 'product_detail' product.id %}" class="title" title="{{ product.name }}">
@@ -205,16 +240,6 @@
 
             <div class="d-flex align-items-baseline justify-content-between mt-1">
               <span class="price">Rs. {{ product.price|floatformat:2 }}</span>
-            </div>
-
-            <!-- Star Rating Display -->
-            <div class="rating-star">
-              <i class="fa fa-star"></i>
-              <i class="fa fa-star"></i>
-              <i class="fa fa-star"></i>
-              <i class="fa fa-star"></i>
-              <i class="fa fa-star-o"></i>
-              <span class="rating-score">4.0</span>
             </div>
 
             <p class="card-desc">{{ product.description|default:"Verified student listing." }}</p>
@@ -256,20 +281,22 @@
 </section>
 <!-- ========================= SECTION POPULAR PRODUCTS END// ========================= -->
 
-<!-- ========================= SECTION CATEGORIES SHOWCASE ========================= -->
-<section class="section-name padding-y-sm bg-light py-5 border-top border-bottom">
+<!-- ========================= SECTION CATEGORIES SHOWCASE (Smooth Flow) ========================= -->
+<section class="section-flow-wrap bg-soft my-4">
   <div class="container">
-    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
       <div>
+        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2" style="font-size: 0.75rem;">DEPARTMENT CURATION</span>
         <h3 class="section-title mb-1">Explore Categories</h3>
         <p class="section-subtitle mb-0">Browse by category to find textbooks, electronics, and stationery.</p>
       </div>
+      <a href="{% url 'products' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">View All</a>
     </header>
 
     <div class="row g-4">
       {% for cat in categories %}
       <div class="col-lg-3 col-md-4 col-sm-6">
-        <a href="{% url 'products' %}?category={{ cat.name }}" class="category-showcase-card">
+        <a href="{% url 'products' %}?category={{ cat.name }}" class="category-showcase-card shadow-sm">
           {% if cat.category_image %}
           <div class="category-img-box">
             <img src="{{ cat.category_image.url }}" alt="{{ cat.name }}" />
@@ -296,12 +323,13 @@
 <!-- ========================= SECTION CATEGORIES END// ========================= -->
 
 <!-- ========================= SECTION OUR BLOGS ========================= -->
-<section class="section-name padding-y-sm py-5">
+<section class="section-name py-5">
   <div class="container">
-    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
       <div>
-        <h3 class="section-title mb-1">Campus Insights &amp; Guides</h3>
-        <p class="section-subtitle mb-0">Student advice, study tips, textbook recommendations, and news.</p>
+        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1 fw-bold mb-2" style="font-size: 0.75rem;">CAMPUS LIFE &amp; GUIDES</span>
+        <h3 class="section-title mb-1">Campus Insights &amp; Advice</h3>
+        <p class="section-subtitle mb-0">Student advice, study tips, textbook recommendations, and peer news.</p>
       </div>
       <a href="{% url 'blog' %}" class="btn btn-outline-primary rounded-pill px-4 fw-semibold small">
         View All Blogs <i class="fa fa-arrow-right ms-1"></i>
@@ -311,7 +339,7 @@
     <div class="row g-4">
       {% for b in latest_blogs %}
       <div class="col-lg-4 col-md-6">
-        <div class="card border rounded-3 shadow-sm h-100 bg-white overflow-hidden" style="transition: transform 0.2s ease, box-shadow 0.2s ease;">
+        <div class="card border-0 rounded-4 shadow-sm h-100 bg-white overflow-hidden" style="transition: transform 0.2s ease, box-shadow 0.2s ease;">
           <div class="card-body d-flex flex-column p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold" style="font-size: 0.72rem;">
@@ -346,23 +374,23 @@
 </section>
 <!-- ========================= SECTION OUR BLOGS END// ========================= -->
 
-<!-- ========================= SECTION LIVE STUDENT BIDDING & AUCTIONS ========================= -->
-<section class="section-name py-5 bg-light border-top" id="liveBiddingSection">
+<!-- ========================= SECTION LIVE STUDENT BIDDING & AUCTIONS (Smooth Flow) ========================= -->
+<section class="section-flow-wrap bg-soft py-5" id="liveBiddingSection">
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-      <div>
-        <div class="d-inline-flex align-items-center gap-2 mb-2">
-          <span class="badge bg-danger rounded-pill px-3 py-1 shadow-sm d-inline-flex align-items-center gap-2" style="font-size: 0.8rem; letter-spacing: 0.05em;">
-            <span class="live-indicator-dot"></span> LIVE AUCTIONS
-          </span>
-          <span class="text-muted small fw-semibold">Real-Time Peer Bidding</span>
+    <!-- Live Bidding Highlight Ribbon -->
+    <div class="section-activity-ribbon d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2" style="font-size: 0.82rem; letter-spacing: 0.05em;">
+          <span class="live-indicator-dot"></span> LIVE AUCTIONS
+        </span>
+        <div>
+          <h4 class="fw-bold text-white mb-0">24-Hour Student Bidding Hub</h4>
+          <small class="text-white-50">Place real-time bids • Highest bidder wins or publisher accepts early</small>
         </div>
-        <h3 class="fw-bold text-dark mb-1">🔥 Live Student Bidding Hub</h3>
-        <p class="text-muted small mb-0">Place bids on textbooks, project kits, electronics, and rare items listed by student peers.</p>
       </div>
       <div>
-        <span class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-sm">
-          <i class="fas fa-gavel text-primary me-1"></i> {{ auctions|length }} Active Auction{{ auctions|length|pluralize }}
+        <span class="badge bg-white text-primary px-3 py-2 rounded-pill fw-bold shadow-sm">
+          <i class="fas fa-gavel me-1"></i> {{ auctions|length }} Active Auction{{ auctions|length|pluralize }}
         </span>
       </div>
     </div>
@@ -554,4 +582,3 @@
   document.addEventListener('DOMContentLoaded', initAuctionTimers);
 </script>
 {% endblock %}
-
