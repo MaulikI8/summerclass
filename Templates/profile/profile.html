@@ -357,7 +357,14 @@
                         {% endif %}
                       </td>
                       <td>
-                        <div class="d-flex gap-1">
+                        <div class="d-flex gap-1 align-items-center">
+                          <form action="{% url 'start_auction' prod.id %}" method="POST" class="d-inline" onsubmit="return confirm('Start a 24-hour live auction for {{ prod.name|escapejs }}? All students will be notified via email.');">
+                            {% csrf_token %}
+                            <input type="hidden" name="starting_bid" value="{{ prod.price }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Start 24h Live Auction" style="font-size: 0.78rem; padding: 4px 8px;">
+                              <i class="fas fa-gavel text-danger"></i> Auction
+                            </button>
+                          </form>
                           <a href="{% url 'product_detail' prod.id %}" class="btn btn-sm btn-outline-primary" title="View in Store" style="font-size: 0.78rem; padding: 4px 8px;">
                             <i class="fa fa-eye"></i>
                           </a>
@@ -445,6 +452,16 @@
                   <small class="text-muted">Upload a clear photo of your book or gadget.</small>
                   <div id="imagePreviewContainer" class="mt-2 d-none">
                     <img id="imagePreviewEl" src="" alt="Preview" class="rounded border" style="max-height: 140px; object-fit: contain;">
+                  </div>
+                </div>
+
+                <div class="form-check form-switch mb-4 p-3 bg-light rounded-3 border">
+                  <input class="form-check-input ms-0 me-2" type="checkbox" name="start_as_auction" value="1" id="startAsAuctionCheck">
+                  <label class="form-check-label fw-bold text-dark" for="startAsAuctionCheck">
+                    🔥 Start as a 24-Hour Live Auction
+                  </label>
+                  <div class="small text-muted mt-1">
+                    Students can place real-time bids for 24 hours. Resend will notify all students via email, and you can accept the highest price whenever you want!
                   </div>
                 </div>
 

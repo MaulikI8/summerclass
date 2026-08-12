@@ -1,5 +1,6 @@
 import json, threading, urllib.request, urllib.error
 from django.conf import settings
+from django.contrib.auth.models import User
 
 class EmailMicroservice:
     @classmethod
@@ -54,9 +55,44 @@ class EmailMicroservice:
         cls.send_async(u.email, "Verify your Islington Marketplace account", html)
 
     @classmethod
-    def send_welcome_email(cls, u):
-        if u.email: cls.send_async(u.email, f"Welcome to Islington Marketplace, {u.first_name or u.username}!", f"<h2>Welcome {u.first_name or u.username}!</h2><p>Your student account is active. <a href='http://127.0.0.1:8000/profile/?tab=add'>Post a listing</a> to start selling.</p>")
-
-    @classmethod
     def send_product_listed_email(cls, u, p):
         if u.email: cls.send_async(u.email, f'Listing Live: "{p.name}"', f"<h2>Listing Published!</h2><p>Hi {u.first_name or u.username}, your item <strong>{p.name}</strong> is live for Rs. {p.price:.2f}. <a href='http://127.0.0.1:8000/products/{p.id}/'>View Item</a></p>")
+
+    @classmethod
+    def send_new_auction_broadcast(cls, auction, auction_url):
+        emails = list(User.objects.filter(is_active=True).exclude(email='').values_list('email', flat=True))
+        if not emails: return
+        html = f"""<div style="font-family:sans-serif;max-width:540px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
+        <span style="background:#ef4444;color:#ffffff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;text-transform:uppercase;">🔥 24-Hour Live Auction</span>
+        <h2 style="color:#0f172a;margin-top:16px;">{auction.title}</h2>
+        <p style="color:#475569;font-size:15px;">A new 24-hour peer auction has just begun! Starting price is <strong>Rs. {auction.starting_bid:.2f}</strong>.</p>
+        <p style="margin:24px 0;"><a href="{auction_url}" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:bold;font-size:15px;display:inline-block;">Place a Bid Now</a></p>
+        <p style="font-size:12px;color:#64748b;">Auction ends in 24 hours or whenever the seller accepts the highest bid.</p>
+        </div>"""
+        cls.send_async(emails, f"🔥 New 24-Hour Live Auction: {auction.title}", html)
+
+    @classmethod
+    def send_outbid_notification(cls, outbid_user, auction, new_bid_amount, auction_url):
+        if not outbid_user or not outbid_user.email: return
+        name = outbid_user.first_name or outbid_user.username
+        html = f"""<div style="font-family:sans-serif;max-width:540px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
+        <span style="background:#f59e0b;color:#ffffff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;">⚠️ Outbid Alert</span>
+        <h2 style="color:#0f172a;margin-top:16px;">You've been outbid on {auction.title}!</h2>
+        <p style="color:#475569;font-size:15px;">Hi {name}, another student just placed a higher bid of <strong style="color:#2563eb;">Rs. {new_bid_amount:.2f}</strong>.</p>
+        <p style="margin:24px 0;"><a href="{auction_url}" style="background:#ef4444;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:bold;font-size:15px;display:inline-block;">Raise Your Bid</a></p>
+        <p style="font-size:12px;color:#64748b;">Bid again before the 24-hour timer expires!</p>
+        </div>"""
+        cls.send_async(outbid_user.email, f"⚠️ You've been outbid on {auction.title}!", html)
+
+    @classmethod
+    def send_auction_won_notification(cls, winner, seller, auction):
+        if winner and winner.email:
+            name = winner.first_name or winner.username
+            html = f"""<div style="font-family:sans-serif;max-width:540px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
+            <span style="background:#10b981;color:#ffffff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;">🎉 Auction Won</span>
+            <h2 style="color:#0f172a;margin-top:16px;">Congratulations {name}!</h2>
+            <p style="color:#475569;font-size:15px;">You won the auction for <strong>{auction.title}</strong> with the winning bid of <strong>Rs. {auction.current_bid:.2f}</strong>!</p>
+            <p style="margin:24px 0;"><a href="http://127.0.0.1:8000/profile/?tab=orders" style="background:#10b981;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:bold;font-size:15px;display:inline-block;">View in My Orders</a></p>
+            <p style="font-size:12px;color:#64748b;">Arrange safe collection directly with the seller {seller.username if seller else 'peer'}.</p>
+            </div>"""
+            cls.send_async(winner.email, f"🎉 You Won the Auction for {auction.title}!", html)

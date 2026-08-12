@@ -1,4 +1,6 @@
 import json
+from datetime import timedelta
+from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -12,6 +14,30 @@ from utils.email_microservice import EmailMicroservice
 def home(request):
     p = Product.objects.select_related('category').filter(status=True).order_by('-created_at') or Product.objects.select_related('category').all().order_by('-created_at')
     b = Post.objects.select_related('category').filter(status=True).order_by('-created_at')[:3]
+    # Check and auto-expire finished auctions
+    for a in Auction.objects.filter(is_active=True, end_time__lte=timezone.now()):
+        a.is_active = False
+        a.save()
+        if a.highest_bidder:
+            order = Order.objects.create(
+                user=a.highest_bidder,
+                buyer_name=a.highest_bidder.first_name or a.highest_bidder.username,
+                buyer_phone='9800000000',
+                buyer_email=a.highest_bidder.email,
+                meetup_location='Block C Library Lobby',
+                meetup_time='Afternoon (1:00 PM - 3:00 PM)',
+                notes=f'Won 24h Auction for {a.title}',
+                total_amount=a.current_bid,
+                payment_method='auction_bid_won',
+                payment_status='Pending (Collection Payment)',
+                order_status='confirmed'
+            )
+            OrderItem.objects.create(order=order, product=a.product, product_name=a.product.name, price=a.current_bid, quantity=1)
+            EmailMicroservice.send_auction_won_notification(a.highest_bidder, a.product.user, a)
+            Notification.notify(a.highest_bidder, f"🎉 You Won Auction: {a.title}!", f"Winning bid: Rs. {a.current_bid:.2f}. See your order in dashboard.", 'auction_won', 'fa-trophy', '/profile/?tab=orders')
+            if a.product.user:
+                Notification.notify(a.product.user, f"Auction Ended for {a.title}!", f"Winner: {a.highest_bidder.username} at Rs. {a.current_bid:.2f}.", 'auction_ended', 'fa-check-circle', '/profile/?tab=orders')
+
     auctions = Auction.objects.filter(is_active=True).select_related('product', 'product__category', 'highest_bidder', 'product__user').order_by('end_time')
     return render(request, 'home/home1.html', {
         'banners': Banner.objects.filter(is_active=True), 'products': p, 'featured_products': p[:8],
@@ -19,11 +45,88 @@ def home(request):
         'total_products': Product.objects.count(), 'total_categories': ProductCategory.objects.count(), 'total_blogs': Post.objects.count()
     })
 
+def start_auction(request, product_id):
+    if not request.user.is_authenticated:
+        messages.error(request, "Please sign in to start an auction.")
+        return redirect('student_login')
+    p = get_object_or_404(Product, id=product_id)
+    if p.user != request.user and not request.user.is_superuser:
+        messages.error(request, "Permission denied.")
+        return redirect('user_profile')
+
+    start_price = float(request.POST.get('starting_bid') or p.price)
+    auction, created = Auction.objects.get_or_create(
+        product=p,
+        defaults={
+            'title': f'24h Auction: {p.name}',
+            'starting_bid': start_price,
+            'current_bid': start_price,
+            'end_time': timezone.now() + timedelta(days=1),
+            'is_active': True
+        }
+    )
+    if not created:
+        auction.starting_bid = start_price
+        auction.current_bid = start_price
+        auction.end_time = timezone.now() + timedelta(days=1)
+        auction.highest_bidder = None
+        auction.is_active = True
+        auction.save()
+
+    auction_url = request.build_absolute_uri('/#liveBiddingSection')
+    EmailMicroservice.send_new_auction_broadcast(auction, auction_url)
+    Notification.notify_all(f'🔥 24h Live Auction: {p.name}', f'{request.user.first_name or request.user.username} started an auction starting at Rs. {start_price:.2f}!', 'auction_start', 'fa-gavel', '/#liveBiddingSection', exclude_user=request.user)
+    messages.success(request, f"24-Hour Live Auction started for {p.name}! Notification sent to students.")
+    return redirect('home')
+
+def accept_auction_bid(request, auction_id):
+    if not request.user.is_authenticated:
+        messages.error(request, "Please sign in.")
+        return redirect('student_login')
+    auction = get_object_or_404(Auction, id=auction_id, is_active=True)
+    if auction.product.user != request.user and not request.user.is_superuser:
+        messages.error(request, "Only the publisher can accept the bid.")
+        return redirect('home')
+
+    if not auction.highest_bidder:
+        messages.error(request, "No bids have been placed yet to accept.")
+        return redirect('home')
+
+    auction.is_active = False
+    auction.save()
+
+    winner = auction.highest_bidder
+    order = Order.objects.create(
+        user=winner,
+        buyer_name=winner.first_name or winner.username,
+        buyer_phone='9800000000',
+        buyer_email=winner.email,
+        meetup_location='Block C Library Lobby',
+        meetup_time='Afternoon (1:00 PM - 3:00 PM)',
+        notes=f'Accepted Early by Seller for {auction.title}',
+        total_amount=auction.current_bid,
+        payment_method='auction_bid_won',
+        payment_status='Pending (Collection Payment)',
+        order_status='confirmed'
+    )
+    OrderItem.objects.create(order=order, product=auction.product, product_name=auction.product.name, price=auction.current_bid, quantity=1)
+
+    EmailMicroservice.send_auction_won_notification(winner, request.user, auction)
+    Notification.notify(winner, f"🎉 Seller Accepted Your Bid for {auction.title}!", f"Winning price: Rs. {auction.current_bid:.2f}. See details in My Orders.", 'auction_won', 'fa-trophy', '/profile/?tab=orders')
+    Notification.notify(request.user, f"Auction Closed for {auction.title}", f"Accepted winning bid of Rs. {auction.current_bid:.2f} from {winner.username}.", 'auction_ended', 'fa-check-circle', '/profile/?tab=orders')
+
+    messages.success(request, f"Success! You accepted the highest bid of Rs. {auction.current_bid:.2f} from {winner.username}. Order created!")
+    return redirect('home')
+
 def place_bid(request, auction_id):
     if not request.user.is_authenticated:
         messages.error(request, "Please sign in to place a bid on student auctions.")
         return redirect('student_login')
     auction = get_object_or_404(Auction, id=auction_id, is_active=True)
+    if auction.product.user == request.user:
+        messages.error(request, "You cannot bid on your own listing.")
+        return redirect('home')
+
     if request.method == 'POST':
         try: bid_amount = float(request.POST.get('bid_amount', 0))
         except (ValueError, TypeError):
@@ -39,10 +142,14 @@ def place_bid(request, auction_id):
         auction.highest_bidder = request.user
         auction.save()
 
+        # Resend Email Notification to Outbid Student
+        if old_bidder and old_bidder != request.user:
+            auction_url = request.build_absolute_uri('/#liveBiddingSection')
+            EmailMicroservice.send_outbid_notification(old_bidder, auction, bid_amount, auction_url)
+            Notification.notify(old_bidder, f"Outbid on {auction.product.name}!", f"New highest bid: Rs. {bid_amount:.2f}.", 'auction_outbid', 'fa-arrow-up', '/#liveBiddingSection')
+
         if auction.product.user and auction.product.user != request.user:
             Notification.notify(auction.product.user, f"New Bid Rs. {bid_amount:.2f} on {auction.product.name}!", f"{request.user.first_name or request.user.username} placed a new highest bid.", 'auction_bid', 'fa-gavel', f'/products/{auction.product.id}/')
-        if old_bidder and old_bidder != request.user:
-            Notification.notify(old_bidder, f"Outbid on {auction.product.name}!", f"New highest bid: Rs. {bid_amount:.2f}.", 'auction_outbid', 'fa-arrow-up', '/#liveBiddingSection')
 
         messages.success(request, f"Success! Your bid of Rs. {bid_amount:.2f} is currently the highest bid.")
     return redirect('home')
@@ -56,10 +163,22 @@ def user_profile(request):
             u.save(); messages.success(request, "Profile updated!")
         elif act == 'add_product' and post.get('name') and post.get('category') and post.get('price'):
             p = Product.objects.create(user=u, name=post['name'].strip(), category_id=post['category'], price=float(post['price']), stock=int(post.get('stock') or 1), description=post.get('description', '').strip(), product_image=request.FILES.get('product_image'), status=True)
+            if post.get('start_as_auction') == '1':
+                a = Auction.objects.create(
+                    product=p,
+                    title=f'24h Auction: {p.name}',
+                    starting_bid=float(post.get('starting_bid') or p.price),
+                    current_bid=float(post.get('starting_bid') or p.price),
+                    end_time=timezone.now() + timedelta(days=1),
+                    is_active=True
+                )
+                auction_url = request.build_absolute_uri('/#liveBiddingSection')
+                EmailMicroservice.send_new_auction_broadcast(a, auction_url)
+                Notification.notify_all(f'🔥 24h Live Auction: {p.name}', f'{u.first_name or u.username} started an auction for "{p.name}"!', 'auction_start', 'fa-gavel', '/#liveBiddingSection', exclude_user=u)
             Notification.notify(u, f'Listing "{p.name}" is live!', f'Rs. {p.price}', 'product_listed', 'fa-check-circle', f'/products/{p.id}/')
             Notification.notify_all(f'New: {p.name}', f'{u.first_name or u.username} listed "{p.name}" for Rs. {p.price}.', 'product_listed', 'fa-box-open', f'/products/{p.id}/', exclude_user=u)
             EmailMicroservice.send_product_listed_email(u, p)
-            messages.success(request, f'"{p.name}" published!')
+            messages.success(request, f'"{p.name}" published successfully!')
         elif act == 'edit_product':
             p = get_object_or_404(Product, id=post.get('product_id'))
             if p.user == u or u.is_superuser:
