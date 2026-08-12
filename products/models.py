@@ -1,18 +1,13 @@
+import time
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
-import time
-
 
 class Category(models.Model):
     name = models.CharField(max_length=225)
     category_image = models.ImageField(upload_to='categories/', blank=True, null=True)
-
-    class Meta:
-        verbose_name_plural = 'Categories'
-
-    def __str__(self):
-        return self.name
+    class Meta: verbose_name_plural = 'Categories'
+    def __str__(self): return self.name
 
 class Product(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='products')
@@ -27,10 +22,7 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.name)
-            self.slug = f"{base_slug}-{int(time.time())}"
+        if not self.slug: self.slug = f"{slugify(self.name)}-{int(time.time())}"
         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return self.name
+    def __str__(self): return self.name

@@ -1,22 +1,11 @@
 from django.contrib import admin
-from .models import Category, Post
-
 from django.utils.html import format_html
+from .models import Category, Post
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'image_preview')
-    readonly_fields = ('image_preview',)
-
-    def image_preview(self, obj):
-        if obj.category_image:
-            return format_html(
-                '<img src="{}" width="60" height="60" style="object-fit:cover; border-radius:6px;" />',
-                obj.category_image.url,
-            )
-        return "No image"
-
-    image_preview.short_description = "Image"
+    list_display = ('id', 'name', 'img_preview')
+    def img_preview(self, o): return format_html('<img src="{}" width="50" height="50" style="object-fit:cover;border-radius:4px;" />', o.category_image.url) if o.category_image else "—"
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):

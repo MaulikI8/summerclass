@@ -5,10 +5,7 @@ from .models import SiteSetting, Banner, Notification
 @admin.register(SiteSetting)
 class SiteSettingAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
-        if SiteSetting.objects.exists():
-            return False
-        return super().has_add_permission(request)
-
+        return not SiteSetting.objects.exists() and super().has_add_permission(request)
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
@@ -18,55 +15,22 @@ class BannerAdmin(admin.ModelAdmin):
     search_fields = ('title', 'subtitle', 'badge_text')
     readonly_fields = ('image_preview',)
 
-    fieldsets = (
-        ('Header & Typography', {
-            'fields': ('title', 'subtitle', 'badge_text', 'badge_icon', 'theme_color')
-        }),
-        ('Call-to-Action Buttons', {
-            'fields': ('primary_btn_text', 'primary_btn_url', 'secondary_btn_text', 'secondary_btn_url')
-        }),
-        ('Media & Display Settings', {
-            'fields': ('banner_image', 'image_preview', 'order', 'is_active')
-        }),
-    )
-
     def theme_badge(self, obj):
-        colors = {
-            'slide-blue': '#2563eb',
-            'slide-green': '#10b981',
-            'slide-purple': '#8b5cf6',
-        }
-        color = colors.get(obj.theme_color, '#2563eb')
-        return format_html(
-            '<span style="background:{}; color:#fff; padding:3px 10px; border-radius:12px; font-weight:600; font-size:0.75rem;">{}</span>',
-            color,
-            obj.get_theme_color_display()
-        )
+        colors = {'slide-blue': '#2563eb', 'slide-green': '#10b981', 'slide-purple': '#8b5cf6'}
+        return format_html('<span style="background:{};color:#fff;padding:2px 8px;border-radius:10px;font-size:0.75rem;">{}</span>', colors.get(obj.theme_color, '#2563eb'), obj.get_theme_color_display())
     theme_badge.short_description = "Theme"
 
     def image_preview(self, obj):
-        if obj.banner_image:
-            return format_html(
-                '<img src="{}" width="100" height="50" style="object-fit:cover; border-radius:6px; border:1px solid #ddd;" />',
-                obj.banner_image.url,
-            )
-        return "No image (Default Gradient)"
-    image_preview.short_description = "Banner Preview"
-
+        return format_html('<img src="{}" width="80" height="40" style="object-fit:cover;border-radius:4px;" />', obj.banner_image.url) if obj.banner_image else "Default Gradient"
+    image_preview.short_description = "Preview"
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('title', 'recipient', 'notif_type', 'is_read', 'created_at')
-    list_filter = ('notif_type', 'is_read', 'created_at')
+    list_filter = ('notif_type', 'is_read')
     search_fields = ('title', 'message', 'recipient__username')
     list_editable = ('is_read',)
-    readonly_fields = ('created_at',)
-    actions = ['mark_as_read', 'mark_as_unread']
+    actions = ['mark_read', 'mark_unread']
 
-    def mark_as_read(self, request, queryset):
-        queryset.update(is_read=True)
-    mark_as_read.short_description = "Mark selected as read"
-
-    def mark_as_unread(self, request, queryset):
-        queryset.update(is_read=False)
-    mark_as_unread.short_description = "Mark selected as unread"
+    def mark_read(self, request, qs): qs.update(is_read=True)
+    def mark_unread(self, request, qs): qs.update(is_read=False)
