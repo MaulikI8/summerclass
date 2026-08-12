@@ -1,0 +1,20 @@
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Database
+*.sqlite3-journal
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo

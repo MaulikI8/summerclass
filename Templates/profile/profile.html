@@ -1,0 +1,796 @@
+{% extends 'master/base.html' %}
+{% load static %}
+
+{% block title %}Student Dashboard | Islington Marketplace{% endblock %}
+
+{% block content %}
+<style>
+  /* Dashboard-specific styles */
+  .dashboard-sidebar {
+    background: #fff;
+    border: 1px solid #e4e4e4;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .dashboard-sidebar .sidebar-item {
+    display: block;
+    padding: 11px 18px;
+    color: #444;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+    transition: all 0.15s ease;
+  }
+  .dashboard-sidebar .sidebar-item:hover {
+    background: #f0f4ff;
+    color: var(--primary);
+    border-left-color: var(--primary);
+  }
+  .dashboard-sidebar .sidebar-item.active {
+    background: var(--primary);
+    color: #fff;
+    border-left-color: var(--primary);
+    font-weight: 600;
+  }
+  .dashboard-sidebar .sidebar-item i {
+    width: 18px;
+    text-align: center;
+    margin-right: 8px;
+    font-size: 0.85rem;
+  }
+  .sidebar-divider {
+    border-top: 1px solid #e4e4e4;
+    margin: 0;
+  }
+  .sidebar-logout {
+    display: block;
+    padding: 12px 18px;
+    text-align: center;
+    color: #555;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-top: 1px solid #e4e4e4;
+    transition: all 0.15s ease;
+  }
+  .sidebar-logout:hover {
+    background: #fff0f0;
+    color: #dc3545;
+  }
+  .sidebar-logout i {
+    margin-right: 6px;
+  }
+
+  .stat-card {
+    background: #fff;
+    border: 1px solid #e4e4e4;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-card .stat-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+  }
+  .stat-card .stat-number {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #111;
+  }
+  .stat-card .stat-link {
+    font-size: 0.82rem;
+    color: var(--primary);
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 6px;
+  }
+  .stat-card .stat-link:hover {
+    text-decoration: underline;
+  }
+
+  .dashboard-panel {
+    background: #fff;
+    border: 1px solid #e4e4e4;
+    border-radius: 12px;
+  }
+  .dashboard-panel .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e4e4e4;
+  }
+  .dashboard-panel .panel-header h5 {
+    font-weight: 700;
+    margin: 0;
+    font-size: 1.05rem;
+    color: #222;
+  }
+  .dashboard-panel .panel-body {
+    padding: 20px;
+  }
+
+  .product-status-bar {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 0.88rem;
+    margin-bottom: 14px;
+  }
+  .product-status-bar span {
+    color: #555;
+    font-weight: 500;
+  }
+  .product-status-bar .count-label {
+    font-weight: 700;
+  }
+  .product-status-bar .count-approved { color: #28a745; }
+  .product-status-bar .count-pending  { color: #fd7e14; }
+  .product-status-bar .count-active   { color: var(--primary); }
+  .product-status-bar .count-inactive { color: #6c757d; }
+
+  .btn-manage {
+    font-size: 0.85rem;
+    padding: 6px 16px;
+    font-weight: 600;
+    border-radius: 8px;
+  }
+
+  .dashboard-tab-pane { display: none; }
+  .dashboard-tab-pane.active { display: block; }
+
+  /* Form styles */
+  .settings-form .form-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #333;
+    margin-bottom: 4px;
+  }
+  .settings-form .form-control, .settings-form .form-select {
+    border-radius: 8px;
+    border: 1px solid #d0d0d0;
+    padding: 9px 12px;
+    font-size: 0.9rem;
+  }
+  .settings-form .form-control:focus, .settings-form .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+</style>
+
+<section class="section-content padding-y-sm py-4">
+  <div class="container">
+
+    <!-- Flash Messages -->
+    {% if messages %}
+    <div class="mb-3">
+      {% for msg in messages %}
+      <div class="alert {% if msg.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center gap-2" role="alert">
+        <i class="fa {% if msg.tags == 'error' %}fa-exclamation-circle text-danger{% else %}fa-check-circle text-success{% endif %} fs-5"></i>
+        <span>{{ msg }}</span>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+      <!-- LEFT SIDEBAR -->
+      <div class="col-lg-3 col-md-4">
+        <div class="dashboard-sidebar shadow-sm">
+          <a href="javascript:void(0)" class="sidebar-item active" id="sidebarDashboard" onclick="switchDashboardTab('dashboard', this)">
+            <i class="fa fa-tachometer-alt"></i> Dashboard
+          </a>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarProducts" onclick="switchDashboardTab('products', this)">
+            <i class="fa fa-box"></i> My Products
+          </a>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarAddProduct" onclick="switchDashboardTab('addproduct', this)">
+            <i class="fa fa-plus-circle text-primary"></i> Post New Listing
+          </a>
+          <div class="sidebar-divider"></div>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarOrders" onclick="switchDashboardTab('orders', this)">
+            <i class="fa fa-receipt"></i> My Orders
+          </a>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarSales" onclick="switchDashboardTab('sales', this)">
+            <i class="fa fa-chart-line"></i> My Sales
+          </a>
+          <div class="sidebar-divider"></div>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarSentReq" onclick="switchDashboardTab('sentreq', this)">
+            <i class="fa fa-paper-plane"></i> My Sent Requests
+          </a>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarRecvReq" onclick="switchDashboardTab('recvreq', this)">
+            <i class="fa fa-inbox"></i> My Received Requests
+          </a>
+          <div class="sidebar-divider"></div>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarMessages" onclick="switchDashboardTab('messages', this)">
+            <i class="fa fa-envelope"></i> Messages
+          </a>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarSent" onclick="switchDashboardTab('sent', this)">
+            <i class="fa fa-share"></i> Sent
+          </a>
+          <div class="sidebar-divider"></div>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarEdit" onclick="switchDashboardTab('edit', this)">
+            <i class="fa fa-user-edit"></i> Edit Profile
+          </a>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarPassword" onclick="switchDashboardTab('password', this)">
+            <i class="fa fa-key"></i> Change Password
+          </a>
+          {% if profile_user.is_authenticated %}
+          <a href="{% url 'student_logout' %}" class="sidebar-logout">
+            <i class="fa fa-power-off"></i> Log out
+          </a>
+          {% else %}
+          <a href="{% url 'student_login' %}" class="sidebar-logout text-primary">
+            <i class="fa fa-sign-in-alt"></i> Student Sign In
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- RIGHT CONTENT AREA -->
+      <div class="col-lg-9 col-md-8">
+
+        <!-- TAB: Dashboard -->
+        <div class="dashboard-tab-pane active" id="tabDashboard">
+          <!-- Logged-in header -->
+          <div class="p-3 bg-white rounded-3 border mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3">
+              <div class="brand-icon-wrap" style="width: 44px; height: 44px;">
+                <i class="fa fa-user-graduate"></i>
+              </div>
+              <div>
+                <span class="text-muted small">Logged in student:</span>
+                <h5 class="fw-bold mb-0 text-dark">
+                  {% if profile_user.is_authenticated %}
+                    {{ profile_user.get_full_name|default:profile_user.username }}
+                  {% else %}
+                    Guest Student (Not Logged In)
+                  {% endif %}
+                </h5>
+              </div>
+            </div>
+            {% if not profile_user.is_authenticated %}
+            <a href="{% url 'student_login' %}" class="btn btn-primary btn-sm rounded-pill px-3">Sign In to Post Items</a>
+            {% else %}
+            <a href="javascript:void(0)" class="btn btn-primary btn-sm rounded-pill px-3" onclick="switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'))">
+              <i class="fa fa-plus-circle me-1"></i> Post New Listing
+            </a>
+            {% endif %}
+          </div>
+
+          <!-- Stat Cards Row -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <div class="stat-card">
+                <div class="stat-title">My Active Listings</div>
+                <div class="stat-number text-primary">{{ user_products|length }}</div>
+                <a href="javascript:void(0)" class="stat-link" onclick="switchDashboardTab('products', document.getElementById('sidebarProducts'))">View Listings</a>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="stat-card">
+                <div class="stat-title">My Orders</div>
+                <div class="stat-number">0</div>
+                <a href="javascript:void(0)" class="stat-link" onclick="switchDashboardTab('orders', document.getElementById('sidebarOrders'))">View Orders</a>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="stat-card">
+                <div class="stat-title">My Sales</div>
+                <div class="stat-number">0</div>
+                <a href="javascript:void(0)" class="stat-link" onclick="switchDashboardTab('sales', document.getElementById('sidebarSales'))">View Sales</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- My Products Summary Panel -->
+          <div class="dashboard-panel">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+              <h5>My Products Summary</h5>
+              <button type="button" class="btn btn-primary btn-sm rounded-pill" onclick="switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'))">
+                <i class="fa fa-plus me-1"></i> Post Item
+              </button>
+            </div>
+            <div class="panel-body">
+              <div class="product-status-bar">
+                <span>Total Items: <span class="count-label">{{ user_products|length }}</span></span>
+                <span>Active in Store: <span class="count-label count-approved">{{ user_products|length }}</span></span>
+                <span>Sold / Inactive: <span class="count-label count-inactive">0</span></span>
+              </div>
+              <div class="d-flex gap-2">
+                <a href="javascript:void(0)" class="btn btn-outline-primary btn-manage" onclick="switchDashboardTab('products', document.getElementById('sidebarProducts'))">Manage My Items</a>
+                <a href="javascript:void(0)" class="btn btn-primary btn-manage" onclick="switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'))">List New Item</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: My Products -->
+        <div class="dashboard-tab-pane" id="tabProducts">
+          <div class="dashboard-panel">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+              <h5>My Listed Products ({{ user_products|length }})</h5>
+              <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" onclick="switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'))">
+                <i class="fa fa-plus me-1"></i> Post New Listing
+              </button>
+            </div>
+            <div class="panel-body">
+              {% if user_products %}
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 40px;">#</th>
+                      <th>Product Item</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                      <th>Stock</th>
+                      <th style="width: 140px;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for prod in user_products %}
+                    <tr>
+                      <td class="text-muted small">{{ forloop.counter }}</td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          {% if prod.product_image %}
+                          <img src="{{ prod.product_image.url }}" alt="{{ prod.name }}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid #e4e4e4;">
+                          {% else %}
+                          <div style="width: 44px; height: 44px; background: #f0f0f0; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-image text-muted" style="font-size: 0.85rem;"></i>
+                          </div>
+                          {% endif %}
+                          <div>
+                            <a href="{% url 'product_detail' prod.id %}" class="text-dark fw-bold text-decoration-none d-block" style="font-size: 0.92rem;">{{ prod.name }}</a>
+                            <small class="text-muted">{{ prod.created_at|date:"M d, Y" }}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="text-muted small">{{ prod.category.name }}</td>
+                      <td class="fw-bold text-primary" style="font-size: 0.95rem;">Rs. {{ prod.price|floatformat:2 }}</td>
+                      <td>
+                        {% if prod.stock > 0 %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">{{ prod.stock }} In Stock</span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Sold Out</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <div class="d-flex gap-1">
+                          <a href="{% url 'product_detail' prod.id %}" class="btn btn-sm btn-outline-primary" title="View in Store" style="font-size: 0.78rem; padding: 4px 8px;">
+                            <i class="fa fa-eye"></i>
+                          </a>
+                          <button type="button" class="btn btn-sm btn-outline-secondary" title="Edit Listing" style="font-size: 0.78rem; padding: 4px 8px;" onclick="openEditProductModal('{{ prod.id }}', '{{ prod.name|escapejs }}', '{{ prod.category.id }}', '{{ prod.price }}', '{{ prod.stock }}', '{{ prod.description|escapejs }}')">
+                            <i class="fa fa-edit"></i>
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-danger" title="Delete Listing" style="font-size: 0.78rem; padding: 4px 8px;" onclick="confirmDeleteProduct('{{ prod.id }}', '{{ prod.name|escapejs }}')">
+                            <i class="fa fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <div class="text-center py-5 text-muted">
+                <i class="fa fa-box-open text-muted display-4 d-block mb-3"></i>
+                <h5 class="fw-bold text-dark">You have not listed any items yet</h5>
+                <p class="small mb-3">Sell your textbooks, lab gear, or gadgets to fellow Islington peers.</p>
+                <button type="button" class="btn btn-primary btn-sm rounded-pill px-4" onclick="switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'))">
+                  <i class="fa fa-plus-circle me-1"></i> Post Your First Listing
+                </button>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Post New Product Listing (Student Frontend Form) -->
+        <div class="dashboard-tab-pane" id="tabAddProduct">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h5><i class="fa fa-plus-circle text-primary me-2"></i> Post New Listing (Student Marketplace)</h5>
+            </div>
+            <div class="panel-body">
+              {% if not profile_user.is_authenticated %}
+              <div class="alert alert-warning rounded-3 border-0">
+                <i class="fa fa-exclamation-triangle me-1"></i> Please <a href="{% url 'student_login' %}" class="fw-bold text-dark">Sign In</a> or <a href="{% url 'student_register' %}" class="fw-bold text-dark">Create an Account</a> to post listings.
+              </div>
+              {% else %}
+              <form method="POST" action="{% url 'user_profile' %}" enctype="multipart/form-data" class="settings-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_product">
+
+                <div class="row g-3 mb-3">
+                  <div class="col-md-8">
+                    <label class="form-label">Item Title <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Discrete Mathematics 7th Edition Textbook" required>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Category <span class="text-danger">*</span></label>
+                    <select name="category" class="form-select" required>
+                      <option value="" disabled selected>Select category...</option>
+                      {% for cat in categories %}
+                      <option value="{{ cat.id }}">{{ cat.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Resale Price (Rs.) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0 text-muted">Rs.</span>
+                      <input type="number" name="price" step="0.01" min="0" class="form-control border-start-0" placeholder="e.g. 750" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Available Stock / Quantity</label>
+                    <input type="number" name="stock" min="1" value="1" class="form-control" required>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Item Description &amp; Condition</label>
+                  <textarea name="description" rows="4" class="form-control" placeholder="Mention item condition (e.g. Like New, No highlights), author/edition, and preferred campus meetup spot (e.g. Library Block C)." required></textarea>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label">Product Photo</label>
+                  <input type="file" name="product_image" class="form-control" accept="image/*" onchange="previewUploadImage(this)">
+                  <small class="text-muted">Upload a clear photo of your book or gadget.</small>
+                  <div id="imagePreviewContainer" class="mt-2 d-none">
+                    <img id="imagePreviewEl" src="" alt="Preview" class="rounded border" style="max-height: 140px; object-fit: contain;">
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary btn-manage px-4 py-2">
+                    <i class="fa fa-check-circle me-1"></i> Publish Listing to Marketplace
+                  </button>
+                  <button type="reset" class="btn btn-outline-secondary btn-manage px-3" onclick="document.getElementById('imagePreviewContainer').classList.add('d-none')">
+                    Reset Form
+                  </button>
+                </div>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: My Orders -->
+        <div class="dashboard-tab-pane" id="tabOrders">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h5>My Orders</h5>
+            </div>
+            <div class="panel-body text-center py-5 text-muted">
+              <i class="fa fa-receipt" style="font-size: 2.5rem; display: block; margin-bottom: 12px;"></i>
+              <h6 class="fw-bold text-dark">No orders yet</h6>
+              <p class="small">Items you reserve or purchase will appear here.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: My Sales -->
+        <div class="dashboard-tab-pane" id="tabSales">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h5>My Sales</h5>
+            </div>
+            <div class="panel-body text-center py-5 text-muted">
+              <i class="fa fa-chart-line" style="font-size: 2.5rem; display: block; margin-bottom: 12px;"></i>
+              <h6 class="fw-bold text-dark">No sales yet</h6>
+              <p class="small">When peers buy your items, sales will be tracked here.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Sent Requests -->
+        <div class="dashboard-tab-pane" id="tabSentreq">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h5>My Sent Requests</h5>
+            </div>
+            <div class="panel-body text-center py-5 text-muted">
+              <i class="fa fa-paper-plane" style="font-size: 2.5rem; display: block; margin-bottom: 12px;"></i>
+              <h6 class="fw-bold text-dark">No sent requests</h6>
+              <p class="small">Requests you send to other sellers will appear here.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Received Requests -->
+        <div class="dashboard-tab-pane" id="tabRecvreq">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h5>My Received Requests</h5>
+            </div>
+            <div class="panel-body text-center py-5 text-muted">
+              <i class="fa fa-inbox" style="font-size: 2.5rem; display: block; margin-bottom: 12px;"></i>
+              <h6 class="fw-bold text-dark">No received requests</h6>
+              <p class="small">Inquiries from campus buyers will appear here.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Messages -->
+        <div class="dashboard-tab-pane" id="tabMessages">
+          <div class="dashboard-panel">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+              <h5>Campus Inquiries &amp; Messages</h5>
+              <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" onclick="toggleCampusChat()">
+                <i class="fa fa-comments me-1"></i> Open Live Chat
+              </button>
+            </div>
+            <div class="panel-body p-4">
+              <div class="p-3 bg-light rounded-3 border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="brand-icon-wrap" style="width: 44px; height: 44px;">
+                    <i class="fa fa-user-graduate"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold mb-0 text-dark">Islington Peer Support &amp; Seller Hub</h6>
+                    <small class="text-muted">Chat active across campus listings</small>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="toggleCampusChat()">
+                  Continue Chat <i class="fa fa-arrow-right ms-1"></i>
+                </button>
+              </div>
+              <p class="text-muted small mb-0">
+                <i class="fa fa-shield-alt text-success me-1"></i> Messages are synchronized with your active session. Use the bottom-right floating chat bubble for instant messaging.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Sent Messages -->
+        <div class="dashboard-tab-pane" id="tabSent">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h5>Sent Inquiries</h5>
+            </div>
+            <div class="panel-body p-4 text-center text-muted">
+              <i class="fa fa-paper-plane text-muted display-4 d-block mb-3"></i>
+              <h6 class="fw-bold text-dark">Sent Product Inquiries</h6>
+              <p class="small text-muted mb-3">Inquiries you send on product pages ("Chat with Seller") are tracked in your live chat window.</p>
+              <button type="button" class="btn btn-primary btn-sm rounded-pill px-4" onclick="toggleCampusChat()">
+                <i class="fa fa-comments me-1"></i> View Sent Messages in Chat
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Edit Profile -->
+        <div class="dashboard-tab-pane" id="tabEdit">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h5>Edit Profile</h5>
+            </div>
+            <div class="panel-body">
+              <form method="POST" action="{% url 'user_profile' %}" class="settings-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_profile">
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">First Name</label>
+                    <input type="text" name="first_name" class="form-control" value="{{ profile_user.first_name }}" placeholder="First name">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" name="last_name" class="form-control" value="{{ profile_user.last_name }}" placeholder="Last name">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Email Address</label>
+                  <input type="email" name="email" class="form-control" value="{{ profile_user.email }}" placeholder="email@example.com">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Username</label>
+                  <input type="text" class="form-control" value="{{ profile_user.username }}" disabled style="background: #f5f5f5;">
+                  <small class="text-muted">Username cannot be changed.</small>
+                </div>
+                <button type="submit" class="btn btn-primary btn-manage px-4">
+                  Save Changes
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Change Password -->
+        <div class="dashboard-tab-pane" id="tabPassword">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h5>Change Password</h5>
+            </div>
+            <div class="panel-body">
+              <form class="settings-form" onsubmit="event.preventDefault(); alert('Password changes are securely verified.');">
+                <div class="mb-3">
+                  <label class="form-label">Current Password</label>
+                  <input type="password" class="form-control" placeholder="Enter current password">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">New Password</label>
+                  <input type="password" class="form-control" placeholder="Enter new password">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-control" placeholder="Confirm new password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-manage px-4">
+                  Update Password
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Edit Product Modal (In-Page Student Management) -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title fw-bold" id="editProductModalLabel"><i class="fa fa-edit text-primary me-2"></i> Edit Product Listing</h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form method="POST" action="{% url 'user_profile' %}" enctype="multipart/form-data" class="settings-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="edit_product">
+          <input type="hidden" name="product_id" id="editProductId">
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-8">
+              <label class="form-label">Title <span class="text-danger">*</span></label>
+              <input type="text" name="name" id="editProductName" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Category <span class="text-danger">*</span></label>
+              <select name="category" id="editProductCategory" class="form-select" required>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Price (Rs.) <span class="text-danger">*</span></label>
+              <input type="number" name="price" id="editProductPrice" step="0.01" min="0" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Stock Quantity</label>
+              <input type="number" name="stock" id="editProductStock" min="0" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" id="editProductDescription" rows="3" class="form-control" required></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Replace Image (Optional)</label>
+            <input type="file" name="product_image" class="form-control" accept="image/*">
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow-lg rounded-4 text-center p-4">
+      <div class="text-danger mb-3">
+        <i class="fa fa-trash-alt display-4"></i>
+      </div>
+      <h5 class="fw-bold mb-2">Delete Listing?</h5>
+      <p class="text-muted small mb-4">Are you sure you want to remove <strong id="deleteProductNameText"></strong> from the marketplace?</p>
+      <form method="POST" action="{% url 'user_profile' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete_product">
+        <input type="hidden" name="product_id" id="deleteProductId">
+        <div class="d-flex gap-2 justify-content-center">
+          <button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger btn-sm rounded-pill px-4">Yes, Delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard Tab Switching & Edit Helpers Script -->
+<script>
+  const tabMap = {
+    'dashboard':  'tabDashboard',
+    'products':   'tabProducts',
+    'addproduct': 'tabAddProduct',
+    'orders':     'tabOrders',
+    'sales':      'tabSales',
+    'sentreq':    'tabSentreq',
+    'recvreq':    'tabRecvreq',
+    'messages':   'tabMessages',
+    'sent':       'tabSent',
+    'edit':       'tabEdit',
+    'password':   'tabPassword',
+  };
+
+  function switchDashboardTab(tabName, sidebarEl) {
+    document.querySelectorAll('.dashboard-tab-pane').forEach(function(pane) {
+      pane.classList.remove('active');
+    });
+    document.querySelectorAll('.dashboard-sidebar .sidebar-item').forEach(function(item) {
+      item.classList.remove('active');
+    });
+    const targetId = tabMap[tabName];
+    if (targetId) {
+      var el = document.getElementById(targetId);
+      if (el) el.classList.add('active');
+    }
+    if (sidebarEl) {
+      sidebarEl.classList.add('active');
+    }
+  }
+
+  function previewUploadImage(input) {
+    const container = document.getElementById('imagePreviewContainer');
+    const imgEl = document.getElementById('imagePreviewEl');
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        imgEl.src = e.target.result;
+        container.classList.remove('d-none');
+      }
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function openEditProductModal(id, name, catId, price, stock, desc) {
+    document.getElementById('editProductId').value = id;
+    document.getElementById('editProductName').value = name;
+    document.getElementById('editProductCategory').value = catId;
+    document.getElementById('editProductPrice').value = price;
+    document.getElementById('editProductStock').value = stock;
+    document.getElementById('editProductDescription').value = desc;
+
+    const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
+    modal.show();
+  }
+
+  function confirmDeleteProduct(id, name) {
+    document.getElementById('deleteProductId').value = id;
+    document.getElementById('deleteProductNameText').innerText = `"${name}"`;
+    const modal = new bootstrap.Modal(document.getElementById('deleteProductModal'));
+    modal.show();
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab === 'add' || tab === 'addproduct') {
+      switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'));
+    } else if (tab === 'products') {
+      switchDashboardTab('products', document.getElementById('sidebarProducts'));
+    }
+  });
+</script>
+{% endblock %}

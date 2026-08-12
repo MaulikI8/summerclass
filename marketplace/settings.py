@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'products.apps.ProductsConfig',
     'blog.apps.BlogConfig',
+    'pages.apps.PagesConfig',
+    'sitesetting.apps.SitesettingConfig',
    ]
 
 MIDDLEWARE = [
@@ -63,6 +66,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'pages.context_processors.page_links',
+                'sitesetting.context_processors.site_settings',
             ],
         },
     },
@@ -121,3 +126,6 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "marketplace" / "static",
 ]
+
+MEDIA_URL='/media/'
+MEDIA_ROOT=BASE_DIR / 'media'

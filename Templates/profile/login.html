@@ -1,0 +1,65 @@
+{% extends 'master/base.html' %}
+{% load static %}
+
+{% block title %}Student Sign In | Islington Marketplace{% endblock %}
+
+{% block content %}
+<section class="section-content padding-y-lg py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-5 col-md-7 col-sm-10">
+        <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white">
+          <div class="text-center mb-4">
+            <div class="brand-icon-wrap mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.3rem;">
+              <i class="fa fa-graduation-cap"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">Student Sign In</h3>
+            <p class="text-muted small">Sign in to list items, manage products, and chat with peers.</p>
+          </div>
+
+          {% if messages %}
+          <div class="mb-3">
+            {% for msg in messages %}
+            <div class="alert alert-danger py-2 small rounded-3 border-0 d-flex align-items-center gap-2">
+              <i class="fa fa-exclamation-circle"></i>
+              <span>{{ msg }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <form method="POST" action="{% url 'student_login' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark">Student Username</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted"><i class="fa fa-user"></i></span>
+                <input type="text" name="username" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="e.g. maulik" required autofocus>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label fw-semibold small text-dark mb-0">Password</label>
+              </div>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted"><i class="fa fa-lock"></i></span>
+                <input type="password" name="password" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="••••••••" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold rounded-pill shadow-sm mb-3">
+              <i class="fa fa-sign-in-alt me-1"></i> Sign In to Marketplace
+            </button>
+
+            <div class="text-center">
+              <span class="text-muted small">Don't have a student account?</span>
+              <a href="{% url 'student_register' %}" class="fw-bold text-primary small text-decoration-none ms-1">Create Account</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

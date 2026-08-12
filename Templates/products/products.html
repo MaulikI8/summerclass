@@ -1,25 +1,143 @@
 {% extends 'master/base.html' %}
+{% load static %}
 
-{% block title %}This is product list{% endblock %}
+{% block title %}Explore Store | Islington Marketplace{% endblock %}
 
 {% block content %}
-<h2>This is product page</h2>
+<!-- ========================= SECTION CONTENT ========================= -->
+<section class="section-content padding-y-sm py-4">
+  <div class="container">
+    <!-- Breadcrumb & Store Filter Header -->
+    <div class="card mb-4 border-0 shadow-sm bg-white p-4 rounded-3">
+      <div class="row align-items-center justify-content-between g-3">
+        <div class="col-lg-6">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+              <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Store</li>
+              {% if selected_category %}
+              <li class="breadcrumb-item active text-primary" aria-current="page">{{ selected_category }}</li>
+              {% endif %}
+            </ol>
+          </nav>
+          <h3 class="fw-bold mb-0 text-dark">
+            {% if query %}
+              Search Results for <span class="text-primary">"{{ query }}"</span>
+            {% elif selected_category %}
+              Category: <span class="text-primary">{{ selected_category }}</span>
+            {% else %}
+              All Campus Products
+            {% endif %}
+          </h3>
+          <span class="text-muted small">Showing {{ products|length }} active items</span>
+        </div>
 
-<div class="products-list">
-    {% for prod in product %}
-    <div class="product">
-        <a href="{% url 'product_detail' prod.id %}">
-            <h3>{{ prod.name }}</h3>
-            <p><strong>Category:</strong> {{ prod.category.name }}</p>
-            <p><strong>Description:</strong> {{ prod.description }}</p>
-            <p><strong>Price:</strong> RS {{ prod.price }}</p>
-            <p><strong>Stock:</strong> {{ prod.stock }}</p>
-        </a>
+        <div class="col-lg-6 text-lg-end">
+          <div class="filter-chips-bar justify-content-lg-end">
+            <a href="{% url 'products' %}" class="filter-chip {% if not selected_category and not query %}active{% endif %} text-decoration-none">
+              All Products
+            </a>
+            {% for cat in categories %}
+            <a href="{% url 'products' %}?category={{ cat.name }}" class="filter-chip {% if selected_category == cat.name %}active{% endif %} text-decoration-none">
+              {{ cat.name }}
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
     </div>
-    {% empty %}
-    <p>No products available.</p>
-    {% endfor %}
-</div>
 
-<p><a href="{% url 'home' %}">Back to Homepage</a></p>
+    <!-- Products Grid -->
+    <div class="row g-4">
+      {% for product in products %}
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="card card-product-grid">
+          <!-- Image Wrap -->
+          <a href="{% url 'product_detail' product.id %}" class="img-wrap">
+            {% if product.product_image %}
+              <img src="{{ product.product_image.url }}" alt="{{ product.name }}" loading="lazy" />
+            {% else %}
+              <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" loading="lazy" />
+            {% endif %}
+
+            <!-- Category Overlay Badge -->
+            <span class="card-category-badge">
+              {{ product.category.name }}
+            </span>
+
+            <!-- Stock Status Badge -->
+            {% if product.stock > 0 %}
+            <span class="card-stock-badge in-stock">
+              <i class="fa fa-check-circle"></i> In Stock ({{ product.stock }})
+            </span>
+            {% else %}
+            <span class="card-stock-badge out-of-stock">
+              <i class="fa fa-times-circle"></i> Sold Out
+            </span>
+            {% endif %}
+          </a>
+
+          <!-- Floating Wishlist Button -->
+          <button type="button" 
+                  class="card-wishlist-btn wishlist-toggle-btn" 
+                  data-id="{{ product.id }}"
+                  title="Save to Wishlist"
+                  onclick="toggleWishlist('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}', '{{ product.category.name|escapejs }}')">
+            <i class="far fa-heart"></i>
+          </button>
+
+          <!-- Info Wrap -->
+          <figcaption class="info-wrap">
+            <a href="{% url 'product_detail' product.id %}" class="title" title="{{ product.name }}">
+              {{ product.name }}
+            </a>
+
+            <div class="price">Rs. {{ product.price|floatformat:2 }}</div>
+
+            <!-- Star Rating Display -->
+            <div class="rating-star">
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star-o"></i>
+              <span class="rating-score">4.0</span>
+            </div>
+
+            <p class="card-desc">{{ product.description|default:"Verified campus student listing." }}</p>
+
+            <div class="card-action-bar">
+              <a href="{% url 'product_detail' product.id %}" class="btn-card-primary text-decoration-none">
+                View Details
+              </a>
+              {% if product.stock > 0 %}
+              <button type="button" class="btn-card-icon" onclick="toggleCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
+                <i class="fa fa-shopping-cart text-primary"></i>
+              </button>
+              {% endif %}
+              <button type="button" class="btn-card-icon" title="Quick View" onclick="openQuickView('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}', '{{ product.category.name|escapejs }}', '{{ product.description|escapejs }}', '{{ product.stock }}', '{% url 'product_detail' product.id %}')">
+                <i class="fa fa-eye text-muted"></i>
+              </button>
+            </div>
+          </figcaption>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="card p-5 text-center bg-white border-0 shadow-sm rounded-3">
+          <i class="fa fa-search text-muted display-4 d-block mb-3"></i>
+          <h4 class="fw-bold text-dark mb-1">No products found</h4>
+          <p class="text-muted small mb-3">We could not find any products matching your selected criteria.</p>
+          <div>
+            <a href="{% url 'products' %}" class="btn btn-primary px-4 rounded-pill">
+              View All Products
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
 {% endblock %}

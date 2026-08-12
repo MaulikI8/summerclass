@@ -1,13 +1,170 @@
 {% extends 'master/base.html' %}
+{% load static %}
 
-{% block title %}{{ product.name }} - Detail{% endblock %}
+{% block title %}{{ product.name }} | Islington Marketplace{% endblock %}
 
 {% block content %}
-<div class="product-detail">
-    <h2>{{ product.name }}</h2>
-    <p><strong>Price:</strong> RS {{ product.price }}</p>
-    <p><strong>Description:</strong> {{ product.description }}</p>
-    <p><strong>Stock:</strong> {{ product.stock }}</p>
-    <p><a href="{% url 'home' %}">Back to Home</a></p>
-</div>
+<!-- ========================= SECTION CONTENT ========================= -->
+<section class="section-content padding-y-sm py-4">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'products' %}" class="text-decoration-none">Store</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'products' %}?category={{ product.category.name }}" class="text-decoration-none">{{ product.category.name }}</a></li>
+        <li class="breadcrumb-item active text-primary" aria-current="page">{{ product.name }}</li>
+      </ol>
+    </nav>
+
+    <!-- Product Detail Layout Card -->
+    <div class="card border-0 shadow-sm bg-white rounded-4 overflow-hidden mb-5">
+      <div class="row g-0">
+        <!-- Left: Image Gallery -->
+        <div class="col-lg-6 border-end">
+          <article class="gallery-wrap p-4 p-md-5 text-center d-flex flex-column justify-content-center">
+            <div class="mainImage img-big-wrap position-relative p-3 bg-light rounded-4 d-flex align-items-center justify-content-center" style="min-height: 380px; max-height: 420px; background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);">
+              {% if product.product_image %}
+              <img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="img-fluid rounded-3" style="max-height: 360px; max-width: 100%; object-fit: contain;">
+              {% else %}
+              <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" class="img-fluid rounded-3" style="max-height: 360px; max-width: 100%; object-fit: contain;">
+              {% endif %}
+              <span class="badge bg-primary position-absolute top-0 start-0 m-3 rounded-pill px-3 py-2 fw-semibold">
+                {{ product.category.name }}
+              </span>
+            </div>
+
+            <!-- Thumbnail Gallery -->
+            {% if product.product_image %}
+            <ul class="thumb mt-3 d-flex justify-content-center list-unstyled gap-2">
+              <li>
+                <a href="{{ product.product_image.url }}">
+                  <img src="{{ product.product_image.url }}" alt="{{ product.name }} thumbnail" class="rounded-3 shadow-xs" />
+                </a>
+              </li>
+            </ul>
+            {% endif %}
+          </article>
+        </div>
+
+        <!-- Right: Product Information & Action Area -->
+        <main class="col-lg-6 p-4 p-lg-5 d-flex flex-column justify-content-between">
+          <article class="content-body">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold small">
+                {{ product.category.name }}
+              </span>
+              {% if product.stock > 0 %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill small">
+                <i class="fa fa-check-circle me-1"></i> In Stock ({{ product.stock }})
+              </span>
+              {% else %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill small">
+                <i class="fa fa-times-circle me-1"></i> Sold Out
+              </span>
+              {% endif %}
+            </div>
+
+            <h2 class="title text-dark fw-bold mb-2">{{ product.name }}</h2>
+
+            <div class="mb-3 d-flex align-items-center gap-3">
+              <span class="price h3 text-primary fw-bold mb-0">Rs. {{ product.price|floatformat:2 }}</span>
+            </div>
+
+            <!-- Star Rating Display -->
+            <div class="rating-star mb-3">
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star-o"></i>
+              <span class="rating-score text-muted ms-1">(4.0 / 5 based on peer reviews)</span>
+            </div>
+
+            <!-- Interactive Rating Widget -->
+            <div class="p-3 bg-light rounded-3 border mb-4">
+              <small class="text-muted fw-bold d-block mb-1">Rate this item:</small>
+              <fieldset class="rate">
+                <input type="radio" id="rating10" name="rating" value="10" /><label for="rating10" title="5 stars"></label>
+                <input type="radio" id="rating9" name="rating" value="9" /><label class="half" for="rating9" title="4.5 stars"></label>
+                <input type="radio" id="rating8" name="rating" value="8" /><label for="rating8" title="4 stars"></label>
+                <input type="radio" id="rating7" name="rating" value="7" /><label class="half" for="rating7" title="3.5 stars"></label>
+                <input type="radio" id="rating6" name="rating" value="6" /><label for="rating6" title="3 stars"></label>
+                <input type="radio" id="rating5" name="rating" value="5" /><label class="half" for="rating5" title="2.5 stars"></label>
+                <input type="radio" id="rating4" name="rating" value="4" /><label for="rating4" title="2 stars"></label>
+                <input type="radio" id="rating3" name="rating" value="3" /><label class="half" for="rating3" title="1.5 stars"></label>
+                <input type="radio" id="rating2" name="rating" value="2" /><label for="rating2" title="1 star"></label>
+                <input type="radio" id="rating1" name="rating" value="1" /><label class="half" for="rating1" title="0.5 stars"></label>
+              </fieldset>
+            </div>
+
+            <div class="mb-4">
+              <h6 class="text-muted text-uppercase fw-bold small mb-2">Item Description</h6>
+              <p class="text-secondary" style="line-height: 1.7;">
+                {{ product.description|linebreaks }}
+              </p>
+            </div>
+
+            <!-- Meetup Location Notice -->
+            <div class="p-3 bg-primary-subtle text-primary rounded-3 border border-primary-subtle mb-4">
+              <div class="d-flex align-items-center gap-2 mb-1 fw-bold small">
+                <i class="fa fa-map-marker-alt"></i>
+                <span>Campus Meetup Location</span>
+              </div>
+              <p class="small mb-0 text-dark opacity-75">Islington College Campus (Library / Cafeteria). Pay on spot via Cash, eSewa, or Khalti after inspection.</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-wrap gap-2 pt-2">
+              {% if product.stock > 0 %}
+              <button type="button" class="btn btn-primary btn-lg px-4 fw-semibold flex-grow-1 rounded-pill shadow-sm" onclick="toggleCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')">
+                <i class="fa fa-shopping-cart me-1"></i> Add to Bag
+              </button>
+              {% else %}
+              <button type="button" class="btn btn-secondary btn-lg px-4 fw-semibold flex-grow-1 rounded-pill" disabled>
+                Sold Out
+              </button>
+              {% endif %}
+
+              <button type="button" class="btn btn-outline-primary btn-lg px-4 rounded-pill fw-semibold" onclick="openProductChat('{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Chat with Seller">
+                <i class="fa fa-comment-dots me-1"></i> Chat with Seller
+              </button>
+
+              <button type="button" class="btn btn-outline-danger btn-lg px-3 rounded-pill wishlist-toggle-btn" data-id="{{ product.id }}" title="Wishlist" onclick="toggleWishlist('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}', '{{ product.category.name|escapejs }}')">
+                <i class="far fa-heart"></i>
+              </button>
+            </div>
+          </article>
+        </main>
+      </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="related-products-wrap mt-5">
+      <h4 class="fw-bold mb-4 text-dark">Related Products in {{ product.category.name }}</h4>
+      <div class="row g-4">
+        {% for rel in related_products %}
+        <div class="col-lg-3 col-md-4 col-sm-6">
+          <div class="card card-product-grid">
+            <a href="{% url 'product_detail' rel.id %}" class="img-wrap">
+              {% if rel.product_image %}
+              <img src="{{ rel.product_image.url }}" alt="{{ rel.name }}" loading="lazy">
+              {% else %}
+              <img src="{% static 'images/default.jpg' %}" alt="{{ rel.name }}" loading="lazy">
+              {% endif %}
+            </a>
+            <figcaption class="info-wrap">
+              <a href="{% url 'product_detail' rel.id %}" class="title text-truncate">{{ rel.name }}</a>
+              <div class="price">Rs. {{ rel.price|floatformat:2 }}</div>
+            </figcaption>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
 {% endblock %}

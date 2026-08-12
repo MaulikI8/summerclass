@@ -1,19 +1,83 @@
 {% extends 'master/base.html' %}
+{% load static %}
 
-{% block title %}{{ post.title }}{% endblock %}
+{% block title %}{{ blog.title }} | Islington Marketplace{% endblock %}
 
 {% block content %}
-<div class="post-detail">
-    <h2>{{ post.title }}</h2>
-    <p><strong>Category:</strong> {{ post.category.name }}</p>
-    <p><small>Published on {{ post.created_at|date:"F d, Y" }} | Last updated: {{ post.updated_at|date:"F d, Y" }}</small></p>
-    
-    <div class="post-content">
-        {{ post.content|linebreaks }}
-    </div>
-</div>
+<section class="section-content padding-y-sm">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'blog' %}" class="text-decoration-none">Blogs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ blog.title }}</li>
+      </ol>
+    </nav>
 
-<hr>
-<p><a href="{% url 'blog' %}">Back to Blog</a></p>
-<p><a href="{% url 'home' %}">Back to Homepage</a></p>
+    <div class="row g-4">
+      <!-- Main Blog Post -->
+      <div class="col-lg-8">
+        <article class="card border-0 shadow-sm bg-white p-4 p-md-5 rounded">
+          <div class="mb-3">
+            <span class="badge bg-primary rounded-pill px-3 py-1 text-uppercase small" style="font-size: 0.72rem;">
+              {{ blog.category.name|default:"Campus Insight" }}
+            </span>
+            <span class="text-muted small ms-3">
+              <i class="far fa-calendar-alt me-1"></i> Published: {{ blog.created_at|date:"F d, Y" }}
+            </span>
+          </div>
+
+          <h1 class="display-6 fw-bold text-dark mb-4">{{ blog.title }}</h1>
+
+          <div class="blog-post-content text-secondary" style="font-size: 1.05rem; line-height: 1.8;">
+            {{ blog.content|linebreaks }}
+          </div>
+
+          <hr class="my-4">
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <a href="{% url 'blog' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+              <i class="fa fa-arrow-left me-1"></i> Back to Blogs
+            </a>
+            <a href="{% url 'products' %}" class="btn btn-primary btn-sm rounded-pill px-3">
+              Browse Store <i class="fa fa-shopping-bag ms-1"></i>
+            </a>
+          </div>
+        </article>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm bg-white p-4 rounded mb-4">
+          <h5 class="fw-bold text-dark mb-3">Campus Meetup Safety</h5>
+          <p class="text-muted small mb-3">
+            Always meet inside the college campus library or cafeteria during working hours. Inspect items before transferring funds.
+          </p>
+          <a href="{% url 'products' %}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">
+            Explore All Listings
+          </a>
+        </div>
+
+        {% if recent_blogs %}
+        <div class="card border-0 shadow-sm bg-white p-4 rounded">
+          <h5 class="fw-bold text-dark mb-3">Recent Guides</h5>
+          <ul class="list-unstyled d-flex flex-column gap-3 mb-0">
+            {% for rb in recent_blogs %}
+            <li class="border-bottom pb-2">
+              <a href="{% url 'blog_detail' rb.id %}" class="text-dark fw-semibold small text-decoration-none d-block mb-1">
+                {{ rb.title }}
+              </a>
+              <span class="text-muted small" style="font-size: 0.75rem;">
+                <i class="far fa-calendar-alt me-1"></i> {{ rb.created_at|date:"M d, Y" }}
+              </span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}
