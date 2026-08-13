@@ -12,42 +12,57 @@ from sitesetting.models import Banner, Notification
 from utils.email_microservice import EmailMicroservice
 
 def home(request):
-    p = Product.objects.select_related('category').filter(status=True, is_approved=True).order_by('-created_at')
-    b = Post.objects.select_related('category').filter(status=True).order_by('-created_at')[:3]
-    # Check and permanently close finished auctions
-    for a in Auction.objects.filter(is_active=True, end_time__lte=timezone.now()):
-        a.is_active = False
-        a.save()
-        if a.highest_bidder:
-            # Transfer item to winning student
-            a.product.stock = max(0, a.product.stock - 1)
-            if a.product.stock == 0: a.product.status = False
-            a.product.save()
+    try:
+        p = list(Product.objects.select_related('category').filter(status=True, is_approved=True).order_by('-created_at'))
+    except Exception:
+        p = []
+    try:
+        b = list(Post.objects.select_related('category').filter(status=True).order_by('-created_at')[:3])
+    except Exception:
+        b = []
+    try:
+        # Check and permanently close finished auctions
+        for a in Auction.objects.filter(is_active=True, end_time__lte=timezone.now()):
+            a.is_active = False
+            a.save()
+            if a.highest_bidder:
+                a.product.stock = max(0, a.product.stock - 1)
+                if a.product.stock == 0: a.product.status = False
+                a.product.save()
 
-            order = Order.objects.create(
-                user=a.highest_bidder,
-                buyer_name=a.highest_bidder.first_name or a.highest_bidder.username,
-                buyer_phone='9800000000',
-                buyer_email=a.highest_bidder.email,
-                meetup_location='Block C Library Lobby',
-                meetup_time='Afternoon (1:00 PM - 3:00 PM)',
-                notes=f'Won 24h Auction for {a.title}',
-                total_amount=a.current_bid,
-                payment_method='auction_bid_won',
-                payment_status='Pending (Collection Payment)',
-                order_status='confirmed'
-            )
-            OrderItem.objects.create(order=order, product=a.product, product_name=a.product.name, price=a.current_bid, quantity=1)
-            EmailMicroservice.send_auction_won_notification(a.highest_bidder, a.product.user, a)
-            Notification.notify(a.highest_bidder, f"🎉 You Won Auction: {a.title}!", f"Winning bid: Rs. {a.current_bid:.2f}. See your order in dashboard.", 'auction_won', 'fa-trophy', '/profile/?tab=orders')
-            if a.product.user:
-                Notification.notify(a.product.user, f"Auction Closed for {a.title}!", f"Item won by {a.highest_bidder.username} at Rs. {a.current_bid:.2f}.", 'auction_ended', 'fa-check-circle', '/profile/?tab=orders')
+                order = Order.objects.create(
+                    user=a.highest_bidder,
+                    buyer_name=a.highest_bidder.first_name or a.highest_bidder.username,
+                    buyer_phone='9800000000',
+                    buyer_email=a.highest_bidder.email,
+                    meetup_location='Block C Library Lobby',
+                    meetup_time='Afternoon (1:00 PM - 3:00 PM)',
+                    notes=f'Won 24h Auction for {a.title}',
+                    total_amount=a.current_bid,
+                    payment_method='auction_bid_won',
+                    payment_status='Pending (Collection Payment)',
+                    order_status='confirmed'
+                )
+                OrderItem.objects.create(order=order, product=a.product, product_name=a.product.name, price=a.current_bid, quantity=1)
+                EmailMicroservice.send_auction_won_notification(a.highest_bidder, a.product.user, a)
+                Notification.notify(a.highest_bidder, f"🎉 You Won Auction: {a.title}!", f"Winning bid: Rs. {a.current_bid:.2f}. See your order in dashboard.", 'auction_won', 'fa-trophy', '/profile/?tab=orders')
+                if a.product.user:
+                    Notification.notify(a.product.user, f"Auction Closed for {a.title}!", f"Item won by {a.highest_bidder.username} at Rs. {a.current_bid:.2f}.", 'auction_ended', 'fa-check-circle', '/profile/?tab=orders')
 
-    auctions = Auction.objects.filter(is_active=True, end_time__gt=timezone.now(), product__is_approved=True).select_related('product', 'product__category', 'highest_bidder', 'product__user').order_by('end_time')
+        auctions = list(Auction.objects.filter(is_active=True, end_time__gt=timezone.now(), product__is_approved=True).select_related('product', 'product__category', 'highest_bidder', 'product__user').order_by('end_time'))
+    except Exception:
+        auctions = []
+
+    try: banners = list(Banner.objects.filter(is_active=True))
+    except Exception: banners = []
+
+    try: categories = list(ProductCategory.objects.all())
+    except Exception: categories = []
+
     return render(request, 'home/home1.html', {
-        'banners': Banner.objects.filter(is_active=True), 'products': p, 'featured_products': p[:8],
-        'categories': ProductCategory.objects.all(), 'blogs': b, 'latest_blogs': b, 'auctions': auctions,
-        'total_products': Product.objects.filter(is_approved=True).count(), 'total_categories': ProductCategory.objects.count(), 'total_blogs': Post.objects.count()
+        'banners': banners, 'products': p, 'featured_products': p[:8],
+        'categories': categories, 'blogs': b, 'latest_blogs': b, 'auctions': auctions,
+        'total_products': len(p), 'total_categories': len(categories), 'total_blogs': len(b)
     })
 
 def start_auction(request, product_id):

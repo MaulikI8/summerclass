@@ -1,4 +1,7 @@
-from . models import Page
+from .models import Page
 
 def page_links(request):
-    return {'pages' : Page.objects.all()}
+    try:
+        return {'pages': list(Page.objects.all())}
+    except Exception:
+        return {'pages': []}
