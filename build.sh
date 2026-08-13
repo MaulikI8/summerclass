@@ -6,17 +6,16 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 python manage.py migrate
 
-# Automatically ensure superuser exists for admin panel access
+# Seed superuser using environment variables if configured
 python manage.py shell -c "
+import os
 from django.contrib.auth.models import User
-if not User.objects.filter(username='maulik').exists():
-    User.objects.create_superuser('maulik', 'maulikj663@gmail.com', '1234')
-    print('Superuser maulik created successfully.')
-else:
-    u = User.objects.get(username='maulik')
-    u.set_password('1234')
-    u.is_superuser = True
-    u.is_staff = True
-    u.save()
-    print('Superuser maulik updated.')
+
+username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'maulik')
+email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'maulikj663@gmail.com')
+password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', '1234')
+
+if not User.objects.filter(username=username).exists():
+    User.objects.create_superuser(username, email, password)
+    print(f'Superuser {username} created successfully.')
 "
