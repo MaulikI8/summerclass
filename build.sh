@@ -6,16 +6,8 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 python manage.py migrate
 
-# Seed superuser using environment variables if configured
-python manage.py shell -c "
-import os
-from django.contrib.auth.models import User
-
-username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'maulik')
-email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'maulikj663@gmail.com')
-password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', '1234')
-
-if not User.objects.filter(username=username).exists():
-    User.objects.create_superuser(username, email, password)
-    print(f'Superuser {username} created successfully.')
-"
+# Automatically creates superuser from Render environment variables if provided:
+# (DJANGO_SUPERUSER_USERNAME, DJANGO_SUPERUSER_PASSWORD, DJANGO_SUPERUSER_EMAIL)
+if [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
+    python manage.py createsuperuser --noinput || true
+fi
