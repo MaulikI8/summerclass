@@ -7,15 +7,49 @@ class SiteSetting(models.Model):
     def __str__(self): return "Site Setting"
 
 class Banner(models.Model):
-    title, subtitle = models.CharField(max_length=200), models.TextField()
-    badge_text, badge_icon = models.CharField(max_length=100, default="Official Student Hub"), models.CharField(max_length=50, default="fa-graduation-cap")
-    theme_color = models.CharField(max_length=50, default='slide-blue', choices=[('slide-blue', 'Blue'), ('slide-green', 'Green'), ('slide-purple', 'Purple')])
-    banner_image = models.ImageField(upload_to="banners/", blank=True, null=True)
-    primary_btn_text, primary_btn_url = models.CharField(max_length=100, default="Explore Store"), models.CharField(max_length=255, default="/products/")
-    secondary_btn_text, secondary_btn_url = models.CharField(max_length=100, blank=True, null=True, default="Sell an Item"), models.CharField(max_length=255, blank=True, null=True, default="/profile/?tab=add")
-    order, is_active, created_at = models.PositiveIntegerField(default=0), models.BooleanField(default=True), models.DateTimeField(auto_now_add=True)
-    class Meta: ordering = ['order', '-created_at']
-    def __str__(self): return self.title
+    featured_product = models.ForeignKey(
+        'products.Product',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        limit_choices_to={'is_approved': True},
+        help_text="Select an existing approved posting from the marketplace to showcase in this banner.",
+        related_name="banners"
+    )
+    title = models.CharField(max_length=200, blank=True, help_text="Optional custom title. Leave blank to auto-use product name.")
+    subtitle = models.TextField(blank=True, help_text="Optional custom description. Leave blank to auto-use product description.")
+    badge_text = models.CharField(max_length=100, default="Featured Campus Item", blank=True)
+    badge_icon = models.CharField(max_length=50, default="fa-star", blank=True)
+    theme_color = models.CharField(max_length=50, default='slide-blue', choices=[('slide-blue', 'Blue Gradient'), ('slide-green', 'Emerald Green'), ('slide-purple', 'Purple Accent')])
+    banner_image = models.ImageField(upload_to="banners/", blank=True, null=True, help_text="Optional custom banner image. If empty, uses product photo.")
+    primary_btn_text = models.CharField(max_length=100, default="View Listing", blank=True)
+    primary_btn_url = models.CharField(max_length=255, default="/products/", blank=True)
+    secondary_btn_text = models.CharField(max_length=100, blank=True, null=True, default="Explore Store")
+    secondary_btn_url = models.CharField(max_length=255, blank=True, null=True, default="/products/")
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def save(self, *args, **kwargs):
+        if self.featured_product:
+            if not self.title:
+                self.title = self.featured_product.name
+            if not self.subtitle:
+                desc = self.featured_product.description or "Verified student listing available for campus pickup."
+                self.subtitle = desc[:200]
+            if not self.primary_btn_url or self.primary_btn_url == "/products/":
+                self.primary_btn_url = f"/products/{self.featured_product.id}/"
+            if not self.badge_text or self.badge_text == "Featured Campus Item":
+                self.badge_text = f"Featured • Rs. {self.featured_product.price:.2f}"
+            if not self.banner_image and self.featured_product.product_image:
+                self.banner_image = self.featured_product.product_image
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title or (self.featured_product.name if self.featured_product else f"Banner #{self.id}")
 
 class Notification(models.Model):
     recipient, sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications'), models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_notifications')

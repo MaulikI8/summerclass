@@ -13,7 +13,7 @@
           {% for banner in banners %}
           <!-- Dynamic Slide {{ forloop.counter }} -->
           <div class="carousel-item {% if forloop.first %}active{% endif %}">
-            <div class="hero-slide-card {{ banner.theme_color|default:'slide-blue' }}" {% if banner.banner_image %}style="background-image: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.85)), url('{{ banner.banner_image.url }}'); background-size: cover; background-position: center;"{% endif %}>
+            <div class="hero-slide-card {{ banner.theme_color|default:'slide-blue' }}">
               <div class="hero-glow-blob top-right"></div>
               <div class="hero-glow-blob bottom-left"></div>
               <div class="row align-items-center w-100 g-4">
@@ -21,7 +21,7 @@
                   <div class="hero-content">
                     {% if banner.badge_text %}
                     <span class="hero-badge {% if banner.theme_color == 'slide-green' %}badge-emerald{% else %}badge-amber{% endif %}">
-                      <i class="fa {{ banner.badge_icon|default:'fa-graduation-cap' }}"></i> {{ banner.badge_text }}
+                      <i class="fa {{ banner.badge_icon|default:'fa-star' }}"></i> {{ banner.badge_text }}
                     </span>
                     {% endif %}
                     <h1 class="hero-title">{{ banner.title }}</h1>
@@ -33,18 +33,25 @@
                       </a>
                       {% endif %}
                       {% if banner.secondary_btn_text %}
-                      <a href="{{ banner.secondary_btn_url|default:'/profile/?tab=add' }}" class="hero-btn-outline">
-                        <i class="fa fa-plus-circle"></i> {{ banner.secondary_btn_text }}
+                      <a href="{{ banner.secondary_btn_url|default:'/products/' }}" class="hero-btn-outline">
+                        <i class="fa fa-layer-group"></i> {{ banner.secondary_btn_text }}
                       </a>
                       {% endif %}
                     </div>
                   </div>
                 </div>
                 <div class="col-lg-4 d-none d-lg-block">
-                  {% if banner.banner_image %}
+                  {% if banner.banner_image or banner.featured_product.product_image %}
                   <div class="text-center position-relative">
-                    <div class="p-2 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 shadow-lg overflow-hidden" style="backdrop-filter: blur(12px);">
-                      <img src="{{ banner.banner_image.url }}" alt="{{ banner.title }}" class="img-fluid rounded-3" style="max-height: 260px; width: 100%; object-fit: cover;">
+                    <div class="p-3 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 shadow-lg overflow-hidden" style="backdrop-filter: blur(14px);">
+                      <img src="{% if banner.banner_image %}{{ banner.banner_image.url }}{% elif banner.featured_product.product_image %}{{ banner.featured_product.product_image.url }}{% endif %}" alt="{{ banner.title }}" class="img-fluid rounded-3" style="max-height: 240px; width: 100%; object-fit: contain;">
+                      {% if banner.featured_product %}
+                      <div class="mt-2 text-center">
+                        <span class="badge bg-white text-dark fw-bold px-3 py-2 rounded-pill shadow-sm">
+                          Rs. {{ banner.featured_product.price|floatformat:2 }}
+                        </span>
+                      </div>
+                      {% endif %}
                     </div>
                   </div>
                   {% else %}
