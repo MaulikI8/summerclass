@@ -55,6 +55,44 @@ class EmailMicroservice:
         cls.send_async(u.email, "Verify your Islington Marketplace account", html)
 
     @classmethod
+    def send_admin_new_pending_review_email(cls, p, u, admin_url="https://maulikjoshi.com.np/admin/products/pendingproductreview/"):
+        admin_emails = list(User.objects.filter(is_superuser=True).exclude(email='').values_list('email', flat=True))
+        if not admin_emails:
+            admin_emails = ['maulikj663@gmail.com']
+        
+        student_name = u.get_full_name() or u.username if u else "Student"
+        html = f"""<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
+        <span style="background:#f59e0b;color:#ffffff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;text-transform:uppercase;">🔔 Action Required • New Listing</span>
+        <h2 style="color:#0f172a;margin-top:16px;">New Item Submitted for Approval</h2>
+        <p style="color:#475569;font-size:15px;">Student <strong>{student_name}</strong> has submitted a new item for sale that is waiting for your approval before being published.</p>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;text-align:left;margin:20px 0;font-size:14px;color:#334155;">
+          <p style="margin:4px 0;"><strong>Product:</strong> {p.name}</p>
+          <p style="margin:4px 0;"><strong>Category:</strong> {p.category.name if p.category else 'General'}</p>
+          <p style="margin:4px 0;"><strong>Price:</strong> Rs. {p.price:.2f}</p>
+          <p style="margin:4px 0;"><strong>Stock:</strong> {p.stock}</p>
+          <p style="margin:4px 0;"><strong>Student Email:</strong> {u.email if u else 'N/A'}</p>
+        </div>
+        <p style="margin:24px 0;">
+          <a href="{admin_url}" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:bold;font-size:15px;display:inline-block;">Open Moderation Hub to Approve</a>
+        </p>
+        <p style="font-size:12px;color:#64748b;">This item remains hidden from the store until you click [ ✔ Approve ] in your admin panel.</p>
+        </div>"""
+        cls.send_async(admin_emails, f"🔔 [Admin Review Required] New Listing: \"{p.name}\" by {student_name}", html)
+
+    @classmethod
+    def send_student_submission_pending_email(cls, u, p):
+        if not u or not u.email: return
+        name = u.first_name or u.username
+        html = f"""<div style="font-family:sans-serif;max-width:540px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
+        <span style="background:#3b82f6;color:#ffffff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;">⏳ Pending Admin Review</span>
+        <h2 style="color:#0f172a;margin-top:16px;">Listing Submitted Successfully!</h2>
+        <p style="color:#475569;font-size:15px;">Hi {name}, your item <strong>"{p.name}"</strong> (Rs. {p.price:.2f}) was submitted to the moderation queue.</p>
+        <p style="color:#64748b;font-size:13px;line-height:1.6;">Our campus admin will verify the listing details, price, and photos. You will receive an email confirmation as soon as it is approved and goes live on the marketplace!</p>
+        <p style="margin:24px 0;"><a href="https://maulikjoshi.com.np/profile/?tab=products" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:bold;font-size:15px;display:inline-block;">View Status in My Products</a></p>
+        </div>"""
+        cls.send_async(u.email, f'⏳ Listing Received: "{p.name}" is pending admin review', html)
+
+    @classmethod
     def send_product_approved_email(cls, u, p, site_url="https://maulikjoshi.com.np"):
         if not u or not u.email: return
         name = u.first_name or u.username

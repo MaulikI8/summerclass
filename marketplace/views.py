@@ -73,6 +73,9 @@ def start_auction(request, product_id):
     if p.user != request.user and not request.user.is_superuser:
         messages.error(request, "Permission denied.")
         return redirect('user_profile')
+    if not p.is_approved:
+        messages.error(request, f'Listing "{p.name}" is pending admin review. It can only be put on auction once approved by admin.')
+        return redirect('user_profile')
 
     start_price = float(request.POST.get('starting_bid') or p.price)
     auction, created = Auction.objects.get_or_create(
@@ -105,11 +108,11 @@ def accept_auction_bid(request, auction_id):
         return redirect('student_login')
     auction = get_object_or_404(Auction, id=auction_id, is_active=True)
     if auction.product.user != request.user and not request.user.is_superuser:
-        messages.error(request, "Only the publisher can accept the bid.")
+        messages.error(request, "Only the seller can accept the highest bid.")
         return redirect('home')
 
     if not auction.highest_bidder:
-        messages.error(request, "No bids have been placed yet to accept.")
+        messages.error(request, "No bids have been placed yet.")
         return redirect('home')
 
     # Permanently close auction and decrement stock
@@ -128,7 +131,7 @@ def accept_auction_bid(request, auction_id):
         buyer_email=winner.email,
         meetup_location='Block C Library Lobby',
         meetup_time='Afternoon (1:00 PM - 3:00 PM)',
-        notes=f'Accepted Early by Seller for {auction.title}',
+        notes=f'Publisher accepted early winning bid of Rs. {auction.current_bid:.2f}',
         total_amount=auction.current_bid,
         payment_method='auction_bid_won',
         payment_status='Pending (Collection Payment)',
@@ -187,7 +190,6 @@ def user_profile(request):
             u.first_name, u.last_name, u.email = post.get('first_name', u.first_name), post.get('last_name', u.last_name), post.get('email', u.email)
             u.save(); messages.success(request, "Profile updated!")
         elif act == 'add_product' and post.get('name') and post.get('category') and post.get('price'):
-            is_staff_user = u.is_superuser or u.is_staff
             p = Product.objects.create(
                 user=u,
                 name=post['name'].strip(),
@@ -196,29 +198,14 @@ def user_profile(request):
                 stock=int(post.get('stock') or 1),
                 description=post.get('description', '').strip(),
                 product_image=request.FILES.get('product_image'),
-                status=True if is_staff_user else False,
-                is_approved=True if is_staff_user else False
+                status=False,       # Hidden until admin approves
+                is_approved=False   # Always requires admin moderation
             )
-            if is_staff_user:
-                if post.get('start_as_auction') == '1':
-                    a = Auction.objects.create(
-                        product=p,
-                        title=f'24h Auction: {p.name}',
-                        starting_bid=float(post.get('starting_bid') or p.price),
-                        current_bid=float(post.get('starting_bid') or p.price),
-                        end_time=timezone.now() + timedelta(days=1),
-                        is_active=True
-                    )
-                    auction_url = request.build_absolute_uri('/#liveBiddingSection')
-                    EmailMicroservice.send_new_auction_broadcast(a, auction_url)
-                    Notification.notify_all(f'🔥 24h Live Auction: {p.name}', f'{u.first_name or u.username} started an auction for "{p.name}"!', 'auction_start', 'fa-gavel', '/#liveBiddingSection', exclude_user=u)
-                Notification.notify(u, f'Listing "{p.name}" is live!', f'Rs. {p.price}', 'product_listed', 'fa-check-circle', f'/products/{p.id}/')
-                Notification.notify_all(f'New: {p.name}', f'{u.first_name or u.username} listed "{p.name}" for Rs. {p.price}.', 'product_listed', 'fa-box-open', f'/products/{p.id}/', exclude_user=u)
-                EmailMicroservice.send_product_listed_email(u, p)
-                messages.success(request, f'"{p.name}" published successfully and is now live on the store!')
-            else:
-                Notification.notify(u, f'Listing Submitted for Review: {p.name}', f'Your listing "{p.name}" is under review by college admin and will appear on the store once approved.', 'product_pending', 'fa-clock', '/profile/?tab=products')
-                messages.success(request, f'Listing "{p.name}" submitted! It is currently under review by admin and will appear publicly once approved.')
+            admin_url = request.build_absolute_uri('/admin/products/pendingproductreview/')
+            EmailMicroservice.send_admin_new_pending_review_email(p, u, admin_url=admin_url)
+            EmailMicroservice.send_student_submission_pending_email(u, p)
+            Notification.notify(u, f'Listing Submitted for Review: {p.name}', f'Your listing "{p.name}" is under review by college admin and will appear on the store once approved.', 'product_pending', 'fa-clock', '/profile/?tab=products')
+            messages.success(request, f'Listing "{p.name}" submitted! It is under review by college admin and will appear publicly once approved.')
         elif act == 'edit_product':
             p = get_object_or_404(Product, id=post.get('product_id'))
             if p.user == u or u.is_superuser:
