@@ -247,6 +247,8 @@ def checkout(request):
                 Notification.notify(prod.user, f'New Order #{order.id} for {prod.name}!', f'{order.buyer_name} ordered {qty}x {prod.name}. Pickup: {order.meetup_location}', 'order_placed', 'fa-receipt', f'/profile/?tab=orders')
 
         order.total_amount = total; order.save()
+        site_url = request.build_absolute_uri('/')[:-1]
+        EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
         if request.user.is_authenticated:
             Notification.notify(request.user, f'Order #{order.id} Confirmed!', f'Total Rs. {total:.2f}. Pickup: {order.meetup_location}', 'order_placed', 'fa-check-circle', f'/profile/?tab=orders')
 

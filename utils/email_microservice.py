@@ -55,11 +55,47 @@ class EmailMicroservice:
         cls.send_async(u.email, "Verify your Islington Marketplace account", html)
 
     @classmethod
-    def send_product_listed_email(cls, u, p):
-        if u.email: cls.send_async(u.email, f'Listing Live: "{p.name}"', f"<h2>Listing Published!</h2><p>Hi {u.first_name or u.username}, your item <strong>{p.name}</strong> is live for Rs. {p.price:.2f}. <a href='http://127.0.0.1:8000/products/{p.id}/'>View Item</a></p>")
+    def send_product_approved_email(cls, u, p, site_url="https://maulikjoshi.com.np"):
+        if not u or not u.email: return
+        name = u.first_name or u.username
+        prod_url = f"{site_url}/products/{p.id}/"
+        html = f"""<div style="font-family:sans-serif;max-width:540px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
+        <span style="background:#10b981;color:#ffffff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;">✔ Listing Approved</span>
+        <h2 style="color:#0f172a;margin-top:16px;">Your Listing is Live!</h2>
+        <p style="color:#475569;font-size:15px;">Hi {name}, great news! Your listing <strong>"{p.name}"</strong> has been approved by admin and is now live on the marketplace for <strong>Rs. {p.price:.2f}</strong>.</p>
+        <p style="margin:24px 0;"><a href="{prod_url}" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:bold;font-size:15px;display:inline-block;">View Your Item</a></p>
+        <p style="font-size:12px;color:#64748b;">Students can now view, purchase, or bid on your item.</p>
+        </div>"""
+        cls.send_async(u.email, f'🎉 Your listing "{p.name}" has been approved!', html)
+
+    @classmethod
+    def send_product_rejected_email(cls, u, p, reason=""):
+        if not u or not u.email: return
+        name = u.first_name or u.username
+        html = f"""<div style="font-family:sans-serif;max-width:540px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
+        <span style="background:#ef4444;color:#ffffff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;">⚠️ Listing Moderation Notice</span>
+        <h2 style="color:#0f172a;margin-top:16px;">Listing Not Approved</h2>
+        <p style="color:#475569;font-size:15px;">Hi {name}, your listing for <strong>"{p.name}"</strong> was reviewed by college admin and could not be approved at this time.</p>
+        {f'<p style="background:#fef2f2;border:1px solid #fecaca;padding:12px;border-radius:8px;color:#991b1b;font-size:14px;"><strong>Feedback:</strong> {reason}</p>' if reason else ''}
+        <p style="font-size:12px;color:#64748b;">Please verify item details, pricing, and photos, then resubmit from your dashboard.</p>
+        </div>"""
+        cls.send_async(u.email, f'Listing Update: "{p.name}"', html)
+
+    @classmethod
+    def send_product_listed_email(cls, u, p, site_url="https://maulikjoshi.com.np"):
+        if not u or not u.email: return
+        name = u.first_name or u.username
+        prod_url = f"{site_url}/products/{p.id}/"
+        html = f"""<div style="font-family:sans-serif;max-width:540px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
+        <h2 style="color:#2563eb;margin-top:0;">Listing Published!</h2>
+        <p style="color:#334155;">Hi {name}, your item <strong>{p.name}</strong> is live for <strong>Rs. {p.price:.2f}</strong>.</p>
+        <p style="margin:24px 0;"><a href="{prod_url}" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:bold;font-size:15px;display:inline-block;">View Item</a></p>
+        </div>"""
+        cls.send_async(u.email, f'Listing Live: "{p.name}"', html)
 
     @classmethod
     def send_new_auction_broadcast(cls, auction, auction_url):
+        # Email all registered active students via Resend
         emails = list(User.objects.filter(is_active=True).exclude(email='').values_list('email', flat=True))
         if not emails: return
         html = f"""<div style="font-family:sans-serif;max-width:540px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
@@ -85,14 +121,31 @@ class EmailMicroservice:
         cls.send_async(outbid_user.email, f"⚠️ You've been outbid on {auction.title}!", html)
 
     @classmethod
-    def send_auction_won_notification(cls, winner, seller, auction):
+    def send_auction_won_notification(cls, winner, seller, auction, site_url="https://maulikjoshi.com.np"):
         if winner and winner.email:
             name = winner.first_name or winner.username
+            order_url = f"{site_url}/profile/?tab=orders"
             html = f"""<div style="font-family:sans-serif;max-width:540px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
             <span style="background:#10b981;color:#ffffff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;">🎉 Auction Won</span>
             <h2 style="color:#0f172a;margin-top:16px;">Congratulations {name}!</h2>
             <p style="color:#475569;font-size:15px;">You won the auction for <strong>{auction.title}</strong> with the winning bid of <strong>Rs. {auction.current_bid:.2f}</strong>!</p>
-            <p style="margin:24px 0;"><a href="http://127.0.0.1:8000/profile/?tab=orders" style="background:#10b981;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:bold;font-size:15px;display:inline-block;">View in My Orders</a></p>
+            <p style="margin:24px 0;"><a href="{order_url}" style="background:#10b981;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:bold;font-size:15px;display:inline-block;">View in My Orders</a></p>
             <p style="font-size:12px;color:#64748b;">Arrange safe collection directly with the seller {seller.username if seller else 'peer'}.</p>
             </div>"""
             cls.send_async(winner.email, f"🎉 You Won the Auction for {auction.title}!", html)
+
+    @classmethod
+    def send_order_confirmation_email(cls, order, site_url="https://maulikjoshi.com.np"):
+        if not order.buyer_email: return
+        html = f"""<div style="font-family:sans-serif;max-width:540px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;">
+        <span style="background:#2563eb;color:#ffffff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold;">📦 Order Confirmed</span>
+        <h2 style="color:#0f172a;margin-top:16px;">Order #{order.id} Placed Successfully!</h2>
+        <p style="color:#475569;font-size:15px;">Thank you {order.buyer_name}! Your order total is <strong>Rs. {order.total_amount:.2f}</strong>.</p>
+        <p style="background:#f8fafc;padding:12px;border-radius:8px;text-align:left;font-size:14px;color:#334155;">
+        <strong>Pickup Location:</strong> {order.meetup_location}<br>
+        <strong>Preferred Time:</strong> {order.meetup_time}<br>
+        <strong>Payment Status:</strong> {order.payment_status}
+        </p>
+        <p style="margin:24px 0;"><a href="{site_url}/profile/?tab=orders" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:bold;font-size:15px;display:inline-block;">View My Order</a></p>
+        </div>"""
+        cls.send_async(order.buyer_email, f"Order #{order.id} Confirmation - Islington Marketplace", html)

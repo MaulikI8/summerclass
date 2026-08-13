@@ -93,8 +93,10 @@ class PendingProductReviewAdmin(admin.ModelAdmin):
         p.status = True
         p.save()
         if p.user:
+            site_url = request.build_absolute_uri('/')[:-1]
+            EmailMicroservice.send_product_approved_email(p.user, p, site_url=site_url)
             Notification.notify(p.user, f"🎉 Listing Approved: {p.name}", f"Great news! Your listing '{p.name}' has been approved by admin and is now live on the marketplace.", 'product_approved', 'fa-check-circle', f'/products/{p.id}/')
-        self.message_user(request, f"Listing '{p.name}' approved and is now live on the marketplace!", messages.SUCCESS)
+        self.message_user(request, f"Listing '{p.name}' approved and is now live on the marketplace! (Email sent to student)", messages.SUCCESS)
         return redirect('../../')
 
     def reject_single(self, request, product_id):
@@ -103,26 +105,32 @@ class PendingProductReviewAdmin(admin.ModelAdmin):
         p.status = False
         p.save()
         if p.user:
+            EmailMicroservice.send_product_rejected_email(p.user, p, reason="Item did not meet marketplace listing guidelines.")
             Notification.notify(p.user, f"Listing Not Approved: {p.name}", f"Your listing '{p.name}' was not approved by college admin. Please verify details.", 'product_rejected', 'fa-times-circle', '/profile/?tab=products')
-        self.message_user(request, f"Listing '{p.name}' rejected.", messages.WARNING)
+        self.message_user(request, f"Listing '{p.name}' rejected. (Email notice sent to student)", messages.WARNING)
         return redirect('../../')
 
     @admin.action(description="✅ Approve all selected listings")
     def approve_selected_reviews(self, request, queryset):
         count = 0
+        site_url = request.build_absolute_uri('/')[:-1]
         for p in queryset:
             p.is_approved = True
             p.status = True
             p.save()
             if p.user:
+                EmailMicroservice.send_product_approved_email(p.user, p, site_url=site_url)
                 Notification.notify(p.user, f"🎉 Listing Approved: {p.name}", f"Your listing '{p.name}' has been approved by admin!", 'product_approved', 'fa-check-circle', f'/products/{p.id}/')
             count += 1
-        self.message_user(request, f"{count} listings approved and published to the store.", messages.SUCCESS)
+        self.message_user(request, f"{count} listings approved and published to the store. (Emails sent to students)", messages.SUCCESS)
 
     @admin.action(description="❌ Reject all selected listings")
     def reject_selected_reviews(self, request, queryset):
+        for p in queryset:
+            if p.user:
+                EmailMicroservice.send_product_rejected_email(p.user, p)
         count = queryset.update(is_approved=False, status=False)
-        self.message_user(request, f"{count} listings rejected.", messages.WARNING)
+        self.message_user(request, f"{count} listings rejected. (Email notices sent)", messages.WARNING)
 
 
 class OrderItemInline(admin.TabularInline):
