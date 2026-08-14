@@ -1,4 +1,4 @@
-import json, threading, urllib.request, urllib.error
+import json, threading, requests
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -6,28 +6,32 @@ class EmailMicroservice:
     @classmethod
     def _send(cls, p):
         k = getattr(settings, 'EMAIL_MICROSERVICE_API_KEY', '')
-        print("\n" + "="*60 + f"\n[EMAIL MICROSERVICE DISPATCH]\nTo: {p.get('to')}\nSubject: {p.get('subject')}\n" + "="*60 + "\n")
+        to_addr = p.get('to')
+        subject = p.get('subject')
+        print(f"\n[EMAIL DISPATCH] To: {to_addr} | Subject: {subject}")
 
         if k and not getattr(settings, 'EMAIL_MICROSERVICE_MOCK', False):
             try:
-                req = urllib.request.Request(
-                    getattr(settings, 'EMAIL_MICROSERVICE_URL', 'https://api.resend.com/emails'),
-                    data=json.dumps(p).encode('utf-8'),
-                    headers={
-                        'Content-Type': 'application/json',
-                        'Authorization': f'Bearer {k}',
-                        'User-Agent': 'IslingtonMarketplace/1.0'
-                    },
-                    method='POST'
-                )
-                with urllib.request.urlopen(req, timeout=10) as r:
-                    res_body = r.read().decode('utf-8')
-                    print(f"[EMAIL MICROSERVICE SUCCESS]: {r.status} | {res_body}")
-            except urllib.error.HTTPError as he:
-                err_data = he.read().decode('utf-8')
-                print(f"[EMAIL MICROSERVICE HTTP ERROR {he.code}]: {err_data}")
+                url = getattr(settings, 'EMAIL_MICROSERVICE_URL', 'https://api.resend.com/emails')
+                headers = {
+                    'Authorization': f'Bearer {k}',
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'resend-python/2.0.0'
+                }
+                resp = requests.post(url, headers=headers, json=p, timeout=12)
+                if resp.status_code in (200, 201):
+                    print(f"[EMAIL SUCCESS]: {resp.status_code} | {resp.text}")
+                else:
+                    print(f"[EMAIL API RESPONSE {resp.status_code}]: {resp.text}")
+                    # If Resend free sandbox rejects because recipient is not the account owner (maulikj663@gmail.com)
+                    if resp.status_code == 403 and 'maulikj663@gmail.com' not in str(to_addr):
+                        print("[EMAIL SANDBOX FALLBACK]: Forwarding copy to maulikj663@gmail.com")
+                        fallback_payload = dict(p)
+                        fallback_payload['to'] = ['maulikj663@gmail.com']
+                        fallback_payload['subject'] = f"[For {to_addr}] {subject}"
+                        requests.post(url, headers=headers, json=fallback_payload, timeout=12)
             except Exception as e:
-                print(f"[EMAIL MICROSERVICE ERROR]: {e}")
+                print(f"[EMAIL ERROR]: {e}")
 
     @classmethod
     def send_async(cls, to, sub, html):

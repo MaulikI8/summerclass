@@ -295,12 +295,22 @@ def student_login(request):
     entered_username = ''
     if request.method == 'POST':
         entered_username = request.POST.get('username', '').strip()
-        u = authenticate(request, username=entered_username, password=request.POST.get('password', ''))
+        pwd = request.POST.get('password', '')
+        u = authenticate(request, username=entered_username, password=pwd)
         if u:
             login(request, u)
             messages.success(request, f"Welcome back, {u.first_name or u.username}!")
             return redirect('user_profile')
-        messages.error(request, "Invalid student credentials or wrong password.")
+        else:
+            # If user exists but is_active was False from past registration
+            inactive_user = User.objects.filter(username=entered_username).first()
+            if inactive_user and inactive_user.check_password(pwd):
+                inactive_user.is_active = True
+                inactive_user.save()
+                login(request, inactive_user)
+                messages.success(request, f"Welcome back, {inactive_user.first_name or inactive_user.username}! Your account is now active.")
+                return redirect('user_profile')
+            messages.error(request, "Invalid student credentials or wrong password.")
     return render(request, 'profile/login.html', {'saved_username': entered_username})
 
 def student_register(request):
@@ -311,15 +321,24 @@ def student_register(request):
         u, em, pw, cpw = request.POST.get('username', '').strip(), request.POST.get('email', '').strip(), request.POST.get('password', ''), request.POST.get('confirm_password', '')
         if not u or not em or not pw: messages.error(request, "All fields required.")
         elif pw != cpw: messages.error(request, "Passwords do not match.")
-        elif User.objects.filter(username=u).exists(): messages.error(request, "Username taken.")
-        elif User.objects.filter(email=em).exists(): messages.error(request, "Email already in use.")
+        elif User.objects.filter(username=u).exists(): messages.error(request, "Username taken. Please choose another username.")
+        elif User.objects.filter(email=em).exists(): messages.error(request, "Email already registered. Please sign in.")
         else:
-            usr = User.objects.create_user(username=u, email=em, password=pw, first_name=request.POST.get('first_name', '').strip(), last_name=request.POST.get('last_name', '').strip(), is_active=False)
+            usr = User.objects.create_user(
+                username=u,
+                email=em,
+                password=pw,
+                first_name=request.POST.get('first_name', '').strip(),
+                last_name=request.POST.get('last_name', '').strip(),
+                is_active=True
+            )
             token = TimestampSigner().sign(usr.username)
             verify_url = request.build_absolute_uri(f'/verify-email/{token}/')
             EmailMicroservice.send_verification_email(usr, verify_url)
-            messages.success(request, "Registration successful! Please check your email to verify your account.")
-            return redirect('student_login')
+            login(request, usr)
+            Notification.notify(usr, f'Welcome to Islington Marketplace, {usr.first_name or usr.username}!', 'Account created successfully! Explore listings or post your items for sale.', 'welcome', 'fa-check-circle', '/profile/')
+            messages.success(request, f"Welcome {usr.first_name or usr.username}! Your student account is ready.")
+            return redirect('user_profile')
     return render(request, 'profile/register.html', {'form_data': form_data})
 
 def verify_email(request, token):
