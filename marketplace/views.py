@@ -267,6 +267,7 @@ def checkout(request):
             order_status='confirmed'
         )
         total = 0.0
+        site_url = request.build_absolute_uri('/')[:-1]
         for item in cart_items:
             prod = item.product
             pr = float(prod.price) if prod else 0.0
@@ -275,6 +276,7 @@ def checkout(request):
             total += pr * qty
             if prod and prod.user and prod.user != request.user:
                 Notification.notify(prod.user, f'New Order #{order.id} for {prod.name}!', f'{order.buyer_name} ordered {qty}x {prod.name}. Pickup/Delivery: {order.meetup_location}', 'order_placed', 'fa-receipt', f'/profile/?tab=orders')
+                EmailMicroservice.send_seller_new_order_email(prod.user, prod, order, qty, site_url=site_url)
 
         order.total_amount = total
         order.save()
@@ -282,7 +284,6 @@ def checkout(request):
         # Clear cart upon successful order
         cart_items.delete()
 
-        site_url = request.build_absolute_uri('/')[:-1]
         EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
         if request.user.is_authenticated:
             Notification.notify(request.user, f'Order #{order.id} Confirmed!', f'Total Rs. {total:.2f}. Pickup/Delivery: {order.meetup_location}', 'order_placed', 'fa-check-circle', f'/profile/?tab=orders')

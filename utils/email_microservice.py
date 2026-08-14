@@ -189,3 +189,29 @@ class EmailMicroservice:
         <p style="margin:24px 0;"><a href="{site_url}/profile/?tab=orders" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 26px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block;">View in My Orders</a></p>
         </div>"""
         cls.send_async(order.buyer_email, f"Order #{order.id} Confirmation - Islington Marketplace", html)
+
+    @classmethod
+    def send_seller_new_order_email(cls, seller, product, order, quantity, site_url="https://maulikjoshi.com.np"):
+        if not seller or not seller.email:
+            return
+        seller_name = seller.first_name or seller.username
+        item_total = (product.price or 0.0) * quantity
+        html = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:540px;margin:0 auto;padding:28px;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a;background:#ffffff;">
+        <div style="display:inline-block;background:#ecfdf5;color:#065f46;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:12px;">New Order Received</div>
+        <h2 style="margin:0 0 16px 0;font-size:20px;">Your item has been ordered!</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Hello <strong>{seller_name}</strong>,</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">A student (<strong>{order.buyer_name}</strong>) just placed an order for your listing <strong>"{product.name}"</strong>.</p>
+        
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:18px 0;font-size:14px;color:#334155;line-height:1.7;">
+          <div><strong>Item:</strong> {product.name}</div>
+          <div><strong>Quantity:</strong> {quantity}</div>
+          <div><strong>Total Earning:</strong> Rs. {item_total:.2f}</div>
+          <div><strong>Buyer Name:</strong> {order.buyer_name}</div>
+          <div><strong>Buyer Phone:</strong> {order.buyer_phone}</div>
+          <div><strong>Collection / Delivery:</strong> {order.meetup_location}</div>
+          <div><strong>Preferred Time Slot:</strong> {order.meetup_time}</div>
+        </div>
+
+        <p style="margin:24px 0;"><a href="{site_url}/profile/?tab=orders" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 26px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block;">View in My Orders</a></p>
+        </div>"""
+        cls.send_async(seller.email, f"New Order #{order.id} for your item: \"{product.name}\"", html)

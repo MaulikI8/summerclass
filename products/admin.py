@@ -34,18 +34,34 @@ class ProductAdmin(admin.ModelAdmin):
         return format_html('<img src="{}" width="48" height="48" style="object-fit:cover;border-radius:6px;" />', o.product_image.url) if o.product_image else "—"
     img_preview.short_description = "Photo"
 
-    @admin.action(description="✅ Approve selected products (Publish to Store)")
+    @admin.action(description="Approve selected products (Publish to Store)")
     def approve_selected_products(self, request, queryset):
         count = queryset.update(is_approved=True, status=True)
+        site_url = request.build_absolute_uri('/')[:-1]
         for p in queryset:
             if p.user:
+                EmailMicroservice.send_product_approved_email(p.user, p, site_url=site_url)
                 Notification.notify(p.user, f"Listing Approved: {p.name}", f"Your listing '{p.name}' is now live on the marketplace!", 'product_approved', 'fa-check-circle', f'/products/{p.id}/')
-        self.message_user(request, f"{count} products successfully approved and published to the store.", messages.SUCCESS)
+        self.message_user(request, f"{count} products successfully approved and published to the store. (Emails sent)", messages.SUCCESS)
 
-    @admin.action(description="❌ Unapprove selected products (Hide from Store)")
+    @admin.action(description="Unapprove selected products (Hide from Store)")
     def unapprove_selected_products(self, request, queryset):
         count = queryset.update(is_approved=False, status=False)
         self.message_user(request, f"{count} products unapproved.", messages.WARNING)
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            try:
+                old = Product.objects.get(pk=obj.pk)
+                if not old.is_approved and obj.is_approved:
+                    obj.status = True
+                    if obj.user:
+                        site_url = request.build_absolute_uri('/')[:-1]
+                        EmailMicroservice.send_product_approved_email(obj.user, obj, site_url=site_url)
+                        Notification.notify(obj.user, f"Listing Approved: {obj.name}", f"Your listing '{obj.name}' is now live!", 'product_approved', 'fa-check-circle', f'/products/{obj.id}/')
+            except Exception:
+                pass
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(PendingProductReview)
