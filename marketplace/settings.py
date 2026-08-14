@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cloudinary_storage',
     'cloudinary',
+    'cart.apps.CartConfig',
     'products.apps.ProductsConfig',
     'blog.apps.BlogConfig',
     'pages.apps.PagesConfig',
@@ -69,6 +70,7 @@ TEMPLATES = [{
         'django.contrib.messages.context_processors.messages',
         'pages.context_processors.page_links',
         'sitesetting.context_processors.site_settings',
+        'cart.context_processors.cart_counter',
     ]},
 }]
 

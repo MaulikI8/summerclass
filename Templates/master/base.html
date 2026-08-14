@@ -125,11 +125,11 @@
                 {% endif %}
 
                 <!-- Shopping Bag Link -->
-                <a href="{% url 'cart_view' %}" class="widget-header position-relative text-decoration-none" title="My Shopping Bag">
+                <a href="{% url 'cart:cart_detail' %}" class="widget-header position-relative text-decoration-none" title="My Shopping Bag">
                   <div class="widget-icon-btn">
                     <i class="fas fa-shopping-bag text-primary"></i>
                   </div>
-                  <span class="badge bg-primary widget-badge" id="cartCountBadge">0</span>
+                  <span class="badge bg-primary widget-badge" id="cartCountBadge">{{ cart_count|default:0 }}</span>
                 </a>
               </div>
             </div>
@@ -269,38 +269,43 @@
     <!-- Bootstrap 5 JS Bundle (for standard dropdowns) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
-    <!-- Minimal Inline Script (Cart Storage & Notifications) -->
+    <!-- Cart Sync & Notifications Script -->
     <script>
-      function getStoredCart() {
-        try { return JSON.parse(localStorage.getItem('islington_campus_cart')) || []; }
-        catch(e) { return []; }
-      }
-      function setStoredCart(c) {
-        localStorage.setItem('islington_campus_cart', JSON.stringify(c));
-        updateCartBadge();
-      }
       function addToCart(id, name, price, img) {
-        let cart = getStoredCart();
-        let existing = cart.find(x => String(x.id) === String(id));
-        if (existing) { existing.quantity = (existing.quantity || 1) + 1; }
-        else { cart.push({ id: id, name: name, price: parseFloat(price), img: img, quantity: 1 }); }
-        setStoredCart(cart);
-        showToast('Added to Bag', name + ' was added to your shopping bag.', 'success');
-      }
-      function clearAllCart() {
-        localStorage.removeItem('islington_campus_cart');
-        updateCartBadge();
-      }
-      function updateCartBadge() {
-        let count = getStoredCart().reduce((sum, item) => sum + (item.quantity || 1), 0);
-        let el = document.getElementById('cartCountBadge');
-        if (el) {
-          el.textContent = count;
-          if (count > 0) {
-            el.style.animation = 'none';
-            el.offsetHeight;
-            el.style.animation = 'pulse-ring 0.4s ease-out';
+        fetch(`/cart/add/${id}/`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'success') {
+            updateCartBadge(data.cart_count);
+            showToast('Added to Bag', (name || 'Item') + ' was added to your shopping bag.', 'success');
+          } else if (data.status === 'error') {
+            showToast('Notice', data.message || 'Cannot add item to bag.', 'error');
+          } else if (data.status === 'warning') {
+            showToast('Stock Limit', data.message || 'Maximum stock reached.', 'info');
           }
+        })
+        .catch(() => {
+          window.location.href = `/cart/add/${id}/`;
+        });
+      }
+
+      function updateCartBadge(customCount) {
+        let el = document.getElementById('cartCountBadge');
+        if (!el) return;
+        if (customCount !== undefined) {
+          el.textContent = customCount;
+          el.style.animation = 'none';
+          el.offsetHeight;
+          el.style.animation = 'pulse-ring 0.4s ease-out';
+        } else {
+          fetch('/cart/api/count/')
+            .then(r => r.json())
+            .then(d => {
+              el.textContent = d.count || 0;
+            })
+            .catch(() => {});
         }
       }
 

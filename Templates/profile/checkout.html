@@ -169,26 +169,39 @@
         <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 90px;">
           <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom">Order Summary</h5>
           
-          <div id="checkoutCartItemsContainer" class="d-flex flex-column gap-3 mb-3 overflow-auto" style="max-height: 280px;">
-            <!-- Rendered dynamically from localStorage cart -->
-          </div>
-
-          <div id="checkoutEmptyNotice" class="alert alert-warning py-3 small rounded-3 d-none">
-            <i class="fas fa-shopping-bag me-1"></i> Your shopping bag is currently empty. <a href="{% url 'products' %}" class="fw-bold">Browse items</a>
+          <div id="checkoutCartItemsContainer" class="d-flex flex-column gap-3 mb-3 overflow-auto" style="max-height: 320px;">
+            {% for item in cart_items %}
+            <div class="d-flex align-items-center gap-3 pb-2 border-bottom">
+              {% if item.product.product_image %}
+              <img src="{{ item.product.product_image.url }}" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 2px;" alt="{{ item.product.name }}" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';">
+              {% else %}
+              <img src="{% static 'images/default.jpg' %}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="{{ item.product.name }}">
+              {% endif %}
+              <div class="flex-grow-1 overflow-hidden">
+                <div class="fw-semibold small text-truncate text-dark">{{ item.product.name }}</div>
+                <span class="text-muted small">Qty: {{ item.quantity }} &times; Rs. {{ item.product.price|floatformat:2 }}</span>
+              </div>
+              <strong class="text-primary small">Rs. {{ item.sub_total|floatformat:2 }}</strong>
+            </div>
+            {% empty %}
+            <div class="alert alert-warning py-3 small rounded-3 mb-0">
+              <i class="fas fa-shopping-bag me-1"></i> Your shopping bag is empty. <a href="{% url 'products' %}" class="fw-bold">Browse items</a>
+            </div>
+            {% endfor %}
           </div>
 
           <div class="border-top pt-3 d-flex flex-column gap-2 small">
             <div class="d-flex justify-content-between text-muted">
               <span>Subtotal:</span>
-              <span class="fw-semibold text-dark" id="checkoutSubtotal">Rs. 0.00</span>
+              <span class="fw-semibold text-dark">Rs. {{ total|floatformat:2 }}</span>
             </div>
             <div class="d-flex justify-content-between text-muted">
-              <span id="deliveryLabel">Delivery / Collection:</span>
+              <span>Delivery / Collection:</span>
               <span class="fw-semibold text-success" id="deliveryStatusLabel">FREE</span>
             </div>
             <div class="d-flex justify-content-between fs-5 fw-bold text-dark border-top pt-2 mt-1">
               <span>Total Payable:</span>
-              <span class="text-primary" id="checkoutTotal">Rs. 0.00</span>
+              <span class="text-primary">Rs. {{ total|floatformat:2 }}</span>
             </div>
           </div>
 

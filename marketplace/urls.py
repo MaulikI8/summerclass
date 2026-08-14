@@ -14,7 +14,7 @@ urlpatterns = [
     path('register/', views.student_register, name='student_register'),
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     path('checkout/', views.checkout, name='checkout'),
-    path('cart/', views.cart_view, name='cart_view'),
+    path('cart/', include('cart.urls')),
     path('checkout/success/<int:order_id>/', views.order_success, name='order_success'),
     path('place-bid/<int:auction_id>/', views.place_bid, name='place_bid'),
     path('start-auction/<int:product_id>/', views.start_auction, name='start_auction'),

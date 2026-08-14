@@ -226,22 +226,23 @@ def user_profile(request):
     })
 
 def checkout(request):
+    from cart.views import _get_or_create_cart
+    cart = _get_or_create_cart(request)
+    cart_items = cart.items.filter(is_active=True).select_related('product', 'product__user')
+
+    if not cart_items.exists():
+        messages.warning(request, "Your shopping bag is empty. Please add items to checkout.")
+        return redirect('products')
+
+    # Prevent sellers from buying their own products
+    if request.user.is_authenticated:
+        for item in cart_items:
+            if item.product and item.product.user == request.user:
+                messages.error(request, f"You cannot purchase your own item: '{item.product.name}'. Please remove it from your bag to proceed.")
+                return redirect('cart:cart_detail')
+
     if request.method == 'POST':
         post = request.POST
-        try: cart = json.loads(post.get('cart_json', '[]'))
-        except Exception: cart = []
-        if not cart: messages.error(request, "Your shopping bag is empty."); return redirect('products')
-
-        # Prevent sellers from buying their own products
-        if request.user.is_authenticated:
-            for item in cart:
-                pid = item.get('id')
-                if pid:
-                    prod = Product.objects.filter(id=pid).first()
-                    if prod and prod.user == request.user:
-                        messages.error(request, f"You cannot purchase your own item: '{prod.name}'. Please remove it from your bag to proceed.")
-                        return redirect('checkout')
-
         delivery_type = post.get('delivery_type', 'campus_pickup')
         if delivery_type == 'home_delivery':
             home_addr = post.get('home_address', '').strip()
@@ -266,29 +267,38 @@ def checkout(request):
             order_status='confirmed'
         )
         total = 0.0
-        for item in cart:
-            pid, qty, pr = item.get('id'), int(item.get('quantity') or 1), float(item.get('price') or 0.0)
-            prod = Product.objects.filter(id=pid).first() if pid else None
-            OrderItem.objects.create(order=order, product=prod, product_name=item.get('name', 'Product'), price=pr, quantity=qty)
+        for item in cart_items:
+            prod = item.product
+            pr = float(prod.price) if prod else 0.0
+            qty = item.quantity
+            OrderItem.objects.create(order=order, product=prod, product_name=prod.name if prod else 'Product', price=pr, quantity=qty)
             total += pr * qty
             if prod and prod.user and prod.user != request.user:
-                Notification.notify(prod.user, f'New Order #{order.id} for {prod.name}!', f'{order.buyer_name} ordered {qty}x {prod.name}. Pickup: {order.meetup_location}', 'order_placed', 'fa-receipt', f'/profile/?tab=orders')
+                Notification.notify(prod.user, f'New Order #{order.id} for {prod.name}!', f'{order.buyer_name} ordered {qty}x {prod.name}. Pickup/Delivery: {order.meetup_location}', 'order_placed', 'fa-receipt', f'/profile/?tab=orders')
 
-        order.total_amount = total; order.save()
+        order.total_amount = total
+        order.save()
+
+        # Clear cart upon successful order
+        cart_items.delete()
+
         site_url = request.build_absolute_uri('/')[:-1]
         EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
         if request.user.is_authenticated:
-            Notification.notify(request.user, f'Order #{order.id} Confirmed!', f'Total Rs. {total:.2f}. Pickup: {order.meetup_location}', 'order_placed', 'fa-check-circle', f'/profile/?tab=orders')
+            Notification.notify(request.user, f'Order #{order.id} Confirmed!', f'Total Rs. {total:.2f}. Pickup/Delivery: {order.meetup_location}', 'order_placed', 'fa-check-circle', f'/profile/?tab=orders')
 
         return redirect('order_success', order_id=order.id)
-    return render(request, 'profile/checkout.html')
+
+    return render(request, 'profile/checkout.html', {
+        'cart': cart,
+        'cart_items': cart_items,
+        'total': cart.total_price,
+        'item_count': cart.total_items_count,
+    })
 
 def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     return render(request, 'profile/order_success.html', {'order': order})
-
-def cart_view(request):
-    return render(request, 'profile/cart.html', {'categories': ProductCategory.objects.all()})
 
 def student_login(request):
     if request.user.is_authenticated: return redirect('user_profile')
