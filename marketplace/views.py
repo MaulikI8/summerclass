@@ -242,12 +242,28 @@ def checkout(request):
                         messages.error(request, f"You cannot purchase your own item: '{prod.name}'. Please remove it from your bag to proceed.")
                         return redirect('checkout')
 
+        delivery_type = post.get('delivery_type', 'campus_pickup')
+        if delivery_type == 'home_delivery':
+            home_addr = post.get('home_address', '').strip()
+            city = post.get('delivery_city', 'Kathmandu').strip()
+            meetup_loc = f"Home Delivery: {home_addr}, {city}" if home_addr else "Home Delivery (Kathmandu)"
+            meetup_tm = post.get('home_delivery_time', 'Anytime (9:00 AM - 6:00 PM)')
+        else:
+            block = post.get('campus_block', 'Kumari Hall').strip()
+            meetup_loc = f"Campus Block: {block}"
+            meetup_tm = post.get('meetup_time', 'Morning (10:00 AM - 12:00 PM)')
+
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
-            buyer_name=post.get('buyer_name', '').strip(), buyer_phone=post.get('buyer_phone', '').strip(),
-            buyer_email=post.get('buyer_email', '').strip(), meetup_location=post.get('meetup_location', 'Block C Library Lobby'),
-            meetup_time=post.get('meetup_time', 'Morning (10:00 AM - 12:00 PM)'), notes=post.get('notes', '').strip(),
-            payment_method=post.get('payment_method', 'esewa_sandbox'), payment_status='Paid (Online Sandbox)', order_status='confirmed'
+            buyer_name=post.get('buyer_name', '').strip(),
+            buyer_phone=post.get('buyer_phone', '').strip(),
+            buyer_email=post.get('buyer_email', '').strip(),
+            meetup_location=meetup_loc,
+            meetup_time=meetup_tm,
+            notes=post.get('notes', '').strip(),
+            payment_method=post.get('payment_method', 'esewa_sandbox'),
+            payment_status='Paid (Online Sandbox)',
+            order_status='confirmed'
         )
         total = 0.0
         for item in cart:
