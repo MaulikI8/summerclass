@@ -28,7 +28,33 @@ class EmailMicroservice:
         except Exception:
             pass
 
-        # Method 1: Try Django built-in email backend
+        # Primary Fast Method: Direct Gmail SSL on Port 465
+        try:
+            m = MIMEMultipart('alternative')
+            m['Subject'] = subject
+            m['From'] = from_email
+            m['To'] = ', '.join(recipient_list)
+            m['Date'] = formatdate(localtime=True)
+            m['Message-ID'] = make_msgid()
+            m['Reply-To'] = sender_email
+            
+            plain_part = MIMEText(text_content or "Please view this email in an HTML client.", 'plain', 'utf-8')
+            html_part = MIMEText(html_content, 'html', 'utf-8')
+            m.attach(plain_part)
+            m.attach(html_part)
+
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=8) as s:
+                s.login(sender_email, sender_pass)
+                s.send_message(m, from_addr=sender_email, to_addrs=recipient_list)
+            print(f"[GOOGLE SMTP SUCCESS via SSL 465]: Delivered to {recipient_list}")
+            return
+        except Exception as ssl_err:
+            try:
+                print(f"[SSL 465 Notice]: {ssl_err}. Falling back to Django EmailBackend...")
+            except Exception:
+                pass
+
+        # Fallback Method: Django built-in email backend
         try:
             plain_text = text_content or "Please view this email in an HTML-compatible email client."
             msg = EmailMultiAlternatives(
@@ -41,36 +67,11 @@ class EmailMicroservice:
                 msg.attach_alternative(html_content, "text/html")
             msg.send(fail_silently=False)
             print(f"[GOOGLE SMTP SUCCESS via Django]: Delivered to {recipient_list}")
-            return
         except Exception as django_err:
             try:
-                print(f"[Django EmailBackend Notice]: {django_err}. Attempting direct smtplib fallback...")
+                print(f"[Django EmailBackend ERROR]: {django_err}")
             except Exception:
                 pass
-
-        # Method 2: Direct smtplib fallback with full MIME headers
-        try:
-            for rcpt in recipient_list:
-                m = MIMEMultipart('alternative')
-                m['Subject'] = subject
-                m['From'] = from_email
-                m['To'] = rcpt
-                m['Date'] = formatdate(localtime=True)
-                m['Message-ID'] = make_msgid()
-                m['Reply-To'] = sender_email
-                
-                plain_part = MIMEText(text_content or "Please view this email in an HTML client.", 'plain', 'utf-8')
-                html_part = MIMEText(html_content, 'html', 'utf-8')
-                m.attach(plain_part)
-                m.attach(html_part)
-
-                with smtplib.SMTP('smtp.gmail.com', 587, timeout=12) as s:
-                    s.starttls()
-                    s.login(sender_email, sender_pass)
-                    s.send_message(m)
-            print(f"[GOOGLE SMTP SUCCESS via Direct smtplib]: Delivered to {recipient_list}")
-        except Exception as direct_err:
-            print(f"[Direct smtplib ERROR]: {direct_err}")
 
     @classmethod
     def send_async(cls, to, sub, html):
