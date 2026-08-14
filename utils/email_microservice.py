@@ -1,70 +1,51 @@
-import json, threading, requests
+import threading
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.models import User
 
 class EmailMicroservice:
     @classmethod
-    def _send(cls, p):
-        k = getattr(settings, 'EMAIL_MICROSERVICE_API_KEY', '')
-        smtp_user = getattr(settings, 'EMAIL_HOST_USER', '')
-        smtp_pass = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
-        to_addr = p.get('to')
-        subject = p.get('subject')
-        print(f"\n[EMAIL DISPATCH] To: {to_addr} | Subject: {subject}")
-
-        # Method 1: If Gmail / SMTP credentials are configured, send directly via SMTP
-        if smtp_user and smtp_pass and not getattr(settings, 'EMAIL_MICROSERVICE_MOCK', False):
-            try:
-                from django.core.mail import EmailMultiAlternatives
-                recipients = to_addr if isinstance(to_addr, list) else [to_addr]
-                msg = EmailMultiAlternatives(
-                    subject=subject,
-                    body="Please view this email in an HTML-compatible client.",
-                    from_email=f"{getattr(settings, 'EMAIL_SENDER_NAME', 'Islington Marketplace')} <{smtp_user}>",
-                    to=recipients
-                )
-                if p.get('html'):
-                    msg.attach_alternative(p.get('html'), 'text/html')
-                msg.send(fail_silently=False)
-                print(f"[EMAIL SUCCESS (SMTP)]: Delivered to {recipients}")
+    def _send(cls, recipients, subject, html_content, text_content=""):
+        try:
+            if not recipients:
                 return
-            except Exception as e:
-                print(f"[EMAIL SMTP ERROR]: {e}")
 
-        # Method 2: Resend API Dispatch
-        if k and not getattr(settings, 'EMAIL_MICROSERVICE_MOCK', False):
-            try:
-                url = getattr(settings, 'EMAIL_MICROSERVICE_URL', 'https://api.resend.com/emails')
-                headers = {
-                    'Authorization': f'Bearer {k}',
-                    'Content-Type': 'application/json',
-                    'User-Agent': 'resend-python/2.0.0'
-                }
-                resp = requests.post(url, headers=headers, json=p, timeout=12)
-                if resp.status_code in (200, 201):
-                    print(f"[EMAIL SUCCESS (Resend)]: {resp.status_code} | {resp.text}")
-                else:
-                    print(f"[EMAIL RESEND RESPONSE {resp.status_code}]: {resp.text}")
-                    # If Resend free sandbox rejects because recipient is not account owner (maulikj663@gmail.com)
-                    if resp.status_code == 403 and 'maulikj663@gmail.com' not in str(to_addr):
-                        print("[EMAIL SANDBOX FALLBACK]: Forwarding copy to maulikj663@gmail.com")
-                        fallback_payload = dict(p)
-                        fallback_payload['to'] = ['maulikj663@gmail.com']
-                        fallback_payload['subject'] = f"[For {to_addr}] {subject}"
-                        requests.post(url, headers=headers, json=fallback_payload, timeout=12)
-            except Exception as e:
-                print(f"[EMAIL ERROR]: {e}")
+            recipient_list = recipients if isinstance(recipients, list) else [recipients]
+            recipient_list = [e.strip() for e in recipient_list if e and isinstance(e, str) and '@' in e]
+            if not recipient_list:
+                return
+
+            sender_name = getattr(settings, 'EMAIL_SENDER_NAME', 'Islington Marketplace')
+            sender_email = getattr(settings, 'EMAIL_HOST_USER', 'maulikj663@gmail.com')
+            from_email = f"{sender_name} <{sender_email}>"
+
+            print(f"\n[GOOGLE SMTP DISPATCH] To: {recipient_list} | Subject: {subject}")
+
+            plain_text = text_content or "Please view this email in an HTML-compatible email client."
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=plain_text,
+                from_email=from_email,
+                to=recipient_list
+            )
+            if html_content:
+                msg.attach_alternative(html_content, "text/html")
+
+            msg.send(fail_silently=False)
+            print(f"[GOOGLE SMTP SUCCESS]: Delivered to {recipient_list}")
+        except Exception as e:
+            print(f"[GOOGLE SMTP NOTICE]: {e}")
 
     @classmethod
     def send_async(cls, to, sub, html):
-        if not to: return
-        sender = f"{getattr(settings, 'EMAIL_SENDER_NAME', 'Islington Marketplace')} <{getattr(settings, 'EMAIL_SENDER_ADDRESS', 'onboarding@resend.dev')}>"
-        p = {'from': sender, 'to': [to] if isinstance(to, str) else to, 'subject': sub, 'html': html}
-        threading.Thread(target=cls._send, args=(p,), daemon=True).start()
+        if not to:
+            return
+        threading.Thread(target=cls._send, args=(to, sub, html), daemon=True).start()
 
     @classmethod
     def send_verification_email(cls, u, verify_url):
-        if not u.email: return
+        if not u or not u.email:
+            return
         name = u.first_name or u.username
         html = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:540px;margin:0 auto;padding:28px;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a;">
         <h2 style="color:#2563eb;margin-top:0;font-size:20px;">Verify Your Student Account</h2>
@@ -101,7 +82,8 @@ class EmailMicroservice:
 
     @classmethod
     def send_product_approved_email(cls, u, p, site_url="https://maulikjoshi.com.np"):
-        if not u or not u.email: return
+        if not u or not u.email:
+            return
         name = u.first_name or u.username
         prod_url = f"{site_url}/products/{p.id}/"
         html = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:540px;margin:0 auto;padding:28px;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a;">
@@ -115,7 +97,8 @@ class EmailMicroservice:
 
     @classmethod
     def send_product_rejected_email(cls, u, p, reason=""):
-        if not u or not u.email: return
+        if not u or not u.email:
+            return
         name = u.first_name or u.username
         html = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:540px;margin:0 auto;padding:28px;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a;">
         <div style="display:inline-block;background:#fef2f2;color:#991b1b;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:12px;">Listing Moderation Notice</div>
@@ -130,7 +113,8 @@ class EmailMicroservice:
     @classmethod
     def send_new_auction_broadcast(cls, auction, auction_url):
         emails = list(User.objects.filter(is_active=True).exclude(email='').values_list('email', flat=True))
-        if not emails: return
+        if not emails:
+            return
         html = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:540px;margin:0 auto;padding:28px;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a;">
         <div style="display:inline-block;background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:12px;">Live Auction</div>
         <h2 style="margin:0 0 16px 0;font-size:20px;">{auction.title}</h2>
@@ -141,7 +125,8 @@ class EmailMicroservice:
 
     @classmethod
     def send_outbid_notification(cls, outbid_user, auction, new_bid_amount, auction_url):
-        if not outbid_user or not outbid_user.email: return
+        if not outbid_user or not outbid_user.email:
+            return
         name = outbid_user.first_name or outbid_user.username
         html = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:540px;margin:0 auto;padding:28px;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a;">
         <div style="display:inline-block;background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:12px;">Outbid Notice</div>
@@ -166,14 +151,15 @@ class EmailMicroservice:
 
     @classmethod
     def send_order_confirmation_email(cls, order, site_url="https://maulikjoshi.com.np"):
-        if not order.buyer_email: return
+        if not order.buyer_email:
+            return
         html = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:540px;margin:0 auto;padding:28px;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a;">
         <div style="display:inline-block;background:#eff6ff;color:#1e40af;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:12px;">Order Confirmed</div>
         <h2 style="margin:0 0 16px 0;font-size:20px;">Order #{order.id} Confirmation</h2>
         <p style="color:#475569;font-size:15px;line-height:1.6;">Thank you {order.buyer_name}. Your order total is <strong>Rs. {order.total_amount:.2f}</strong>.</p>
         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:18px 0;font-size:14px;color:#334155;line-height:1.7;">
-          <div><strong>Pickup Location:</strong> {order.meetup_location}</div>
-          <div><strong>Pickup Time:</strong> {order.meetup_time}</div>
+          <div><strong>Pickup/Delivery Location:</strong> {order.meetup_location}</div>
+          <div><strong>Preferred Time Slot:</strong> {order.meetup_time}</div>
           <div><strong>Payment Status:</strong> {order.payment_status}</div>
         </div>
         <p style="margin:24px 0;"><a href="{site_url}/profile/?tab=orders" style="background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 26px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block;">View in My Orders</a></p>
