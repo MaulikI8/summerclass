@@ -22,7 +22,11 @@ class EmailMicroservice:
         sender_pass = getattr(settings, 'EMAIL_HOST_PASSWORD', 'lwdtdidnicnudkxr')
         from_email = f"{sender_name} <{sender_email}>"
 
-        print(f"\n[GOOGLE SMTP DISPATCH] To: {recipient_list} | Subject: {subject}")
+        try:
+            clean_sub = str(subject).encode('ascii', 'ignore').decode()
+            print(f"\n[GOOGLE SMTP DISPATCH] To: {recipient_list} | Subject: {clean_sub}")
+        except Exception:
+            pass
 
         # Method 1: Try Django built-in email backend
         try:
@@ -39,7 +43,10 @@ class EmailMicroservice:
             print(f"[GOOGLE SMTP SUCCESS via Django]: Delivered to {recipient_list}")
             return
         except Exception as django_err:
-            print(f"[Django EmailBackend Notice]: {django_err}. Attempting direct smtplib fallback...")
+            try:
+                print(f"[Django EmailBackend Notice]: {django_err}. Attempting direct smtplib fallback...")
+            except Exception:
+                pass
 
         # Method 2: Direct smtplib fallback with full MIME headers
         try:
