@@ -1,4 +1,7 @@
-import threading
+import threading, smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formatdate, make_msgid
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.models import User
@@ -6,21 +9,23 @@ from django.contrib.auth.models import User
 class EmailMicroservice:
     @classmethod
     def _send(cls, recipients, subject, html_content, text_content=""):
+        if not recipients:
+            return
+
+        recipient_list = recipients if isinstance(recipients, list) else [recipients]
+        recipient_list = [e.strip() for e in recipient_list if e and isinstance(e, str) and '@' in e]
+        if not recipient_list:
+            return
+
+        sender_name = getattr(settings, 'EMAIL_SENDER_NAME', 'Islington Marketplace')
+        sender_email = getattr(settings, 'EMAIL_HOST_USER', 'maulikj663@gmail.com')
+        sender_pass = getattr(settings, 'EMAIL_HOST_PASSWORD', 'lwdtdidnicnudkxr')
+        from_email = f"{sender_name} <{sender_email}>"
+
+        print(f"\n[GOOGLE SMTP DISPATCH] To: {recipient_list} | Subject: {subject}")
+
+        # Method 1: Try Django built-in email backend
         try:
-            if not recipients:
-                return
-
-            recipient_list = recipients if isinstance(recipients, list) else [recipients]
-            recipient_list = [e.strip() for e in recipient_list if e and isinstance(e, str) and '@' in e]
-            if not recipient_list:
-                return
-
-            sender_name = getattr(settings, 'EMAIL_SENDER_NAME', 'Islington Marketplace')
-            sender_email = getattr(settings, 'EMAIL_HOST_USER', 'maulikj663@gmail.com')
-            from_email = f"{sender_name} <{sender_email}>"
-
-            print(f"\n[GOOGLE SMTP DISPATCH] To: {recipient_list} | Subject: {subject}")
-
             plain_text = text_content or "Please view this email in an HTML-compatible email client."
             msg = EmailMultiAlternatives(
                 subject=subject,
@@ -30,11 +35,35 @@ class EmailMicroservice:
             )
             if html_content:
                 msg.attach_alternative(html_content, "text/html")
-
             msg.send(fail_silently=False)
-            print(f"[GOOGLE SMTP SUCCESS]: Delivered to {recipient_list}")
-        except Exception as e:
-            print(f"[GOOGLE SMTP NOTICE]: {e}")
+            print(f"[GOOGLE SMTP SUCCESS via Django]: Delivered to {recipient_list}")
+            return
+        except Exception as django_err:
+            print(f"[Django EmailBackend Notice]: {django_err}. Attempting direct smtplib fallback...")
+
+        # Method 2: Direct smtplib fallback with full MIME headers
+        try:
+            for rcpt in recipient_list:
+                m = MIMEMultipart('alternative')
+                m['Subject'] = subject
+                m['From'] = from_email
+                m['To'] = rcpt
+                m['Date'] = formatdate(localtime=True)
+                m['Message-ID'] = make_msgid()
+                m['Reply-To'] = sender_email
+                
+                plain_part = MIMEText(text_content or "Please view this email in an HTML client.", 'plain', 'utf-8')
+                html_part = MIMEText(html_content, 'html', 'utf-8')
+                m.attach(plain_part)
+                m.attach(html_part)
+
+                with smtplib.SMTP('smtp.gmail.com', 587, timeout=12) as s:
+                    s.starttls()
+                    s.login(sender_email, sender_pass)
+                    s.send_message(m)
+            print(f"[GOOGLE SMTP SUCCESS via Direct smtplib]: Delivered to {recipient_list}")
+        except Exception as direct_err:
+            print(f"[Direct smtplib ERROR]: {direct_err}")
 
     @classmethod
     def send_async(cls, to, sub, html):
