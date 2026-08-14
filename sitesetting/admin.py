@@ -60,4 +60,13 @@ class NotificationAdmin(admin.ModelAdmin):
     list_editable = ('is_read',)
     actions = [lambda s, r, q: q.update(is_read=True)]
 
+from .models import EmailOTP
+
+@admin.register(EmailOTP)
+class EmailOTPAdmin(admin.ModelAdmin):
+    list_display = ('user', 'otp_code', 'purpose', 'is_used', 'created_at')
+    list_filter = ('is_used', 'purpose', 'created_at')
+    search_fields = ('user__username', 'user__email', 'otp_code')
+    readonly_fields = ('created_at',)
+
 

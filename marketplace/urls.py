@@ -12,6 +12,8 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('login/', views.student_login, name='student_login'),
     path('register/', views.student_register, name='student_register'),
+    path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('resend-otp/', views.resend_otp, name='resend_otp'),
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     path('checkout/', views.checkout, name='checkout'),
     path('cart/', include('cart.urls')),

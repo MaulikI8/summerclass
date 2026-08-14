@@ -327,6 +327,8 @@ def student_register(request):
     if request.user.is_authenticated: return redirect('user_profile')
     form_data = {}
     if request.method == 'POST':
+        import random
+        from sitesetting.models import EmailOTP
         form_data = request.POST
         u, em, pw, cpw = request.POST.get('username', '').strip(), request.POST.get('email', '').strip(), request.POST.get('password', ''), request.POST.get('confirm_password', '')
         if not u or not em or not pw: messages.error(request, "All fields required.")
@@ -340,16 +342,84 @@ def student_register(request):
                 password=pw,
                 first_name=request.POST.get('first_name', '').strip(),
                 last_name=request.POST.get('last_name', '').strip(),
-                is_active=True
+                is_active=False
             )
-            token = TimestampSigner().sign(usr.username)
-            verify_url = request.build_absolute_uri(f'/verify-email/{token}/')
-            EmailMicroservice.send_verification_email(usr, verify_url)
-            login(request, usr)
-            Notification.notify(usr, f'Welcome to Islington Marketplace, {usr.first_name or usr.username}!', 'Account created successfully! Explore listings or post your items for sale.', 'welcome', 'fa-check-circle', '/profile/')
-            messages.success(request, f"Welcome {usr.first_name or usr.username}! Your student account is ready.")
-            return redirect('user_profile')
+            # Generate 6-Digit Email OTP
+            otp_code = f"{random.randint(100000, 999999):06d}"
+            EmailOTP.objects.create(user=usr, otp_code=otp_code, purpose='registration')
+            EmailMicroservice.send_otp_email(usr, otp_code)
+
+            request.session['pending_otp_user_id'] = usr.id
+            messages.success(request, f"Verification code sent to {usr.email}. Please enter the 6-digit OTP to activate your account.")
+            return redirect('verify_otp')
     return render(request, 'profile/register.html', {'form_data': form_data})
+
+def verify_otp(request):
+    if request.user.is_authenticated:
+        return redirect('user_profile')
+    
+    user_id = request.session.get('pending_otp_user_id')
+    if not user_id:
+        messages.info(request, "Please register or sign in to verify your account.")
+        return redirect('student_login')
+
+    try:
+        pending_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        messages.error(request, "User session expired. Please register again.")
+        return redirect('student_register')
+
+    if request.method == 'POST':
+        from sitesetting.models import EmailOTP
+        entered_otp = request.POST.get('otp_code', '').strip().replace(' ', '')
+        
+        active_otps = EmailOTP.objects.filter(user=pending_user, is_used=False).order_by('-created_at')
+        valid_otp = None
+        for otp_obj in active_otps:
+            if otp_obj.is_valid() and otp_obj.otp_code == entered_otp:
+                valid_otp = otp_obj
+                break
+
+        if valid_otp:
+            valid_otp.is_used = True
+            valid_otp.save()
+
+            pending_user.is_active = True
+            pending_user.save()
+
+            login(request, pending_user)
+            if 'pending_otp_user_id' in request.session:
+                del request.session['pending_otp_user_id']
+
+            Notification.notify(pending_user, f'Welcome to Islington Marketplace, {pending_user.first_name or pending_user.username}!', 'Email verified successfully! You can now list items and trade with peers.', 'welcome', 'fa-check-circle', '/profile/')
+            messages.success(request, f"Welcome {pending_user.first_name or pending_user.username}! Your account has been verified successfully.")
+            return redirect('user_profile')
+        else:
+            messages.error(request, "Invalid or expired 6-digit code. Please check your inbox or click 'Resend Code'.")
+
+    return render(request, 'profile/verify_otp.html', {'pending_user': pending_user})
+
+def resend_otp(request):
+    user_id = request.session.get('pending_otp_user_id')
+    if not user_id:
+        messages.error(request, "Session expired. Please sign in or register.")
+        return redirect('student_login')
+
+    try:
+        import random
+        from sitesetting.models import EmailOTP
+        pending_user = User.objects.get(id=user_id)
+        # Invalidate past OTPs
+        EmailOTP.objects.filter(user=pending_user, is_used=False).update(is_used=True)
+        # Generate new 6-digit OTP
+        new_otp = f"{random.randint(100000, 999999):06d}"
+        EmailOTP.objects.create(user=pending_user, otp_code=new_otp, purpose='registration')
+        EmailMicroservice.send_otp_email(pending_user, new_otp)
+        messages.success(request, f"A new 6-digit verification code was sent to {pending_user.email}!")
+    except Exception as e:
+        messages.error(request, f"Could not resend code: {e}")
+
+    return redirect('verify_otp')
 
 def verify_email(request, token):
     try:

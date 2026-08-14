@@ -1,0 +1,95 @@
+{% extends 'master/base.html' %}
+{% load static %}
+
+{% block title %}Verify Email with OTP | Islington Marketplace{% endblock %}
+
+{% block content %}
+<section class="section-content padding-y-lg py-5 bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-5 col-md-7 col-sm-10">
+        <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white text-center">
+          
+          <div class="rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px; color: #2563eb; font-size: 1.6rem;">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+
+          <h3 class="fw-bold text-dark mb-1">Enter Verification Code</h3>
+          <p class="text-muted small mb-4">
+            We sent a 6-digit verification code to<br>
+            <strong class="text-dark">{{ pending_user.email }}</strong>
+          </p>
+
+          {% if messages %}
+          <div class="mb-4 text-start">
+            {% for msg in messages %}
+            <div class="alert {% if msg.tags == 'error' %}alert-danger{% elif msg.tags == 'warning' %}alert-warning{% else %}alert-success{% endif %} py-2 px-3 small rounded-3 border-0 d-flex align-items-center gap-2">
+              <i class="fas {% if msg.tags == 'error' %}fa-exclamation-circle text-danger{% elif msg.tags == 'warning' %}fa-exclamation-triangle text-warning{% else %}fa-check-circle text-success{% endif %}"></i>
+              <span>{{ msg }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <form method="POST" action="{% url 'verify_otp' %}" id="otpVerifyForm">
+            {% csrf_token %}
+
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing: 0.05em;">6-Digit OTP Code</label>
+              <input
+                type="text"
+                name="otp_code"
+                id="otpInput"
+                class="form-control form-control-lg text-center fw-bold rounded-3 shadow-xs"
+                placeholder="&bull; &bull; &bull; &bull; &bull; &bull;"
+                maxlength="6"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                style="letter-spacing: 12px; font-size: 30px; font-family: monospace; height: 60px; color: #1e293b;"
+                required
+                autofocus
+              />
+              <small class="text-muted d-block mt-2">Code is valid for 10 minutes</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm mb-3" id="verifyBtn">
+              <i class="fas fa-check-circle me-1"></i> Verify &amp; Activate Account
+            </button>
+
+            <div class="d-flex align-items-center justify-content-between pt-3 border-top small">
+              <span class="text-muted">Didn't receive code?</span>
+              <a href="{% url 'resend_otp' %}" class="fw-bold text-primary text-decoration-none" id="resendBtn">
+                Resend Code <span id="timerCountdown"></span>
+              </a>
+            </div>
+
+            <div class="text-center mt-4">
+              <a href="{% url 'student_register' %}" class="text-muted small text-decoration-none">
+                <i class="fas fa-arrow-left me-1"></i> Change email / Register again
+              </a>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('otpInput');
+    if (input) {
+        input.focus();
+        input.addEventListener('input', (e) => {
+            // Only allow numbers
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            if (e.target.value.length === 6) {
+                // Auto submit when 6 digits are typed
+                document.getElementById('otpVerifyForm').submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

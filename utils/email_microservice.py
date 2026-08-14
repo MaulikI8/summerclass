@@ -43,6 +43,30 @@ class EmailMicroservice:
         threading.Thread(target=cls._send, args=(to, sub, html), daemon=True).start()
 
     @classmethod
+    def send_otp_email(cls, u, otp_code):
+        if not u or not u.email:
+            return
+        name = u.first_name or u.username
+        html = f"""<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;padding:32px;border:1px solid #e2e8f0;border-radius:14px;color:#0f172a;background:#ffffff;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="display:inline-block;background:#eff6ff;color:#2563eb;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Islington Marketplace</div>
+        </div>
+        <h2 style="color:#0f172a;margin-top:0;font-size:22px;text-align:center;font-weight:700;">Account Verification Code</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;margin-top:16px;">Hello <strong>{name}</strong>,</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Use the 6-digit verification code below to verify your student account and complete your sign in:</p>
+        
+        <div style="background:#f8fafc;border:2px dashed #3b82f6;border-radius:12px;padding:18px;margin:24px 0;text-align:center;">
+          <span style="font-size:34px;font-weight:800;letter-spacing:10px;color:#1d4ed8;font-family:monospace;">{otp_code}</span>
+        </div>
+        
+        <p style="color:#64748b;font-size:13px;line-height:1.5;margin-bottom:8px;">This code expires in <strong>10 minutes</strong>. Never share this code with anyone.</p>
+        <div style="border-top:1px solid #e2e8f0;margin-top:24px;padding-top:16px;font-size:12px;color:#94a3b8;text-align:center;">
+          Islington College Student Marketplace &bull; Safe Peer-to-Peer Trading
+        </div>
+        </div>"""
+        cls.send_async(u.email, f"Your Verification Code: {otp_code} - Islington Marketplace", html)
+
+    @classmethod
     def send_verification_email(cls, u, verify_url):
         if not u or not u.email:
             return

@@ -68,3 +68,23 @@ class Notification(models.Model):
         if exclude_user: qs = qs.exclude(pk=exclude_user.pk)
         return cls.objects.bulk_create([cls(recipient=u, notif_type=notif_type, title=title, message=message, icon=icon, link=link) for u in qs])
 
+class EmailOTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otp_codes')
+    otp_code = models.CharField(max_length=6, db_index=True)
+    purpose = models.CharField(max_length=50, default='registration')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Email OTP Verification'
+        verbose_name_plural = 'Email OTP Verifications'
+
+    def is_valid(self):
+        import datetime
+        from django.utils import timezone
+        return not self.is_used and (timezone.now() - self.created_at) < datetime.timedelta(minutes=10)
+
+    def __str__(self):
+        return f"OTP {self.otp_code} for {self.user.username} ({'Used' if self.is_used else 'Active'})"
+
