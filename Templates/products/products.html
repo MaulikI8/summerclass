@@ -55,7 +55,7 @@
           <!-- Image Wrap -->
           <a href="{% url 'product_detail' product.id %}" class="img-wrap">
             {% if product.product_image %}
-              <img src="{{ product.product_image.url }}" alt="{{ product.name }}" loading="lazy" />
+              <img src="{{ product.product_image.url }}" alt="{{ product.name }}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';" />
             {% else %}
               <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" loading="lazy" />
             {% endif %}

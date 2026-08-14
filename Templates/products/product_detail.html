@@ -25,7 +25,7 @@
           <article class="gallery-wrap p-4 p-md-5 text-center d-flex flex-column justify-content-center">
             <div class="mainImage img-big-wrap position-relative p-3 bg-light rounded-4 d-flex align-items-center justify-content-center" style="min-height: 380px; max-height: 420px; background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);">
               {% if product.product_image %}
-              <img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="img-fluid rounded-3" style="max-height: 360px; max-width: 100%; object-fit: contain;">
+              <img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="img-fluid rounded-3" style="max-height: 360px; max-width: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';">
               {% else %}
               <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" class="img-fluid rounded-3" style="max-height: 360px; max-width: 100%; object-fit: contain;">
               {% endif %}
