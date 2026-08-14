@@ -201,10 +201,10 @@ def user_profile(request):
                 status=False,       # Hidden until admin approves
                 is_approved=False   # Always requires admin moderation
             )
+            # Send 1 single alert to admin for review
             admin_url = request.build_absolute_uri('/admin/products/pendingproductreview/')
             EmailMicroservice.send_admin_new_pending_review_email(p, u, admin_url=admin_url)
-            EmailMicroservice.send_student_submission_pending_email(u, p)
-            Notification.notify(u, f'Listing Submitted for Review: {p.name}', f'Your listing "{p.name}" is under review by college admin and will appear on the store once approved.', 'product_pending', 'fa-clock', '/profile/?tab=products')
+            Notification.notify(u, f'Listing Submitted: {p.name}', f'Your item "{p.name}" is under review by college admin.', 'product_pending', 'fa-clock', '/profile/?tab=products')
             messages.success(request, f'Listing "{p.name}" submitted! It is under review by college admin and will appear publicly once approved.')
         elif act == 'edit_product':
             p = get_object_or_404(Product, id=post.get('product_id'))
@@ -232,6 +232,16 @@ def checkout(request):
         except Exception: cart = []
         if not cart: messages.error(request, "Your shopping bag is empty."); return redirect('products')
 
+        # Prevent sellers from buying their own products
+        if request.user.is_authenticated:
+            for item in cart:
+                pid = item.get('id')
+                if pid:
+                    prod = Product.objects.filter(id=pid).first()
+                    if prod and prod.user == request.user:
+                        messages.error(request, f"You cannot purchase your own item: '{prod.name}'. Please remove it from your bag to proceed.")
+                        return redirect('checkout')
+
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
             buyer_name=post.get('buyer_name', '').strip(), buyer_phone=post.get('buyer_phone', '').strip(),
@@ -245,7 +255,7 @@ def checkout(request):
             prod = Product.objects.filter(id=pid).first() if pid else None
             OrderItem.objects.create(order=order, product=prod, product_name=item.get('name', 'Product'), price=pr, quantity=qty)
             total += pr * qty
-            if prod and prod.user:
+            if prod and prod.user and prod.user != request.user:
                 Notification.notify(prod.user, f'New Order #{order.id} for {prod.name}!', f'{order.buyer_name} ordered {qty}x {prod.name}. Pickup: {order.meetup_location}', 'order_placed', 'fa-receipt', f'/profile/?tab=orders')
 
         order.total_amount = total; order.save()

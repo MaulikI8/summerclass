@@ -212,7 +212,7 @@
               <a href="{% url 'product_detail' product.id %}" class="btn-card-primary text-decoration-none">
                 View Item
               </a>
-              {% if product.stock > 0 %}
+              {% if product.stock > 0 and product.user != user %}
               <button type="button" class="btn-card-icon" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
                 <i class="fas fa-shopping-cart text-primary"></i>
               </button>

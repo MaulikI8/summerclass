@@ -116,7 +116,18 @@
 
             <!-- Action Buttons -->
             <div class="d-flex flex-wrap gap-2 pt-2">
-              {% if product.stock > 0 %}
+              {% if user.is_authenticated and product.user == user %}
+              <div class="alert alert-light border rounded-4 p-3 w-100 d-flex align-items-center gap-3 mb-0">
+                <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                  <i class="fas fa-user-tag"></i>
+                </div>
+                <div>
+                  <div class="fw-bold text-dark small">You are the seller of this listing</div>
+                  <small class="text-muted">Self-purchasing is disabled for your own items.</small>
+                </div>
+                <a href="{% url 'user_profile' %}?tab=products" class="btn btn-outline-primary btn-sm rounded-pill ms-auto">Manage Listing</a>
+              </div>
+              {% elif product.stock > 0 %}
               <button type="button" class="btn btn-primary btn-lg px-4 fw-semibold flex-grow-1 rounded-pill shadow-sm" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')">
                 <i class="fas fa-shopping-cart me-1"></i> Add to Bag
               </button>
