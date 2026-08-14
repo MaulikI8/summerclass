@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from django.conf import settings
 from . import views
+from account import views as account_views
 from sitesetting import views as site_views
 from pages.views import page_detail
 
@@ -10,19 +11,20 @@ urlpatterns = [
     path('admin', lambda req: redirect('/admin/', permanent=False)),
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('login/', views.student_login, name='student_login'),
-    path('register/', views.student_register, name='student_register'),
-    path('verify-otp/', views.verify_otp, name='verify_otp'),
-    path('resend-otp/', views.resend_otp, name='resend_otp'),
-    path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
+    path('account/', include('account.urls')),
+    path('login/', account_views.student_login, name='student_login'),
+    path('register/', account_views.student_register, name='student_register'),
+    path('verify-otp/', account_views.verify_otp, name='verify_otp'),
+    path('resend-otp/', account_views.resend_otp, name='resend_otp'),
+    path('verify-email/<str:token>/', account_views.verify_email, name='verify_email'),
+    path('logout/', account_views.student_logout, name='student_logout'),
+    path('profile/', account_views.user_profile, name='user_profile'),
     path('checkout/', views.checkout, name='checkout'),
     path('cart/', include('cart.urls')),
     path('checkout/success/<int:order_id>/', views.order_success, name='order_success'),
     path('place-bid/<int:auction_id>/', views.place_bid, name='place_bid'),
     path('start-auction/<int:product_id>/', views.start_auction, name='start_auction'),
     path('accept-auction/<int:auction_id>/', views.accept_auction_bid, name='accept_auction_bid'),
-    path('logout/', views.student_logout, name='student_logout'),
-    path('profile/', views.user_profile, name='user_profile'),
     path('api/notifications/', site_views.api_notifications, name='api_notifications'),
     path('api/notifications/read/', site_views.api_notification_read, name='api_notification_read'),
     path('api/notifications/read-all/', site_views.api_notification_read_all, name='api_notification_read_all'),

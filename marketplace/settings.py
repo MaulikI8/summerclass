@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cloudinary_storage',
     'cloudinary',
+    'account.apps.AccountConfig',
     'cart.apps.CartConfig',
     'products.apps.ProductsConfig',
     'blog.apps.BlogConfig',
