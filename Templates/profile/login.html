@@ -28,13 +28,13 @@
           </div>
           {% endif %}
 
-          <form method="POST" action="{% url 'student_login' %}">
+          <form method="POST" action="{% url 'student_login' %}" id="studentLoginForm">
             {% csrf_token %}
             <div class="mb-3">
               <label class="form-label fw-semibold small text-dark">Student Username</label>
               <div class="input-group">
                 <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted"><i class="fa fa-user"></i></span>
-                <input type="text" name="username" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="e.g. maulik" required autofocus>
+                <input type="text" name="username" id="loginUsernameInput" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="e.g. maulik" value="{% if saved_username %}{{ saved_username }}{% endif %}" required autofocus>
               </div>
             </div>
 
@@ -62,4 +62,19 @@
     </div>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    bindAutoDraft('studentLoginForm', 'islington_login_draft');
+    const uInput = document.getElementById('loginUsernameInput');
+    if (!uInput.value) {
+        const remembered = getCookie('islington_last_username');
+        if (remembered) uInput.value = remembered;
+    }
+    const form = document.getElementById('studentLoginForm');
+    form.addEventListener('submit', () => {
+        if (uInput.value) setCookie('islington_last_username', uInput.value.trim(), 30);
+    });
+});
+</script>
 {% endblock %}

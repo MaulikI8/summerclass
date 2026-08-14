@@ -287,17 +287,27 @@ def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     return render(request, 'profile/order_success.html', {'order': order})
 
+def cart_view(request):
+    return render(request, 'profile/cart.html', {'categories': ProductCategory.objects.all()})
+
 def student_login(request):
     if request.user.is_authenticated: return redirect('user_profile')
+    entered_username = ''
     if request.method == 'POST':
-        u = authenticate(request, username=request.POST.get('username', '').strip(), password=request.POST.get('password', ''))
-        if u: login(request, u); messages.success(request, f"Welcome back, {u.first_name or u.username}!"); return redirect('user_profile')
-        messages.error(request, "Invalid student credentials or unverified account.")
-    return render(request, 'profile/login.html')
+        entered_username = request.POST.get('username', '').strip()
+        u = authenticate(request, username=entered_username, password=request.POST.get('password', ''))
+        if u:
+            login(request, u)
+            messages.success(request, f"Welcome back, {u.first_name or u.username}!")
+            return redirect('user_profile')
+        messages.error(request, "Invalid student credentials or wrong password.")
+    return render(request, 'profile/login.html', {'saved_username': entered_username})
 
 def student_register(request):
     if request.user.is_authenticated: return redirect('user_profile')
+    form_data = {}
     if request.method == 'POST':
+        form_data = request.POST
         u, em, pw, cpw = request.POST.get('username', '').strip(), request.POST.get('email', '').strip(), request.POST.get('password', ''), request.POST.get('confirm_password', '')
         if not u or not em or not pw: messages.error(request, "All fields required.")
         elif pw != cpw: messages.error(request, "Passwords do not match.")
@@ -310,7 +320,7 @@ def student_register(request):
             EmailMicroservice.send_verification_email(usr, verify_url)
             messages.success(request, "Registration successful! Please check your email to verify your account.")
             return redirect('student_login')
-    return render(request, 'profile/register.html')
+    return render(request, 'profile/register.html', {'form_data': form_data})
 
 def verify_email(request, token):
     try:
@@ -328,26 +338,4 @@ def student_logout(request):
     logout(request); messages.success(request, "Logged out."); return redirect('home')
 
 def custom_404(request, exception=None): return render(request, '404.html', status=404)
-
-def serve_db_media(request, path):
-    """
-    Serves images directly from PostgreSQL (DbFile).
-    Falls back to disk if present, or raises 404.
-    """
-    from django.http import HttpResponse, Http404
-    from sitesetting.models import DbFile
-    try:
-        db_file = DbFile.objects.get(name=path)
-        resp = HttpResponse(bytes(db_file.data), content_type=db_file.content_type)
-        resp['Content-Length'] = len(db_file.data)
-        resp['Cache-Control'] = 'public, max-age=86400'
-        return resp
-    except Exception:
-        import os
-        from django.views.static import serve
-        from django.conf import settings
-        full = os.path.join(settings.MEDIA_ROOT, path)
-        if os.path.exists(full):
-            return serve(request, path, document_root=settings.MEDIA_ROOT)
-        raise Http404(f"Media file '{path}' not found.")
 

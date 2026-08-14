@@ -417,7 +417,7 @@
                 <i class="fa fa-exclamation-triangle me-1"></i> Please <a href="{% url 'student_login' %}" class="fw-bold text-dark">Sign In</a> or <a href="{% url 'student_register' %}" class="fw-bold text-dark">Create an Account</a> to post listings.
               </div>
               {% else %}
-              <form method="POST" action="{% url 'user_profile' %}" enctype="multipart/form-data" class="settings-form">
+              <form method="POST" action="{% url 'user_profile' %}" enctype="multipart/form-data" class="settings-form" id="addProductForm">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="add_product">
 
@@ -468,7 +468,7 @@
                 <div class="form-check form-switch mb-4 p-3 bg-light rounded-3 border">
                   <input class="form-check-input ms-0 me-2" type="checkbox" name="start_as_auction" value="1" id="startAsAuctionCheck">
                   <label class="form-check-label fw-bold text-dark" for="startAsAuctionCheck">
-                    🔥 Start as a 24-Hour Live Auction
+                    Start as a 24-Hour Live Auction
                   </label>
                   <div class="small text-muted mt-1">
                     Students can place real-time bids for 24 hours. Resend will notify all students via email, and you can accept the highest price whenever you want!
@@ -479,11 +479,16 @@
                   <button type="submit" class="btn btn-primary btn-manage px-4 py-2">
                     <i class="fa fa-check-circle me-1"></i> Publish Listing to Marketplace
                   </button>
-                  <button type="reset" class="btn btn-outline-secondary btn-manage px-3" onclick="document.getElementById('imagePreviewContainer').classList.add('d-none')">
+                  <button type="reset" class="btn btn-outline-secondary btn-manage px-3" onclick="document.getElementById('imagePreviewContainer').classList.add('d-none'); localStorage.removeItem('islington_add_product_draft');">
                     Reset Form
                   </button>
                 </div>
               </form>
+              <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                  bindAutoDraft('addProductForm', 'islington_add_product_draft');
+                });
+              </script>
               {% endif %}
             </div>
           </div>

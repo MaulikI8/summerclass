@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     'products.apps.ProductsConfig',
     'blog.apps.BlogConfig',
     'pages.apps.PagesConfig',
@@ -89,21 +91,38 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "marketplace" / "static"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-DEFAULT_FILE_STORAGE = 'sitesetting.storage.DatabaseStorage'
-STORAGES = {
-    "default": {
-        "BACKEND": "sitesetting.storage.DatabaseStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-    },
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
 }
+
+if os.environ.get('CLOUDINARY_CLOUD_NAME') or os.environ.get('CLOUDINARY_URL'):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+else:
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
 
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
 
-
-MEDIA_URL, MEDIA_ROOT = '/media/', BASE_DIR / 'media'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 EMAIL_MICROSERVICE_URL = os.environ.get('EMAIL_MICROSERVICE_URL', 'https://api.resend.com/emails')
 EMAIL_MICROSERVICE_API_KEY = os.environ.get('EMAIL_MICROSERVICE_API_KEY', '')

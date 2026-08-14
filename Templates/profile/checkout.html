@@ -277,9 +277,9 @@ function handleCheckoutSubmit(e) {
         return false;
     }
     document.getElementById('hiddenCartJson').value = JSON.stringify(cart);
-    return true;
-}
-
-document.addEventListener('DOMContentLoaded', renderCheckoutPage);
+document.addEventListener('DOMContentLoaded', () => {
+    bindAutoDraft('checkoutForm', 'islington_checkout_draft');
+    renderCheckoutPage();
+});
 </script>
 {% endblock %}

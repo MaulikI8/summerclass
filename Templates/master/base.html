@@ -125,7 +125,7 @@
                 {% endif %}
 
                 <!-- Shopping Bag Link -->
-                <a href="{% url 'checkout' %}" class="widget-header position-relative text-decoration-none" title="Shopping Bag & Checkout">
+                <a href="{% url 'cart_view' %}" class="widget-header position-relative text-decoration-none" title="My Shopping Bag">
                   <div class="widget-icon-btn">
                     <i class="fas fa-shopping-bag text-primary"></i>
                   </div>
@@ -383,9 +383,77 @@
           }
         }).catch(()=>{});
       }
-      function markAllNotifRead(e) {
-        e.stopPropagation();
-        fetch('/api/notifications/read-all/', {method: 'POST'}).then(() => fetchNotifs());
+      // Cookie & Storage Form Draft Persistence Helpers
+      function setCookie(name, value, days = 30) {
+        let expires = "";
+        if (days) {
+          let date = new Date();
+          date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+          expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (encodeURIComponent(value) || "") + expires + "; path=/; SameSite=Lax";
+      }
+
+      function getCookie(name) {
+        let nameEQ = name + "=";
+        let ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+          if (c.indexOf(nameEQ) == 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+        }
+        return null;
+      }
+
+      // Auto-save & Auto-restore Incomplete Work on Forms
+      function bindAutoDraft(formId, storageKey) {
+        const form = document.getElementById(formId);
+        if (!form) return;
+        
+        // Restore saved draft on load
+        try {
+          const raw = localStorage.getItem(storageKey) || getCookie(storageKey);
+          if (raw) {
+            const data = JSON.parse(raw);
+            Object.keys(data).forEach(k => {
+              const el = form.elements[k];
+              if (el && el.type !== 'password' && el.type !== 'file') {
+                if (el.type === 'radio') {
+                  if (el.value === data[k]) el.checked = true;
+                } else if (el.type === 'checkbox') {
+                  el.checked = Boolean(data[k]);
+                } else if (!el.value) {
+                  el.value = data[k];
+                }
+              }
+            });
+          }
+        } catch(e) {}
+
+        // Listen for user typing / input and auto-save in real-time
+        form.addEventListener('input', () => {
+          const data = {};
+          Array.from(form.elements).forEach(el => {
+            if (el.name && el.type !== 'password' && el.type !== 'file') {
+              if (el.type === 'radio') {
+                if (el.checked) data[el.name] = el.value;
+              } else if (el.type === 'checkbox') {
+                data[el.name] = el.checked;
+              } else {
+                data[el.name] = el.value;
+              }
+            }
+          });
+          const jsonStr = JSON.stringify(data);
+          localStorage.setItem(storageKey, jsonStr);
+          setCookie(storageKey, jsonStr, 7);
+        });
+
+        // Clear draft on successful submit
+        form.addEventListener('submit', () => {
+          localStorage.removeItem(storageKey);
+          setCookie(storageKey, '', -1);
+        });
       }
 
       document.addEventListener('DOMContentLoaded', () => {

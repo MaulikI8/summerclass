@@ -9,10 +9,7 @@ try:
     django.setup()
     from django.core.management import call_command
     call_command('migrate', interactive=False)
-
-    from sitesetting.storage import sync_local_media_to_db
-    sync_local_media_to_db()
 except Exception as e:
-    print(f"[WSGI Startup Migrate/Sync Info]: {e}")
+    print(f"[WSGI Startup Migrate Info]: {e}")
 
 application = get_wsgi_application()

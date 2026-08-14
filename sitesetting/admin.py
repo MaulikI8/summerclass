@@ -60,15 +60,4 @@ class NotificationAdmin(admin.ModelAdmin):
     list_editable = ('is_read',)
     actions = [lambda s, r, q: q.update(is_read=True)]
 
-from .models import DbFile
-
-@admin.register(DbFile)
-class DbFileAdmin(admin.ModelAdmin):
-    list_display = ('name', 'content_type', 'size_kb', 'created_at')
-    search_fields = ('name', 'content_type')
-    readonly_fields = ('size', 'created_at')
-
-    def size_kb(self, o):
-        return f"{o.size / 1024:.1f} KB"
-    size_kb.short_description = "File Size"
 

@@ -14,6 +14,7 @@ urlpatterns = [
     path('register/', views.student_register, name='student_register'),
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     path('checkout/', views.checkout, name='checkout'),
+    path('cart/', views.cart_view, name='cart_view'),
     path('checkout/success/<int:order_id>/', views.order_success, name='order_success'),
     path('place-bid/<int:auction_id>/', views.place_bid, name='place_bid'),
     path('start-auction/<int:product_id>/', views.start_auction, name='start_auction'),
@@ -33,7 +34,7 @@ from django.views.static import serve
 from django.urls import re_path
 
 urlpatterns += [
-    re_path(r'^media/(?P<path>.*)$', views.serve_db_media, name='serve_db_media'),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 ]
 

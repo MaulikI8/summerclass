@@ -28,16 +28,16 @@
           </div>
           {% endif %}
 
-          <form method="POST" action="{% url 'student_register' %}">
+          <form method="POST" action="{% url 'student_register' %}" id="studentRegisterForm">
             {% csrf_token %}
             <div class="row g-3 mb-3">
               <div class="col-md-6">
                 <label class="form-label fw-semibold small text-dark">First Name</label>
-                <input type="text" name="first_name" class="form-control rounded-3" placeholder="First name" required>
+                <input type="text" name="first_name" class="form-control rounded-3" placeholder="First name" value="{% if form_data.first_name %}{{ form_data.first_name }}{% endif %}" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label fw-semibold small text-dark">Last Name</label>
-                <input type="text" name="last_name" class="form-control rounded-3" placeholder="Last name" required>
+                <input type="text" name="last_name" class="form-control rounded-3" placeholder="Last name" value="{% if form_data.last_name %}{{ form_data.last_name }}{% endif %}" required>
               </div>
             </div>
 
@@ -45,7 +45,7 @@
               <label class="form-label fw-semibold small text-dark">Student Username</label>
               <div class="input-group">
                 <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted"><i class="fa fa-user"></i></span>
-                <input type="text" name="username" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="Choose a username" required>
+                <input type="text" name="username" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="Choose a username" value="{% if form_data.username %}{{ form_data.username }}{% endif %}" required>
               </div>
             </div>
 
@@ -53,7 +53,7 @@
               <label class="form-label fw-semibold small text-dark">College / Personal Email</label>
               <div class="input-group">
                 <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted"><i class="fa fa-envelope"></i></span>
-                <input type="email" name="email" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="name@islington.edu.np" required>
+                <input type="email" name="email" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="name@islington.edu.np" value="{% if form_data.email %}{{ form_data.email }}{% endif %}" required>
               </div>
             </div>
 
@@ -82,4 +82,10 @@
     </div>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    bindAutoDraft('studentRegisterForm', 'islington_register_draft');
+});
+</script>
 {% endblock %}
