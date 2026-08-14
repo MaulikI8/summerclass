@@ -6,10 +6,32 @@ class EmailMicroservice:
     @classmethod
     def _send(cls, p):
         k = getattr(settings, 'EMAIL_MICROSERVICE_API_KEY', '')
+        smtp_user = getattr(settings, 'EMAIL_HOST_USER', '')
+        smtp_pass = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
         to_addr = p.get('to')
         subject = p.get('subject')
         print(f"\n[EMAIL DISPATCH] To: {to_addr} | Subject: {subject}")
 
+        # Method 1: If Gmail / SMTP credentials are configured, send directly via SMTP
+        if smtp_user and smtp_pass and not getattr(settings, 'EMAIL_MICROSERVICE_MOCK', False):
+            try:
+                from django.core.mail import EmailMultiAlternatives
+                recipients = to_addr if isinstance(to_addr, list) else [to_addr]
+                msg = EmailMultiAlternatives(
+                    subject=subject,
+                    body="Please view this email in an HTML-compatible client.",
+                    from_email=f"{getattr(settings, 'EMAIL_SENDER_NAME', 'Islington Marketplace')} <{smtp_user}>",
+                    to=recipients
+                )
+                if p.get('html'):
+                    msg.attach_alternative(p.get('html'), 'text/html')
+                msg.send(fail_silently=False)
+                print(f"[EMAIL SUCCESS (SMTP)]: Delivered to {recipients}")
+                return
+            except Exception as e:
+                print(f"[EMAIL SMTP ERROR]: {e}")
+
+        # Method 2: Resend API Dispatch
         if k and not getattr(settings, 'EMAIL_MICROSERVICE_MOCK', False):
             try:
                 url = getattr(settings, 'EMAIL_MICROSERVICE_URL', 'https://api.resend.com/emails')
@@ -20,10 +42,10 @@ class EmailMicroservice:
                 }
                 resp = requests.post(url, headers=headers, json=p, timeout=12)
                 if resp.status_code in (200, 201):
-                    print(f"[EMAIL SUCCESS]: {resp.status_code} | {resp.text}")
+                    print(f"[EMAIL SUCCESS (Resend)]: {resp.status_code} | {resp.text}")
                 else:
-                    print(f"[EMAIL API RESPONSE {resp.status_code}]: {resp.text}")
-                    # If Resend free sandbox rejects because recipient is not the account owner (maulikj663@gmail.com)
+                    print(f"[EMAIL RESEND RESPONSE {resp.status_code}]: {resp.text}")
+                    # If Resend free sandbox rejects because recipient is not account owner (maulikj663@gmail.com)
                     if resp.status_code == 403 and 'maulikj663@gmail.com' not in str(to_addr):
                         print("[EMAIL SANDBOX FALLBACK]: Forwarding copy to maulikj663@gmail.com")
                         fallback_payload = dict(p)
