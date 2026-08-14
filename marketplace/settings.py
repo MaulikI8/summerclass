@@ -89,9 +89,10 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "marketplace" / "static"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+DEFAULT_FILE_STORAGE = 'sitesetting.storage.DatabaseStorage'
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "sitesetting.storage.DatabaseStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",

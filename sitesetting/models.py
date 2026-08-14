@@ -67,3 +67,22 @@ class Notification(models.Model):
         qs = User.objects.filter(is_active=True)
         if exclude_user: qs = qs.exclude(pk=exclude_user.pk)
         return cls.objects.bulk_create([cls(recipient=u, notif_type=notif_type, title=title, message=message, icon=icon, link=link) for u in qs])
+
+class DbFile(models.Model):
+    """
+    Stores all uploaded media files directly in PostgreSQL.
+    Survives all server restarts and redeployments permanently.
+    """
+    name = models.CharField(max_length=255, unique=True, db_index=True)
+    content_type = models.CharField(max_length=100, default='application/octet-stream')
+    data = models.BinaryField()
+    size = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Database Stored File"
+        verbose_name_plural = "Database Stored Files"
+
+    def __str__(self):
+        return f"{self.name} ({self.size} bytes)"
+

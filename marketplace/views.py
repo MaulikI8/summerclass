@@ -302,3 +302,26 @@ def student_logout(request):
     logout(request); messages.success(request, "Logged out."); return redirect('home')
 
 def custom_404(request, exception=None): return render(request, '404.html', status=404)
+
+def serve_db_media(request, path):
+    """
+    Serves images directly from PostgreSQL (DbFile).
+    Falls back to disk if present, or raises 404.
+    """
+    from django.http import HttpResponse, Http404
+    from sitesetting.models import DbFile
+    try:
+        db_file = DbFile.objects.get(name=path)
+        resp = HttpResponse(bytes(db_file.data), content_type=db_file.content_type)
+        resp['Content-Length'] = len(db_file.data)
+        resp['Cache-Control'] = 'public, max-age=86400'
+        return resp
+    except Exception:
+        import os
+        from django.views.static import serve
+        from django.conf import settings
+        full = os.path.join(settings.MEDIA_ROOT, path)
+        if os.path.exists(full):
+            return serve(request, path, document_root=settings.MEDIA_ROOT)
+        raise Http404(f"Media file '{path}' not found.")
+
