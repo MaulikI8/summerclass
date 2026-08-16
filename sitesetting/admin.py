@@ -49,24 +49,15 @@ class BannerAdmin(admin.ModelAdmin):
     featured_item_preview.short_description = "Selected Posting"
 
     def image_preview(self, o):
-        img_url = o.banner_image.url if o.banner_image else (o.featured_product.product_image.url if o.featured_product and o.featured_product.product_image else None)
-        return format_html('<img src="{}" height="38" style="border-radius:6px;object-fit:cover;" />', img_url) if img_url else "—"
+        try:
+            img_url = o.banner_image.url if o.banner_image else (o.featured_product.product_image.url if o.featured_product and o.featured_product.product_image else None)
+            if img_url:
+                return format_html('<img src="{}" height="38" style="border-radius:6px;object-fit:cover;" />', img_url)
+        except Exception:
+            pass
+        return "—"
     image_preview.short_description = "Banner Preview"
 
-@admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('title', 'recipient', 'notif_type', 'is_read', 'created_at')
-    list_filter = ('notif_type', 'is_read')
-    list_editable = ('is_read',)
-    actions = [lambda s, r, q: q.update(is_read=True)]
-
-from .models import EmailOTP
-
-@admin.register(EmailOTP)
-class EmailOTPAdmin(admin.ModelAdmin):
-    list_display = ('user', 'otp_code', 'purpose', 'is_used', 'created_at')
-    list_filter = ('is_used', 'purpose', 'created_at')
-    search_fields = ('user__username', 'user__email', 'otp_code')
-    readonly_fields = ('created_at',)
+# Notification and EmailOTP models are hidden from Django admin to keep the admin sidebar clean.
 
 
