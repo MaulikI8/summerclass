@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.urls import path
 from django.shortcuts import redirect, get_object_or_404
 from .models import Category, Product, PendingProductReview, Order, OrderItem, Auction, Bid
@@ -10,7 +11,12 @@ from utils.email_microservice import EmailMicroservice
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'img_preview')
     def img_preview(self, o): 
-        return format_html('<img src="{}" width="50" height="50" style="object-fit:cover;border-radius:6px;" />', o.category_image.url) if o.category_image else "—"
+        try:
+            if o.category_image:
+                return format_html('<img src="{}" width="50" height="50" style="object-fit:cover;border-radius:6px;" />', o.category_image.url)
+        except Exception:
+            pass
+        return mark_safe('<span style="color:#94a3b8;font-size:11px;">—</span>')
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -26,12 +32,17 @@ class ProductAdmin(admin.ModelAdmin):
 
     def approval_badge(self, o):
         if o.is_approved:
-            return format_html('<span style="background:#dcfce7;color:#15803d;padding:4px 10px;border-radius:12px;font-weight:bold;font-size:11px;">✔ Approved</span>')
-        return format_html('<span style="background:#fef3c7;color:#b45309;padding:4px 10px;border-radius:12px;font-weight:bold;font-size:11px;">⏳ Pending Review</span>')
+            return mark_safe('<span style="background:#dcfce7;color:#15803d;padding:4px 10px;border-radius:12px;font-weight:bold;font-size:11px;">✔ Approved</span>')
+        return mark_safe('<span style="background:#fef3c7;color:#b45309;padding:4px 10px;border-radius:12px;font-weight:bold;font-size:11px;">⏳ Pending Review</span>')
     approval_badge.short_description = "Review Status"
 
     def img_preview(self, o): 
-        return format_html('<img src="{}" width="48" height="48" style="object-fit:cover;border-radius:6px;" />', o.product_image.url) if o.product_image else "—"
+        try:
+            if o.product_image:
+                return format_html('<img src="{}" width="48" height="48" style="object-fit:cover;border-radius:6px;" />', o.product_image.url)
+        except Exception:
+            pass
+        return mark_safe('<span style="color:#94a3b8;font-size:11px;">No photo</span>')
     img_preview.short_description = "Photo"
 
     @admin.action(description="Approve selected products (Publish to Store)")
@@ -82,7 +93,12 @@ class PendingProductReviewAdmin(admin.ModelAdmin):
     user_seller.short_description = "Student Seller"
 
     def img_preview(self, o): 
-        return format_html('<img src="{}" width="52" height="52" style="object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;" />', o.product_image.url) if o.product_image else "—"
+        try:
+            if o.product_image:
+                return format_html('<img src="{}" width="52" height="52" style="object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;" />', o.product_image.url)
+        except Exception:
+            pass
+        return mark_safe('<span style="color:#94a3b8;font-size:11px;">No photo</span>')
     img_preview.short_description = "Photo"
 
     def review_actions(self, o):
