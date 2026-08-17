@@ -72,25 +72,17 @@
             </div>
 
             <!-- Student Seller Card Box -->
-            <div class="p-3 bg-light rounded-4 border mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
-              <div class="d-flex align-items-center gap-3">
-                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 44px; height: 44px; flex-shrink: 0;">
-                  {{ product.user.username|default:"A"|slice:":1"|upper }}
-                </div>
-                <div>
-                  <span class="text-muted small d-block">Listed by Islington Student:</span>
-                  <h6 class="fw-bold text-dark mb-0">
-                    {{ product.user.first_name|default:product.user.username|default:"Islington Student" }}
-                    <span class="badge bg-primary-subtle text-primary rounded-pill ms-1" style="font-size: 0.7rem;">@{{ product.user.username|default:"student" }}</span>
-                  </h6>
-                  <small class="text-success fw-semibold"><i class="fas fa-check-circle me-1"></i>Verified Peer Seller</small>
-                </div>
+            <div class="p-3 bg-light rounded-4 border mb-4 d-flex align-items-center gap-3">
+              <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 44px; height: 44px; flex-shrink: 0;">
+                {{ product.user.username|default:"A"|slice:":1"|upper }}
               </div>
-              
-              <!-- Quick Meetup Block -->
-              <div class="text-end d-none d-sm-block">
-                <span class="small text-muted d-block">Campus Pickup:</span>
-                <span class="badge bg-white border text-dark fw-semibold">Library / Cafeteria</span>
+              <div>
+                <span class="text-muted small d-block">Listed by Islington Student:</span>
+                <h6 class="fw-bold text-dark mb-0">
+                  {{ product.user.first_name|default:product.user.username|default:"Islington Student" }}
+                  <span class="badge bg-primary-subtle text-primary rounded-pill ms-1" style="font-size: 0.7rem;">@{{ product.user.username|default:"student" }}</span>
+                </h6>
+                <small class="text-success fw-semibold"><i class="fas fa-check-circle me-1"></i>Verified Peer Seller</small>
               </div>
             </div>
 
