@@ -4,133 +4,78 @@
 {% block title %}Islington Marketplace | Campus Shopping & Student Trade{% endblock %}
 
 {% block content %}
-<!-- ========================= SECTION BANNER CAROUSEL ========================= -->
-<section class="section-intro padding-y-sm">
-  <div class="container">
-    <div class="hero-carousel-wrap">
-      <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
-        <div class="carousel-inner">
-          {% for banner in banners %}
-          <!-- Dynamic Slide {{ forloop.counter }} -->
-          <div class="carousel-item {% if forloop.first %}active{% endif %}">
-            <div class="hero-slide-card {{ banner.theme_color|default:'slide-blue' }}">
-              <div class="hero-glow-blob top-right"></div>
-              <div class="hero-glow-blob bottom-left"></div>
-              <div class="row align-items-center w-100 g-4">
-                <div class="col-lg-8 col-md-10">
-                  <div class="hero-content">
-                    {% if banner.badge_text %}
-                    <span class="hero-badge {% if banner.theme_color == 'slide-green' %}badge-emerald{% else %}badge-amber{% endif %}">
-                      <i class="fa {{ banner.badge_icon|default:'fa-star' }}"></i> {{ banner.badge_text }}
-                    </span>
-                    {% endif %}
-                    <h1 class="hero-title">{{ banner.title }}</h1>
-                    <p class="hero-lead">{{ banner.subtitle }}</p>
-                    <div class="hero-actions">
-                      {% if banner.primary_btn_text %}
-                      <a href="{{ banner.primary_btn_url|default:'/products/' }}" class="hero-btn-primary">
-                        <i class="fa fa-shopping-bag text-primary"></i> {{ banner.primary_btn_text }}
-                      </a>
-                      {% endif %}
-                      {% if banner.secondary_btn_text %}
-                      <a href="{{ banner.secondary_btn_url|default:'/products/' }}" class="hero-btn-outline">
-                        <i class="fa fa-layer-group"></i> {{ banner.secondary_btn_text }}
-                      </a>
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-4 d-none d-lg-block">
-                  {% if banner.banner_image or banner.featured_product.product_image %}
-                  <div class="text-center position-relative">
-                    <div class="p-3 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 shadow-lg overflow-hidden" style="backdrop-filter: blur(14px);">
-                      <img src="{% if banner.banner_image %}{{ banner.banner_image.url }}{% elif banner.featured_product.product_image %}{{ banner.featured_product.product_image.url }}{% endif %}" alt="{{ banner.title }}" class="img-fluid rounded-3" style="max-height: 240px; width: 100%; object-fit: contain;">
-                      {% if banner.featured_product %}
-                      <div class="mt-2 text-center">
-                        <span class="badge bg-white text-dark fw-bold px-3 py-2 rounded-pill shadow-sm">
-                          Rs. {{ banner.featured_product.price|floatformat:2 }}
-                        </span>
-                      </div>
-                      {% endif %}
-                    </div>
-                  </div>
-                  {% else %}
-                  <div class="hero-floating-card text-white">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                      <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                        <i class="fa fa-shield-alt"></i>
-                      </div>
-                      <div>
-                        <h6 class="fw-bold mb-0 text-white">100% Peer Verified</h6>
-                        <small class="text-white-50">Islington Student Network</small>
-                      </div>
-                    </div>
-                    <div class="border-top border-white border-opacity-25 pt-3 d-flex justify-content-between text-center">
-                      <div>
-                        <div class="fs-4 fw-bold text-white">{{ products|length }}</div>
-                        <small class="text-white-50">Active Items</small>
-                      </div>
-                      <div class="border-end border-white border-opacity-25"></div>
-                      <div>
-                        <div class="fs-4 fw-bold text-warning">0%</div>
-                        <small class="text-white-50">Commission</small>
-                      </div>
-                      <div class="border-end border-white border-opacity-25"></div>
-                      <div>
-                        <div class="fs-4 fw-bold text-white">College</div>
-                        <small class="text-white-50">Pickup</small>
-                      </div>
-                    </div>
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-          </div>
-          {% empty %}
-          <!-- Fallback default slide if no banners in database -->
-          <div class="carousel-item active">
-            <div class="hero-slide-card slide-blue">
-              <div class="hero-glow-blob top-right"></div>
-              <div class="hero-glow-blob bottom-left"></div>
-              <div class="row align-items-center w-100 g-4">
-                <div class="col-lg-8 col-md-10">
-                  <div class="hero-content">
-                    <span class="hero-badge badge-amber">
-                      <i class="fa fa-graduation-cap"></i> Official Student Hub
-                    </span>
-                    <h1 class="hero-title">Welcome to Islington Marketplace</h1>
-                    <p class="hero-lead">
-                      Discover verified textbooks, computing gear, electronics, and college essentials at student prices.
-                    </p>
-                    <div class="hero-actions">
-                      <a href="{% url 'products' %}" class="hero-btn-primary">
-                        <i class="fa fa-shopping-bag text-primary"></i> Explore Store
-                      </a>
-                      <a href="{% url 'user_profile' %}?tab=add" class="hero-btn-outline">
-                        <i class="fa fa-plus-circle"></i> Sell an Item
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
+<!-- ========================= SECTION DARK CINEMATIC HERO STAGE ========================= -->
+<section class="cinematic-hero-stage">
+  <!-- Full-bleed CloudFront Looping Video Plate -->
+  <div class="cinematic-plate">
+    <video class="cinematic-plate-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+      <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4" type="video/mp4">
+    </video>
+  </div>
 
-        <!-- Sleek Floating Carousel Controls -->
-        <a class="hero-carousel-control prev" href="#bannerCarousel" role="button" data-bs-slide="prev" title="Previous Slide">
-          <i class="fa fa-chevron-left"></i>
-        </a>
-        <a class="hero-carousel-control next" href="#bannerCarousel" role="button" data-bs-slide="next" title="Next Slide">
-          <i class="fa fa-chevron-right"></i>
-        </a>
+  <div class="container position-relative">
+    <div class="row align-items-center">
+      <div class="col-lg-8 col-md-10">
+        <div class="cinematic-hero-content">
+          <!-- Geometric Brand Bolt Mark -->
+          <div class="mb-3">
+            <svg width="32" height="49" viewBox="0 0 31.5 48.5" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="bgHeroBolt" x1="8" y1="0" x2="34.1" y2="28.9" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#9e9e9e"/>
+                  <stop offset="0.28" stop-color="#a6a6a6"/>
+                  <stop offset="0.4" stop-color="#3a3a3a"/>
+                  <stop offset="0.6" stop-color="#7a7a7a"/>
+                  <stop offset="0.8" stop-color="#a9a9a9"/>
+                  <stop offset="1" stop-color="#cccccc"/>
+                </linearGradient>
+              </defs>
+              <path d="M21.5 0 L21.5 19.5 L31.5 19.5 L31.5 29 L10 48.5 L10 28.5 L0.5 28.5 L0.5 18.5 Z" fill="url(#bgHeroBolt)"/>
+              <rect x="0.5" y="18.5" width="9" height="10" fill="#fdfdfd"/>
+              <rect x="22" y="19.5" width="9.5" height="9.5" fill="#fdfdfd"/>
+            </svg>
+          </div>
+
+          <!-- Headline -->
+          <h1 class="cinematic-headline">
+            <span class="d-block">The Next Layer</span>
+            <span class="d-block text-white-50">of Campus Commerce</span>
+          </h1>
+
+          <!-- Subtitle -->
+          <p class="cinematic-sub">
+            A unified infrastructure platform for Islington students to buy, sell,
+            and scale peer textbook trading and live 24h auctions with confidence.
+          </p>
+
+          <!-- CTAs -->
+          <div class="d-flex align-items-center flex-wrap gap-3">
+            <a href="{% url 'products' %}" class="btn-cinematic-pill">
+              <span>Explore Store</span>
+            </a>
+            <a href="#liveBiddingSection" class="btn-cinematic-ghost">
+              View 24h Live Auctions <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Partner Campus Blocks Strip -->
+    <div class="cinematic-strip">
+      <div class="cinematic-strip-title">Verified Campus Meetup &amp; Collection Hubs</div>
+      <div class="d-flex align-items-center flex-wrap gap-2">
+        <span class="cinematic-block-badge"><i class="fas fa-check-circle text-success small"></i> Kumari Hall</span>
+        <span class="cinematic-block-badge"><i class="fas fa-check-circle text-success small"></i> Skill Block</span>
+        <span class="cinematic-block-badge"><i class="fas fa-check-circle text-success small"></i> Alumni Block</span>
+        <span class="cinematic-block-badge"><i class="fas fa-check-circle text-success small"></i> Brit House</span>
+        <span class="cinematic-block-badge"><i class="fas fa-check-circle text-success small"></i> Nepal Block</span>
+        <span class="cinematic-block-badge"><i class="fas fa-check-circle text-success small"></i> Main &amp; Himal Block</span>
       </div>
     </div>
   </div>
 </section>
-<!-- ========================= SECTION BANNER CAROUSEL END// ========================= -->
+<!-- ========================= SECTION DARK CINEMATIC HERO END// ========================= -->
 
 <!-- ========================= SECTION POPULAR PRODUCTS ========================= -->
 <section class="section-name py-4" id="popularProductsSection">
