@@ -357,6 +357,24 @@
         font-size: 0.85rem !important;
         cursor: pointer !important;
       }
+      .notif-dropdown-panel {
+        display: none !important;
+        position: absolute !important;
+        top: calc(100% + 12px) !important;
+        right: -10px !important;
+        width: 360px !important;
+        max-width: 92vw !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15) !important;
+        z-index: 99999 !important;
+        overflow: hidden !important;
+      }
+      .notif-dropdown-panel.show,
+      .notif-dropdown-panel.active {
+        display: block !important;
+      }
     </style>
   </head>
   <body class="site-body">
@@ -696,31 +714,86 @@
         }
       }, { passive: true });
 
-      // Notifications
-      function toggleNotifPanel() {
+      // Notifications System
+      function toggleNotifPanel(e) {
+        if (e) e.stopPropagation();
         let p = document.getElementById('notifDropdownPanel');
-        if (p) p.classList.toggle('show');
+        if (p) {
+          p.classList.toggle('show');
+          p.classList.toggle('active');
+          if (p.classList.contains('show')) fetchNotifs();
+        }
       }
+
       function fetchNotifs() {
-        fetch('/api/notifications/').then(r => r.json()).then(d => {
-          let b = document.getElementById('notifCountBadge');
-          if (b) {
-            b.textContent = d.unread_count || 0;
-            b.style.display = d.unread_count > 0 ? 'inline-block' : 'none';
-          }
-          let body = document.getElementById('notifDropdownBody');
-          if (body && d.notifications && d.notifications.length) {
-            body.innerHTML = d.notifications.map(n => `
-              <div class="p-2 border-bottom ${n.is_read ? 'opacity-75' : 'bg-light'}">
-                <a href="${n.link || '#'}" class="text-decoration-none text-dark d-block">
-                  <div class="fw-bold small">${n.title}</div>
-                  <div class="small text-muted">${n.message}</div>
-                </a>
-              </div>
-            `).join('');
-          }
-        }).catch(()=>{});
+        fetch('/api/notifications/')
+          .then(r => r.json())
+          .then(d => {
+            let b = document.getElementById('notifCountBadge');
+            if (b) {
+              b.textContent = d.unread_count || 0;
+              b.style.display = d.unread_count > 0 ? 'inline-block' : 'none';
+            }
+            let body = document.getElementById('notifDropdownBody');
+            if (body) {
+              if (d.notifications && d.notifications.length) {
+                body.innerHTML = d.notifications.map(n => `
+                  <div class="p-3 border-bottom ${n.is_read ? 'bg-white' : 'bg-light'}" style="transition: all 0.15s ease;">
+                    <a href="${n.link || '#'}" onclick="markOneNotif(${n.id})" class="text-decoration-none text-dark d-flex align-items-start gap-2">
+                      <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center mt-1" style="width: 30px; height: 30px; font-size: 0.8rem; flex-shrink: 0;">
+                        <i class="fas ${n.icon || 'fa-bell'}"></i>
+                      </div>
+                      <div class="flex-grow-1">
+                        <div class="fw-bold small ${n.is_read ? 'text-secondary' : 'text-dark'}">${n.title}</div>
+                        <div class="small text-muted" style="font-size: 0.78rem; line-height: 1.4;">${n.message}</div>
+                        <span class="text-muted" style="font-size: 0.7rem;">${n.time_ago || ''}</span>
+                      </div>
+                      ${!n.is_read ? '<span class="badge bg-primary rounded-circle p-1 mt-2" style="width: 8px; height: 8px;"></span>' : ''}
+                    </a>
+                  </div>
+                `).join('');
+              } else {
+                body.innerHTML = `
+                  <div class="text-center text-muted py-4 small">
+                    <i class="fas fa-bell-slash d-block mb-2" style="font-size:1.5rem;"></i>
+                    No notifications yet
+                  </div>
+                `;
+              }
+            }
+          })
+          .catch(() => {});
       }
+
+      function markAllNotifRead(e) {
+        if (e) e.stopPropagation();
+        fetch('/api/notifications/read-all/', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCookie('csrftoken') || '' }
+        }).then(() => fetchNotifs());
+      }
+
+      function markOneNotif(id) {
+        const formData = new FormData();
+        formData.append('id', id);
+        fetch('/api/notifications/read/', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCookie('csrftoken') || '' },
+          body: formData
+        }).catch(() => {});
+      }
+
+      document.addEventListener('click', function(e) {
+        const wrap = document.getElementById('notifBellWrap');
+        const panel = document.getElementById('notifDropdownPanel');
+        if (panel && wrap && !wrap.contains(e.target)) {
+          panel.classList.remove('show', 'active');
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', function() {
+        fetchNotifs();
+      });
       // Cookie & Storage Form Draft Persistence Helpers
       function setCookie(name, value, days = 30) {
         let expires = "";

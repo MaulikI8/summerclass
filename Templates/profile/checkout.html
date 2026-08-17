@@ -55,7 +55,7 @@
             <div class="row g-3 mb-3">
               <div class="col-md-6">
                 <label class="p-3 border rounded-3 d-flex align-items-center gap-3 cursor-pointer w-100 bg-white shadow-xs" id="campusPickupOptionCard" onclick="selectDeliveryType('campus_pickup')" style="cursor: pointer;">
-                  <input type="radio" name="delivery_type" value="campus_pickup" checked id="deliveryCampusRadio" class="form-check-input mt-0">
+                  <input type="radio" name="delivery_type" value="campus_pickup" checked id="deliveryCampusRadio" class="form-check-input mt-0" onchange="selectDeliveryType(this.value)">
                   <div>
                     <strong class="d-block text-dark small"><i class="fas fa-building text-primary me-1"></i> Campus Collection</strong>
                     <small class="text-muted">Pick up at an Islington Block</small>
@@ -64,7 +64,7 @@
               </div>
               <div class="col-md-6">
                 <label class="p-3 border rounded-3 d-flex align-items-center gap-3 cursor-pointer w-100 bg-white shadow-xs" id="homeDeliveryOptionCard" onclick="selectDeliveryType('home_delivery')" style="cursor: pointer;">
-                  <input type="radio" name="delivery_type" value="home_delivery" id="deliveryHomeRadio" class="form-check-input mt-0">
+                  <input type="radio" name="delivery_type" value="home_delivery" id="deliveryHomeRadio" class="form-check-input mt-0" onchange="selectDeliveryType(this.value)">
                   <div>
                     <strong class="d-block text-dark small"><i class="fas fa-home text-success me-1"></i> Home Delivery</strong>
                     <small class="text-muted">Delivery in Kathmandu Valley</small>
@@ -98,7 +98,7 @@
             </div>
 
             <!-- Home Delivery Address -->
-            <div id="homeDeliveryFields" class="row g-3 mb-4 d-none">
+            <div id="homeDeliveryFields" class="row g-3 mb-4" style="display: none;">
               <div class="col-12">
                 <label class="form-label small fw-semibold text-muted">Home Delivery Address / Landmark *</label>
                 <input type="text" name="home_address" id="homeAddressInput" class="form-control rounded-3" placeholder="e.g. House No. 45, Kamalpokhari, Kathmandu (Near City Center)">
@@ -149,60 +149,56 @@
               </label>
 
               <label class="payment-option-card d-flex align-items-center gap-3 p-3 rounded-3 border bg-white cursor-pointer" style="cursor: pointer;">
-                <input type="radio" name="payment_method" value="cash_meetup" class="form-check-input mt-0">
+                <input type="radio" name="payment_method" value="cod" class="form-check-input mt-0">
                 <div class="flex-grow-1">
-                  <strong class="small text-dark">Cash on Delivery / QR Scan on Collection</strong>
-                  <small class="text-muted d-block">Pay when receiving the item</small>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary px-2 py-1">COD</span>
+                    <strong class="small text-dark">Cash on Collection / Delivery</strong>
+                  </div>
+                  <small class="text-muted d-block">Pay when meeting at campus block or on home delivery</small>
                 </div>
               </label>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm" id="placeOrderBtn">
-              <i class="fas fa-lock me-2"></i> Confirm Order &amp; Place Request
+            <input type="hidden" name="cart_items_json" id="hiddenCartJson" value="">
+
+            <button type="submit" id="placeOrderBtn" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-sm py-3">
+              <i class="fas fa-lock me-2"></i> Place Order Securely
             </button>
           </form>
         </div>
       </div>
 
       <!-- Order Summary Card -->
-      <div class="col-lg-5 col-md-12">
-        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 90px;">
-          <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom">Order Summary</h5>
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm bg-white rounded-4 p-4 sticky-top" style="top: 90px;">
+          <h5 class="fw-bold text-dark mb-3">Order Summary</h5>
           
-          <div id="checkoutCartItemsContainer" class="d-flex flex-column gap-3 mb-3 overflow-auto" style="max-height: 320px;">
-            {% for item in cart_items %}
-            <div class="d-flex align-items-center gap-3 pb-2 border-bottom">
-              {% if item.product.product_image %}
-              <img src="{{ item.product.product_image.url }}" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 2px;" alt="{{ item.product.name }}" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';">
-              {% else %}
-              <img src="{% static 'images/default.jpg' %}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="{{ item.product.name }}">
-              {% endif %}
-              <div class="flex-grow-1 overflow-hidden">
-                <div class="fw-semibold small text-truncate text-dark">{{ item.product.name }}</div>
-                <span class="text-muted small">Qty: {{ item.quantity }} &times; Rs. {{ item.product.price|floatformat:2 }}</span>
-              </div>
-              <strong class="text-primary small">Rs. {{ item.sub_total|floatformat:2 }}</strong>
-            </div>
-            {% empty %}
-            <div class="alert alert-warning py-3 small rounded-3 mb-0">
-              <i class="fas fa-shopping-bag me-1"></i> Your shopping bag is empty. <a href="{% url 'products' %}" class="fw-bold">Browse items</a>
-            </div>
-            {% endfor %}
+          <div id="checkoutCartItemsContainer" class="d-flex flex-column gap-3 mb-3">
+            <!-- Rendered by JS -->
           </div>
 
-          <div class="border-top pt-3 d-flex flex-column gap-2 small">
-            <div class="d-flex justify-content-between text-muted">
-              <span>Subtotal:</span>
-              <span class="fw-semibold text-dark">Rs. {{ total|floatformat:2 }}</span>
-            </div>
-            <div class="d-flex justify-content-between text-muted">
-              <span>Delivery / Collection:</span>
-              <span class="fw-semibold text-success" id="deliveryStatusLabel">FREE</span>
-            </div>
-            <div class="d-flex justify-content-between fs-5 fw-bold text-dark border-top pt-2 mt-1">
-              <span>Total Payable:</span>
-              <span class="text-primary">Rs. {{ total|floatformat:2 }}</span>
-            </div>
+          <div id="checkoutEmptyNotice" class="text-center py-4 d-none">
+            <p class="text-muted small">Your bag is empty.</p>
+            <a href="{% url 'products' %}" class="btn btn-sm btn-primary rounded-pill">Shop Products</a>
+          </div>
+
+          <hr class="my-3">
+
+          <div class="d-flex justify-content-between text-muted small mb-2">
+            <span>Subtotal</span>
+            <span id="checkoutSubtotal" class="fw-semibold text-dark">Rs. 0.00</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mb-2">
+            <span>Collection / Delivery Fee</span>
+            <span class="text-success fw-bold" id="deliveryStatusLabel">FREE (Campus Collection)</span>
+          </div>
+
+          <hr class="my-3">
+
+          <div class="d-flex justify-content-between align-items-center mb-0">
+            <span class="fw-bold text-dark">Total Payable</span>
+            <span class="h4 fw-bold text-primary mb-0" id="checkoutTotal">Rs. 0.00</span>
           </div>
 
           <div class="p-3 bg-light rounded-3 mt-3 border small text-muted">
@@ -222,19 +218,37 @@ function selectDeliveryType(type) {
     const homeRadio = document.getElementById('deliveryHomeRadio');
     const homeInput = document.getElementById('homeAddressInput');
     const deliveryStatus = document.getElementById('deliveryStatusLabel');
+    const campusCard = document.getElementById('campusPickupOptionCard');
+    const homeCard = document.getElementById('homeDeliveryOptionCard');
 
     if (type === 'home_delivery') {
         if (homeRadio) homeRadio.checked = true;
-        if (campusFields) campusFields.classList.add('d-none');
-        if (homeFields) homeFields.classList.remove('d-none');
+        if (campusFields) {
+            campusFields.style.display = 'none';
+            campusFields.classList.add('d-none');
+        }
+        if (homeFields) {
+            homeFields.style.display = 'flex';
+            homeFields.classList.remove('d-none');
+        }
         if (homeInput) homeInput.required = true;
         if (deliveryStatus) deliveryStatus.textContent = 'Home Delivery';
+        if (homeCard) homeCard.classList.add('border-primary', 'bg-light');
+        if (campusCard) campusCard.classList.remove('border-primary', 'bg-light');
     } else {
         if (campusRadio) campusRadio.checked = true;
-        if (campusFields) campusFields.classList.remove('d-none');
-        if (homeFields) homeFields.classList.add('d-none');
+        if (campusFields) {
+            campusFields.style.display = 'flex';
+            campusFields.classList.remove('d-none');
+        }
+        if (homeFields) {
+            homeFields.style.display = 'none';
+            homeFields.classList.add('d-none');
+        }
         if (homeInput) homeInput.required = false;
         if (deliveryStatus) deliveryStatus.textContent = 'FREE (Campus Collection)';
+        if (campusCard) campusCard.classList.add('border-primary', 'bg-light');
+        if (homeCard) homeCard.classList.remove('border-primary', 'bg-light');
     }
 }
 
@@ -250,14 +264,14 @@ function renderCheckoutPage() {
     const cart = getStoredCart();
     if (!cart || cart.length === 0) {
         itemsContainer.innerHTML = '';
-        emptyNotice.classList.remove('d-none');
+        if (emptyNotice) emptyNotice.classList.remove('d-none');
         if (btn) btn.disabled = true;
         if (subtotalEl) subtotalEl.textContent = 'Rs. 0.00';
         if (totalEl) totalEl.textContent = 'Rs. 0.00';
         return;
     }
 
-    emptyNotice.classList.add('d-none');
+    if (emptyNotice) emptyNotice.classList.add('d-none');
     if (btn) btn.disabled = false;
 
     let total = 0;
@@ -290,9 +304,16 @@ function handleCheckoutSubmit(e) {
         return false;
     }
     document.getElementById('hiddenCartJson').value = JSON.stringify(cart);
+    return true;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     bindAutoDraft('checkoutForm', 'islington_checkout_draft');
     renderCheckoutPage();
+    const checkedDelivery = document.querySelector('input[name="delivery_type"]:checked');
+    if (checkedDelivery) {
+        selectDeliveryType(checkedDelivery.value);
+    }
 });
 </script>
 {% endblock %}

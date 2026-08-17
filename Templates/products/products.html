@@ -83,7 +83,10 @@
               {{ product.name }}
             </a>
 
-            <div class="price">Rs. {{ product.price|floatformat:2 }}</div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <div class="price">Rs. {{ product.price|floatformat:2 }}</div>
+              <small class="text-muted"><i class="fas fa-user-circle text-primary me-1"></i> {{ product.user.first_name|default:product.user.username|default:"Student" }}</small>
+            </div>
 
             <p class="card-desc">{{ product.description|default:"Verified student listing." }}</p>
 

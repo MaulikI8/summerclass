@@ -201,8 +201,9 @@
               {{ product.name }}
             </a>
 
-            <div class="d-flex align-items-baseline justify-content-between mt-1">
+            <div class="d-flex align-items-center justify-content-between mt-1">
               <span class="price">Rs. {{ product.price|floatformat:2 }}</span>
+              <small class="text-muted"><i class="fas fa-user-circle text-primary me-1"></i> {{ product.user.first_name|default:product.user.username|default:"Student" }}</small>
             </div>
 
             <p class="card-desc">{{ product.description|default:"Verified student listing." }}</p>

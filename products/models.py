@@ -81,3 +81,17 @@ class Bid(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta: ordering = ['-created_at']
     def __str__(self): return f"{self.user.username} - Rs. {self.amount:.2f}"
+
+class TradeOffer(models.Model):
+    OFFER_TYPES = [('price', 'Price Offer'), ('trade', 'Item Trade / Swap')]
+    STATUS_CHOICES = [('pending', 'Pending'), ('accepted', 'Accepted'), ('declined', 'Declined')]
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='offers')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_offers')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_offers')
+    offer_type = models.CharField(max_length=10, choices=OFFER_TYPES, default='price')
+    offered_price = models.FloatField(blank=True, null=True)
+    trade_item_desc = models.TextField(blank=True, help_text="Item offered in exchange or notes")
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta: ordering = ['-created_at']
+    def __str__(self): return f"Offer from {self.sender.username} on {self.product.name} ({self.status})"
