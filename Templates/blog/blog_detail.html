@@ -11,37 +11,87 @@
       <ol class="breadcrumb small">
         <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'blog' %}" class="text-decoration-none">Blogs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{ blog.title }}</li>
+        {% if blog.author %}
+        <li class="breadcrumb-item"><a href="{% url 'user_blogs' blog.author.username %}" class="text-decoration-none">{{ blog.author.username }}</a></li>
+        {% endif %}
+        <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 280px;">{{ blog.title }}</li>
       </ol>
     </nav>
 
     <div class="row g-4">
-      <!-- Main Blog Post -->
+      <!-- Main Blog Post Article -->
       <div class="col-lg-8">
-        <article class="card border-0 shadow-sm bg-white p-4 p-md-5 rounded">
-          <div class="mb-3">
-            <span class="badge bg-primary rounded-pill px-3 py-1 text-uppercase small" style="font-size: 0.72rem;">
-              {{ blog.category.name|default:"Campus Insight" }}
-            </span>
-            <span class="text-muted small ms-3">
-              <i class="far fa-calendar-alt me-1"></i> Published: {{ blog.created_at|date:"F d, Y" }}
-            </span>
+        <article class="card border-0 shadow-sm bg-white p-4 p-md-5 rounded-4">
+          <!-- Category & Date Header -->
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary rounded-pill px-3 py-1 text-uppercase small" style="font-size: 0.72rem;">
+                {{ blog.category.name|default:"Campus Guide" }}
+              </span>
+              <span class="text-muted small">
+                <i class="far fa-calendar-alt me-1"></i> {{ blog.created_at|date:"F d, Y" }}
+              </span>
+            </div>
+
+            <!-- Author Controls (Edit / Delete) -->
+            {% if is_author %}
+            <div class="d-flex align-items-center gap-2">
+              <a href="{% url 'blog_edit' blog.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                <i class="fas fa-edit me-1"></i> Edit Article
+              </a>
+              <a href="{% url 'blog_delete' blog.id %}" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold">
+                <i class="fas fa-trash-alt me-1"></i> Delete
+              </a>
+            </div>
+            {% endif %}
           </div>
 
-          <h1 class="display-6 fw-bold text-dark mb-4">{{ blog.title }}</h1>
+          <!-- Title -->
+          <h1 class="display-6 fw-bold text-dark mb-4" style="line-height: 1.25;">{{ blog.title }}</h1>
 
-          <div class="blog-post-content text-secondary" style="font-size: 1.05rem; line-height: 1.8;">
+          <!-- Featured Image (if available) -->
+          {% if blog.post_image %}
+          <div class="mb-4 text-center rounded-4 overflow-hidden shadow-sm" style="max-height: 380px;">
+            <img src="{{ blog.post_image.url }}" alt="{{ blog.title }}" class="img-fluid w-100" style="object-fit: cover; max-height: 380px;" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';">
+          </div>
+          {% endif %}
+
+          <!-- Content Body -->
+          <div class="blog-post-content text-secondary mb-5" style="font-size: 1.05rem; line-height: 1.85;">
             {{ blog.content|linebreaks }}
+          </div>
+
+          <!-- Author Card Highlight -->
+          <div class="p-4 bg-light rounded-4 border d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4" style="width: 52px; height: 52px;">
+                {{ blog.author.username|default:"Admin"|slice:":1"|upper }}
+              </div>
+              <div>
+                <span class="small text-muted d-block">Written by Islington Student</span>
+                <h6 class="mb-0 fw-bold text-dark fs-6">{{ blog.author.first_name|default:blog.author.username }}</h6>
+                {% if blog.author %}
+                <small class="text-muted">@{{ blog.author.username }} • Member since {{ blog.author.date_joined|date:"Y" }}</small>
+                {% endif %}
+              </div>
+            </div>
+
+            {% if blog.author %}
+            <a href="{% url 'user_blogs' blog.author.username %}" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold">
+              View all by @{{ blog.author.username }} <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+            {% endif %}
           </div>
 
           <hr class="my-4">
 
+          <!-- Footer Actions -->
           <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <a href="{% url 'blog' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-              <i class="fa fa-arrow-left me-1"></i> Back to Blogs
+              <i class="fas fa-arrow-left me-1"></i> Back to All Blogs
             </a>
-            <a href="{% url 'products' %}" class="btn btn-primary btn-sm rounded-pill px-3">
-              Browse Store <i class="fa fa-shopping-bag ms-1"></i>
+            <a href="{% url 'products' %}" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">
+              Browse Store <i class="fas fa-shopping-bag ms-1"></i>
             </a>
           </div>
         </article>
@@ -49,33 +99,44 @@
 
       <!-- Sidebar -->
       <div class="col-lg-4">
-        <div class="card border-0 shadow-sm bg-white p-4 rounded mb-4">
-          <h5 class="fw-bold text-dark mb-3">College Safety Guidelines</h5>
-          <p class="text-muted small mb-3">
-            Always meet inside the college library or cafeteria during working hours. Inspect items before transferring funds.
+        <!-- Write a Blog Card CTA -->
+        <div class="card border-0 shadow-sm bg-primary text-white p-4 rounded-4 mb-4">
+          <h5 class="fw-bold mb-2 text-white"><i class="fas fa-pen-fancy me-2"></i> Have a Campus Story?</h5>
+          <p class="small text-white-50 mb-3" style="line-height: 1.6;">
+            Share your textbook recommendations, gadget advice, or study hacks with fellow Islington students.
           </p>
-          <a href="{% url 'products' %}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">
-            Explore All Listings
+          <a href="{% url 'blog_create' %}" class="btn btn-light text-primary fw-bold btn-sm w-100 rounded-pill py-2 shadow-sm">
+            Write a Blog Post <i class="fas fa-arrow-right ms-1"></i>
           </a>
         </div>
 
+        <!-- Recent Blogs -->
         {% if recent_blogs %}
-        <div class="card border-0 shadow-sm bg-white p-4 rounded">
+        <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
           <h5 class="fw-bold text-dark mb-3">Recent Guides</h5>
           <ul class="list-unstyled d-flex flex-column gap-3 mb-0">
             {% for rb in recent_blogs %}
             <li class="border-bottom pb-2">
-              <a href="{% url 'blog_detail' rb.id %}" class="text-dark fw-semibold small text-decoration-none d-block mb-1">
+              <a href="{% url 'blog_detail' rb.id %}" class="text-dark fw-semibold small text-decoration-none d-block mb-1 title-hover">
                 {{ rb.title }}
               </a>
-              <span class="text-muted small" style="font-size: 0.75rem;">
-                <i class="far fa-calendar-alt me-1"></i> {{ rb.created_at|date:"M d, Y" }}
-              </span>
+              <div class="d-flex justify-content-between align-items-center text-muted small" style="font-size: 0.75rem;">
+                <span><i class="fas fa-user-circle me-1"></i> {{ rb.author.username|default:"Admin" }}</span>
+                <span>{{ rb.created_at|date:"M d, Y" }}</span>
+              </div>
             </li>
             {% endfor %}
           </ul>
         </div>
         {% endif %}
+
+        <!-- Safety Guidelines -->
+        <div class="card border-0 shadow-sm bg-white p-4 rounded-4">
+          <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt text-success me-2"></i> College Safety Guidelines</h6>
+          <p class="text-muted small mb-0" style="line-height: 1.6;">
+            Always meet inside verified college blocks (Kumari Hall, Skill Block, Library) during class hours. Inspect all items in person before completing payments.
+          </p>
+        </div>
       </div>
     </div>
   </div>

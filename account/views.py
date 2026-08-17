@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 from django.contrib.auth.decorators import login_required
 from products.models import Product, Category, Order, OrderItem
+from blog.models import Post as BlogPost
 from sitesetting.models import Notification, EmailOTP
 from utils.email_microservice import EmailMicroservice
 
@@ -237,11 +238,13 @@ def user_profile(request):
     user_prods = Product.objects.filter(user=u).select_related('category').order_by('-created_at') if u.is_authenticated else Product.objects.select_related('category').all()[:6]
     user_orders = Order.objects.filter(user=u).prefetch_related('items').order_by('-created_at') if u.is_authenticated else []
     user_sales = OrderItem.objects.filter(product__user=u).select_related('order', 'product').order_by('-order__created_at') if u.is_authenticated else []
+    user_blogs = BlogPost.objects.filter(author=u).select_related('category').order_by('-created_at') if u.is_authenticated else []
     
     return render(request, 'profile/profile.html', {
         'profile_user': u,
         'user_products': user_prods,
         'user_orders': user_orders,
         'user_sales': user_sales,
+        'user_blogs': user_blogs,
         'categories': Category.objects.all()
     })
