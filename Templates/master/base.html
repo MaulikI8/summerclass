@@ -291,11 +291,14 @@
         color: #1e40af !important;
       }
       .ai-typing-indicator {
-        display: flex !important;
+        display: none !important;
         gap: 10px !important;
         align-items: center !important;
         padding: 4px 18px 10px !important;
         background: #f8fafc !important;
+      }
+      .ai-typing-indicator.active {
+        display: flex !important;
       }
       .ai-typing-bubble {
         background: #ffffff !important;
@@ -839,12 +842,12 @@
           <div class="ai-msg ai-msg-bot">
             <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
             <div class="ai-msg-bubble">
-              <p class="mb-1 fw-semibold text-dark">Hello! 👋 Welcome to Islington Marketplace.</p>
-              <p class="mb-0 small text-secondary">I'm your campus AI assistant. How can I help you find textbooks, electronics, post listings, or learn about campus pickup?</p>
+              <p class="mb-1 fw-semibold text-dark">Welcome to Islington Marketplace.</p>
+              <p class="mb-0 small text-secondary">I am your campus assistant. How can I help you with textbooks, auctions, campus pickup, or student blogs?</p>
             </div>
           </div>
 
-          <!-- Quick Suggestion Action Chips -->
+          <!-- Quick Suggestion Action Chips (Clean FontAwesome Icons) -->
           <div class="ai-chips-wrap" id="aiSuggestionChips">
             <button type="button" class="ai-chip" onclick="sendAiChip('Where is campus pickup?')">
               <i class="fas fa-map-marker-alt text-danger"></i> Campus Pickup Blocks
@@ -862,7 +865,7 @@
         </div>
 
         <!-- Typing Indicator -->
-        <div id="aiTypingIndicator" class="ai-typing-indicator" style="display: none;">
+        <div id="aiTypingIndicator" class="ai-typing-indicator">
           <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
           <div class="ai-typing-bubble">
             <span></span>
@@ -911,7 +914,7 @@
           <div class="ai-msg ai-msg-bot">
             <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
             <div class="ai-msg-bubble">
-              <p class="mb-1 fw-semibold text-dark">Chat cleared! 👋</p>
+              <p class="mb-1 fw-semibold text-dark">Chat cleared.</p>
               <p class="mb-0 small text-secondary">How else can I assist you with Islington Marketplace?</p>
             </div>
           </div>
@@ -934,7 +937,7 @@
         handleAiChatSubmit(new Event('submit'));
       }
 
-      function handleAiChatSubmit(e) {
+      async function handleAiChatSubmit(e) {
         if (e) e.preventDefault();
         const input = document.getElementById('aiChatInput');
         const query = input.value.trim();
@@ -948,18 +951,28 @@
         const chips = document.getElementById('aiSuggestionChips');
         if (chips) chips.style.display = 'none';
 
-        // Show Typing Indicator
+        // Show Typing Indicator cleanly
         const typing = document.getElementById('aiTypingIndicator');
-        typing.style.display = 'flex';
+        typing.classList.add('active');
         scrollAiBottom();
 
-        // Simulate intelligent response
+        try {
+          // Call Backend Chatbot API Endpoint (Ready for Agentic AI)
+          const response = await fetch(`/api/chatbot/?message=${encodeURIComponent(query)}`);
+          if (response.ok) {
+            const data = await response.json();
+            typing.classList.remove('active');
+            appendAiMessage(data.reply || generateAiFallback(query), 'bot');
+            return;
+          }
+        } catch (err) {
+          // Fallback to instant local knowledge base
+        }
+
         setTimeout(() => {
-          typing.style.display = 'none';
-          const reply = generateAiReply(query);
-          appendAiMessage(reply, 'bot');
-          scrollAiBottom();
-        }, 600);
+          typing.classList.remove('active');
+          appendAiMessage(generateAiFallback(query), 'bot');
+        }, 400);
       }
 
       function appendAiMessage(text, sender) {
@@ -989,73 +1002,67 @@
         return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       }
 
-      function generateAiReply(q) {
+      function generateAiFallback(q) {
         const query = q.toLowerCase();
 
         if (query.includes('pickup') || query.includes('location') || query.includes('block') || query.includes('where')) {
           return `
-            <strong>📍 Official Campus Pickup Blocks:</strong><br>
-            You can meet your peer seller or pick up your items at any verified Islington campus location:
+            <strong><i class="fas fa-map-marker-alt text-danger me-1"></i> Campus Pickup Blocks:</strong><br>
+            Meet peer sellers or collect items at verified Islington campus blocks:
             <ul class="mb-1 mt-1 ps-3 small">
-              <li><strong>Kumari Hall</strong></li>
-              <li><strong>Alumini Block</strong></li>
-              <li><strong>Skill Block</strong></li>
-              <li><strong>Nepal Block</strong></li>
-              <li><strong>Brit House</strong></li>
-              <li><strong>Main Block &amp; Himal Block</strong></li>
+              <li>Kumari Hall</li>
+              <li>Alumini Block</li>
+              <li>Skill Block</li>
+              <li>Nepal Block</li>
+              <li>Brit House</li>
+              <li>Main Block &amp; Himal Block</li>
             </ul>
-            <em>Campus Pickup is 100% Free!</em>
+            <em>Campus Pickup is free and safe inside college premises.</em>
           `;
         }
 
         if (query.includes('sell') || query.includes('list') || query.includes('post') || query.includes('upload')) {
           return `
-            <strong>📦 How to Sell on Islington Marketplace:</strong><br>
+            <strong><i class="fas fa-box-open text-primary me-1"></i> How to Sell Items:</strong><br>
             1. Log in to your student account.<br>
-            2. Go to <a href="/profile/?tab=add" class="text-primary fw-bold">Post New Listing</a>.<br>
-            3. Fill in the title, price, category, and upload a clear photo.<br>
-            4. Once submitted, our student admin team verifies the listing and publishes it live!
+            2. Open <a href="/profile/?tab=add" class="text-primary fw-bold">Post New Listing</a>.<br>
+            3. Fill in title, price, category, and upload a clear photo.<br>
+            4. College admin reviews and approves the listing to make it live!
           `;
         }
 
         if (query.includes('auction') || query.includes('bid') || query.includes('24h') || query.includes('bidding')) {
           return `
-            <strong>⚡ 24-Hour Live Student Bidding:</strong><br>
-            • Student sellers can put rare or in-demand items up for auction with a starting price.<br>
-            • Registered students can place bids in real-time.<br>
-            • The auction runs for 24 hours. The highest bidder wins, or the seller can choose to accept the highest price immediately!
+            <strong><i class="fas fa-gavel text-warning me-1"></i> 24-Hour Live Auctions:</strong><br>
+            • Student sellers can auction items starting from a base price.<br>
+            • Students place bids in real-time.<br>
+            • The auction closes after 24 hours and the highest bidder wins automatically.
           `;
         }
 
         if (query.includes('pay') || query.includes('esewa') || query.includes('khalti') || query.includes('cod') || query.includes('cash')) {
           return `
-            <strong>💳 Supported Payment Methods:</strong><br>
-            • <strong>Cash on Campus Pickup (COD)</strong> — Pay in person when collecting at your campus block.<br>
-            • <strong>eSewa &amp; Khalti Wallet</strong> — Instant digital payment for direct home deliveries.
+            <strong><i class="fas fa-credit-card text-success me-1"></i> Payment Options:</strong><br>
+            • <strong>Cash on Campus Pickup (COD)</strong> — Pay in person when meeting at your campus block.<br>
+            • <strong>eSewa &amp; Khalti Wallet</strong> — Instant digital payment for direct deliveries.
           `;
         }
 
-        if (query.includes('contact') || query.includes('help') || query.includes('support') || query.includes('email') || query.includes('phone')) {
+        if (query.includes('blog') || query.includes('forum') || query.includes('discussion')) {
           return `
-            <strong>📞 Need Assistance?</strong><br>
-            • <strong>Email:</strong> <a href="mailto:info@islingtonmarket.np">info@islingtonmarket.np</a><br>
-            • <strong>Phone:</strong> +977-1-4412345<br>
-            • <strong>Location:</strong> Kamalpokhari, Kathmandu, Nepal.
+            <strong><i class="fas fa-newspaper text-primary me-1"></i> Student Blogs &amp; Community:</strong><br>
+            Visit the Blogs tab to ask questions, discuss coursework, and share notes with peers!
           `;
         }
 
-        if (query.includes('hello') || query.includes('hi') || query.includes('hey') || query.includes('namaste')) {
-          return `Hello! 😊 How can I help you find student gear or manage your marketplace account today?`;
-        }
-
-        // Generic intelligent fallback
         return `
-          I can help you with anything on Islington Marketplace! You can ask me about:
+          I can help you with Islington Marketplace! You can ask about:
           <ul class="mb-0 mt-1 ps-3 small">
-            <li><strong>Campus Pickup Blocks</strong> (Kumari hall, Brit house, etc.)</li>
-            <li><strong>Posting &amp; Selling Textbooks/Gear</strong></li>
-            <li><strong>Live 24-Hour Auctions</strong></li>
-            <li><strong>Payment &amp; Delivery options</strong></li>
+            <li>Campus Pickup Blocks</li>
+            <li>Posting &amp; Selling Textbooks/Gear</li>
+            <li>24-Hour Live Auctions</li>
+            <li>Payment &amp; Delivery options</li>
+            <li>Student Blogs &amp; Discussions</li>
           </ul>
         `;
       }

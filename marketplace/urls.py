@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/notifications/', site_views.api_notifications, name='api_notifications'),
     path('api/notifications/read/', site_views.api_notification_read, name='api_notification_read'),
     path('api/notifications/read-all/', site_views.api_notification_read_all, name='api_notification_read_all'),
+    path('api/chatbot/', views.api_chatbot, name='api_chatbot'),
     path('404/', views.custom_404, name='preview_404'),
     path('blogs/', include('blog.urls')),
     path('products/', include('products.urls')),
