@@ -51,6 +51,10 @@
     --transition-spring: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 /* --- Premium Keyframe Animations --- */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(24px); }

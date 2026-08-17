@@ -27,6 +27,9 @@
     <!-- Font Awesome 6.6.0 CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+    <!-- Anime.js 3.2.2 CDN for High-Performance Spring & Scroll Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+
     <!-- Master Stylesheet with Cache Busting -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.6">
 
@@ -57,6 +60,66 @@
       .ai-chat-toggle-btn:hover {
         transform: scale(1.08) translateY(-2px) !important;
         box-shadow: 0 12px 32px rgba(37, 99, 235, 0.6) !important;
+      }
+      .notif-dropdown-panel {
+        display: none !important;
+        position: absolute !important;
+        top: calc(100% + 12px) !important;
+        right: -10px !important;
+        width: 360px !important;
+        max-width: 92vw !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15) !important;
+        z-index: 99999 !important;
+        overflow: hidden !important;
+      }
+      .notif-dropdown-panel.show,
+      .notif-dropdown-panel.active {
+        display: block !important;
+      }
+
+      /* Floating Back to Top Button */
+      #backToTopBtn {
+        position: fixed !important;
+        bottom: 24px !important;
+        left: 24px !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 50% !important;
+        background: #ffffff !important;
+        color: #1e40af !important;
+        border: 1.5px solid #e2e8f0 !important;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        z-index: 999 !important;
+        opacity: 0 !important;
+        transform: translateY(20px) scale(0.8) !important;
+        transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s !important;
+        pointer-events: none !important;
+      }
+      #backToTopBtn.visible {
+        opacity: 1 !important;
+        transform: translateY(0) scale(1) !important;
+        pointer-events: auto !important;
+      }
+      #backToTopBtn:hover {
+        background: #1e40af !important;
+        color: #ffffff !important;
+        border-color: #1e40af !important;
+        transform: translateY(-3px) scale(1.08) !important;
+        box-shadow: 0 14px 30px rgba(30, 64, 175, 0.25) !important;
+      }
+
+      /* Smooth entrance styling */
+      .reveal-fade-up {
+        opacity: 0;
+        transform: translateY(24px);
+        will-change: transform, opacity;
       }
       .ai-chat-btn-inner {
         position: relative !important;
@@ -1139,6 +1202,99 @@
           </ul>
         `;
       }
+
+      // Anime.js Scroll Reveals & Interactive Animations
+      function initScrollAnimations() {
+        if (typeof anime === 'undefined') return;
+
+        // Smooth staggered reveal on scroll
+        const observerOptions = { root: null, rootMargin: '0px 0px -40px 0px', threshold: 0.08 };
+
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const target = entry.target;
+              observer.unobserve(target);
+
+              // If container has grid children, stagger them
+              const cards = target.querySelectorAll('.product-card-col, .card-product-grid, .blog-card, .category-card');
+              if (cards.length > 0) {
+                anime({
+                  targets: cards,
+                  opacity: [0, 1],
+                  translateY: [24, 0],
+                  scale: [0.97, 1],
+                  delay: anime.stagger(50, { start: 40 }),
+                  duration: 650,
+                  easing: 'easeOutCubic'
+                });
+              } else {
+                anime({
+                  targets: target,
+                  opacity: [0, 1],
+                  translateY: [20, 0],
+                  duration: 600,
+                  easing: 'easeOutCubic'
+                });
+              }
+            }
+          });
+        }, observerOptions);
+
+        document.querySelectorAll('.section-name, .section-heading, .card-product-grid, .dashboard-panel, .blog-post-card, .hero-slide-content, .filter-chips-bar').forEach(el => {
+          el.style.willChange = 'transform, opacity';
+          revealObserver.observe(el);
+        });
+
+        // Subtle Spring Micro-interactions for interactive chips and buttons
+        document.querySelectorAll('.filter-chip, .ai-chip, .btn-card-primary, .btn-primary').forEach(btn => {
+          btn.addEventListener('mouseenter', () => {
+            anime({ targets: btn, scale: 1.03, duration: 200, easing: 'easeOutQuad' });
+          });
+          btn.addEventListener('mouseleave', () => {
+            anime({ targets: btn, scale: 1.0, duration: 200, easing: 'easeOutQuad' });
+          });
+        });
+      }
+
+      // Smooth Back to Top Scroll using Anime.js
+      function setupBackToTop() {
+        const btn = document.getElementById('backToTopBtn');
+        if (!btn) return;
+
+        window.addEventListener('scroll', () => {
+          if (window.scrollY > 280) {
+            btn.classList.add('visible');
+          } else {
+            btn.classList.remove('visible');
+          }
+        }, { passive: true });
+
+        btn.addEventListener('click', () => {
+          if (typeof anime !== 'undefined') {
+            const scrollObj = { y: window.scrollY };
+            anime({
+              targets: scrollObj,
+              y: 0,
+              duration: 650,
+              easing: 'easeInOutCubic',
+              update: () => window.scrollTo(0, scrollObj.y)
+            });
+          } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        initScrollAnimations();
+        setupBackToTop();
+      });
     </script>
+
+    <!-- Floating Back to Top Button -->
+    <button type="button" id="backToTopBtn" aria-label="Back to Top" title="Back to Top">
+      <i class="fas fa-arrow-up"></i>
+    </button>
   </body>
 </html>
