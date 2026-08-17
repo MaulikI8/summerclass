@@ -419,6 +419,7 @@
                     <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=products"><i class="fas fa-boxes me-2 text-info"></i> My Products</a></li>
                     <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=orders"><i class="fas fa-receipt me-2 text-success"></i> My Orders</a></li>
                     <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=add"><i class="fas fa-plus-circle me-2 text-warning"></i> Post New Listing</a></li>
+                    <li><a class="dropdown-item py-2 rounded" href="{% url 'blog_create' %}"><i class="fas fa-pen-nib me-2 text-primary"></i> Write a Blog</a></li>
                     <li><hr class="dropdown-divider my-1"></li>
                     <li><a class="dropdown-item py-2 rounded text-danger" href="{% url 'student_logout' %}"><i class="fas fa-power-off me-2"></i> Log out</a></li>
                   </ul>
@@ -490,6 +491,9 @@
               </div>
               <a href="{% url 'products' %}" class="btn btn-nav-link d-none d-md-inline-flex">Store</a>
               <a href="{% url 'blog' %}" class="btn btn-nav-link d-none d-md-inline-flex">Blogs</a>
+              <a href="{% url 'blog_create' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 fw-bold d-none d-lg-inline-flex align-items-center gap-1">
+                <i class="fas fa-pen-nib text-primary"></i> Write Blog
+              </a>
             </div>
 
             <!-- Modern Search Bar -->
