@@ -466,5 +466,269 @@
         fetchNotifs();
       });
     </script>
+
+    <!-- ========================= ISLINGTON AI CHATBOT WIDGET ========================= -->
+    <div id="aiChatWidget" class="ai-chat-widget">
+      <!-- Chat Toggle Floating Trigger Button -->
+      <button type="button" id="aiChatToggleBtn" class="ai-chat-toggle-btn" onclick="toggleAiChat()" aria-label="Open Islington AI Assistant">
+        <div class="ai-chat-btn-inner">
+          <i class="fas fa-sparkles ai-sparkle-icon"></i>
+          <i class="fas fa-comments ai-chat-icon"></i>
+          <i class="fas fa-times ai-close-icon"></i>
+        </div>
+        <span class="ai-btn-pulse"></span>
+        <span class="ai-btn-tooltip">Ask Islington AI</span>
+      </button>
+
+      <!-- Chat Main Dialog Window -->
+      <div id="aiChatBox" class="ai-chat-box shadow-xl">
+        <!-- Chat Header -->
+        <div class="ai-chat-header">
+          <div class="d-flex align-items-center gap-2">
+            <div class="ai-avatar-badge">
+              <i class="fas fa-robot"></i>
+              <span class="ai-status-dot"></span>
+            </div>
+            <div>
+              <h6 class="mb-0 fw-bold text-white fs-6">Islington AI Assistant</h6>
+              <small class="ai-status-text"><span class="ai-online-indicator"></span> Online • Student Support</small>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-1">
+            <button type="button" class="ai-header-btn" onclick="resetAiChat()" title="Clear Chat">
+              <i class="fas fa-rotate-right"></i>
+            </button>
+            <button type="button" class="ai-header-btn" onclick="toggleAiChat()" title="Minimize">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <div id="aiChatMessages" class="ai-chat-messages">
+          <div class="ai-msg ai-msg-bot">
+            <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
+            <div class="ai-msg-bubble">
+              <p class="mb-1 fw-semibold text-dark">Hello! 👋 Welcome to Islington Marketplace.</p>
+              <p class="mb-0 small text-secondary">I'm your campus AI assistant. How can I help you find textbooks, electronics, post listings, or learn about campus pickup?</p>
+            </div>
+          </div>
+
+          <!-- Quick Suggestion Action Chips -->
+          <div class="ai-chips-wrap" id="aiSuggestionChips">
+            <button type="button" class="ai-chip" onclick="sendAiChip('Where is campus pickup?')">
+              <i class="fas fa-map-marker-alt text-danger"></i> Campus Pickup Blocks
+            </button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('How do I sell my item?')">
+              <i class="fas fa-plus-circle text-primary"></i> How to Sell Items
+            </button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('How do live auctions work?')">
+              <i class="fas fa-gavel text-warning"></i> 24h Live Auctions
+            </button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('What payment methods are supported?')">
+              <i class="fas fa-credit-card text-success"></i> Payment Methods
+            </button>
+          </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="aiTypingIndicator" class="ai-typing-indicator" style="display: none;">
+          <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
+          <div class="ai-typing-bubble">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+
+        <!-- Chat Input Footer -->
+        <form id="aiChatForm" class="ai-chat-footer" onsubmit="handleAiChatSubmit(event)">
+          <input
+            type="text"
+            id="aiChatInput"
+            class="ai-chat-input"
+            placeholder="Ask anything about the marketplace..."
+            autocomplete="off"
+          />
+          <button type="submit" id="aiChatSendBtn" class="ai-chat-send-btn" title="Send">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- AI Chatbot Client-side Knowledge Script -->
+    <script>
+      let isAiChatOpen = false;
+
+      function toggleAiChat() {
+        const box = document.getElementById('aiChatBox');
+        const btn = document.getElementById('aiChatToggleBtn');
+        isAiChatOpen = !isAiChatOpen;
+        if (isAiChatOpen) {
+          box.classList.add('active');
+          btn.classList.add('open');
+          setTimeout(() => document.getElementById('aiChatInput')?.focus(), 250);
+        } else {
+          box.classList.remove('active');
+          btn.classList.remove('open');
+        }
+      }
+
+      function resetAiChat() {
+        const msgContainer = document.getElementById('aiChatMessages');
+        msgContainer.innerHTML = `
+          <div class="ai-msg ai-msg-bot">
+            <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
+            <div class="ai-msg-bubble">
+              <p class="mb-1 fw-semibold text-dark">Chat cleared! 👋</p>
+              <p class="mb-0 small text-secondary">How else can I assist you with Islington Marketplace?</p>
+            </div>
+          </div>
+          <div class="ai-chips-wrap" id="aiSuggestionChips">
+            <button type="button" class="ai-chip" onclick="sendAiChip('Where is campus pickup?')">
+              <i class="fas fa-map-marker-alt text-danger"></i> Campus Pickup Blocks
+            </button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('How do I sell my item?')">
+              <i class="fas fa-plus-circle text-primary"></i> How to Sell Items
+            </button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('How do live auctions work?')">
+              <i class="fas fa-gavel text-warning"></i> 24h Live Auctions
+            </button>
+          </div>
+        `;
+      }
+
+      function sendAiChip(text) {
+        document.getElementById('aiChatInput').value = text;
+        handleAiChatSubmit(new Event('submit'));
+      }
+
+      function handleAiChatSubmit(e) {
+        if (e) e.preventDefault();
+        const input = document.getElementById('aiChatInput');
+        const query = input.value.trim();
+        if (!query) return;
+
+        // Append User Message
+        appendAiMessage(query, 'user');
+        input.value = '';
+
+        // Hide Suggestion Chips
+        const chips = document.getElementById('aiSuggestionChips');
+        if (chips) chips.style.display = 'none';
+
+        // Show Typing Indicator
+        const typing = document.getElementById('aiTypingIndicator');
+        typing.style.display = 'flex';
+        scrollAiBottom();
+
+        // Simulate intelligent response
+        setTimeout(() => {
+          typing.style.display = 'none';
+          const reply = generateAiReply(query);
+          appendAiMessage(reply, 'bot');
+          scrollAiBottom();
+        }, 600);
+      }
+
+      function appendAiMessage(text, sender) {
+        const container = document.getElementById('aiChatMessages');
+        const div = document.createElement('div');
+        div.className = `ai-msg ai-msg-${sender}`;
+        if (sender === 'bot') {
+          div.innerHTML = `
+            <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
+            <div class="ai-msg-bubble">${text}</div>
+          `;
+        } else {
+          div.innerHTML = `
+            <div class="ai-msg-bubble user-bubble">${escapeHtml(text)}</div>
+          `;
+        }
+        container.appendChild(div);
+        scrollAiBottom();
+      }
+
+      function scrollAiBottom() {
+        const container = document.getElementById('aiChatMessages');
+        container.scrollTop = container.scrollHeight;
+      }
+
+      function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      function generateAiReply(q) {
+        const query = q.toLowerCase();
+
+        if (query.includes('pickup') || query.includes('location') || query.includes('block') || query.includes('where')) {
+          return `
+            <strong>📍 Official Campus Pickup Blocks:</strong><br>
+            You can meet your peer seller or pick up your items at any verified Islington campus location:
+            <ul class="mb-1 mt-1 ps-3 small">
+              <li><strong>Kumari Hall</strong></li>
+              <li><strong>Alumini Block</strong></li>
+              <li><strong>Skill Block</strong></li>
+              <li><strong>Nepal Block</strong></li>
+              <li><strong>Brit House</strong></li>
+              <li><strong>Main Block &amp; Himal Block</strong></li>
+            </ul>
+            <em>Campus Pickup is 100% Free!</em>
+          `;
+        }
+
+        if (query.includes('sell') || query.includes('list') || query.includes('post') || query.includes('upload')) {
+          return `
+            <strong>📦 How to Sell on Islington Marketplace:</strong><br>
+            1. Log in to your student account.<br>
+            2. Go to <a href="/profile/?tab=add" class="text-primary fw-bold">Post New Listing</a>.<br>
+            3. Fill in the title, price, category, and upload a clear photo.<br>
+            4. Once submitted, our student admin team verifies the listing and publishes it live!
+          `;
+        }
+
+        if (query.includes('auction') || query.includes('bid') || query.includes('24h') || query.includes('bidding')) {
+          return `
+            <strong>⚡ 24-Hour Live Student Bidding:</strong><br>
+            • Student sellers can put rare or in-demand items up for auction with a starting price.<br>
+            • Registered students can place bids in real-time.<br>
+            • The auction runs for 24 hours. The highest bidder wins, or the seller can choose to accept the highest price immediately!
+          `;
+        }
+
+        if (query.includes('pay') || query.includes('esewa') || query.includes('khalti') || query.includes('cod') || query.includes('cash')) {
+          return `
+            <strong>💳 Supported Payment Methods:</strong><br>
+            • <strong>Cash on Campus Pickup (COD)</strong> — Pay in person when collecting at your campus block.<br>
+            • <strong>eSewa &amp; Khalti Wallet</strong> — Instant digital payment for direct home deliveries.
+          `;
+        }
+
+        if (query.includes('contact') || query.includes('help') || query.includes('support') || query.includes('email') || query.includes('phone')) {
+          return `
+            <strong>📞 Need Assistance?</strong><br>
+            • <strong>Email:</strong> <a href="mailto:info@islingtonmarket.np">info@islingtonmarket.np</a><br>
+            • <strong>Phone:</strong> +977-1-4412345<br>
+            • <strong>Location:</strong> Kamalpokhari, Kathmandu, Nepal.
+          `;
+        }
+
+        if (query.includes('hello') || query.includes('hi') || query.includes('hey') || query.includes('namaste')) {
+          return `Hello! 😊 How can I help you find student gear or manage your marketplace account today?`;
+        }
+
+        // Generic intelligent fallback
+        return `
+          I can help you with anything on Islington Marketplace! You can ask me about:
+          <ul class="mb-0 mt-1 ps-3 small">
+            <li><strong>Campus Pickup Blocks</strong> (Kumari hall, Brit house, etc.)</li>
+            <li><strong>Posting &amp; Selling Textbooks/Gear</strong></li>
+            <li><strong>Live 24-Hour Auctions</strong></li>
+            <li><strong>Payment &amp; Delivery options</strong></li>
+          </ul>
+        `;
+      }
+    </script>
   </body>
 </html>
