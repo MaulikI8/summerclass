@@ -1,7 +1,7 @@
 {% extends 'master/base.html' %}
 {% load static %}
 
-{% block title %}Student Community &amp; Threads | Islington Marketplace{% endblock %}
+{% block title %}Campus Blogs &amp; Community | Islington Marketplace{% endblock %}
 
 {% block content %}
 <section class="section-content padding-y-sm">
@@ -15,38 +15,38 @@
           <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
               <h4 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
-                <span class="badge bg-primary rounded-circle p-2"><i class="fas fa-comments"></i></span>
-                Islington Student Threads
+                <span class="badge bg-primary rounded-circle p-2"><i class="fas fa-newspaper"></i></span>
+                Islington Student Blogs &amp; Community
               </h4>
-              <p class="text-muted small mb-0">Ask questions, share advice, discuss coursework &amp; buy/sell gear.</p>
+              <p class="text-muted small mb-0">Ask questions, share advice, discuss coursework, and post campus guides.</p>
             </div>
             <a href="{% url 'blog_create' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
-              <i class="fas fa-plus"></i> Create Thread
+              <i class="fas fa-pen-nib"></i> Write a Blog
             </a>
           </div>
 
-          <!-- Filter & Sort Bar (Reddit-style) -->
+          <!-- Filter & Sort Bar -->
           <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3 border-top">
-            <!-- Tag Filter Pills -->
+            <!-- Tag Filter Pills with FontAwesome icons -->
             <div class="d-flex align-items-center gap-1 flex-wrap">
               <a href="{% url 'blog' %}{% if selected_cat %}?category={{ selected_cat }}{% endif %}" class="filter-chip {% if not selected_tag %}active{% endif %}">
                 All
               </a>
               <a href="{% url 'blog' %}?tag=Discussion{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Discussion' %}active{% endif %}">
-                💬 Discussions
+                <i class="fas fa-comments me-1"></i> Discussions
               </a>
               <a href="{% url 'blog' %}?tag=Question{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Question' %}active{% endif %}">
-                ❓ Questions
+                <i class="fas fa-question-circle me-1"></i> Questions
               </a>
               <a href="{% url 'blog' %}?tag=Guide{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Guide' %}active{% endif %}">
-                📖 Guides
+                <i class="fas fa-book-open me-1"></i> Guides
               </a>
               <a href="{% url 'blog' %}?tag=Review{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Review' %}active{% endif %}">
-                ⭐ Reviews
+                <i class="fas fa-star me-1"></i> Reviews
               </a>
             </div>
 
-            <!-- Sort Toggle -->
+            <!-- Sort Toggle with FontAwesome icons -->
             <div class="d-flex align-items-center gap-1">
               <a href="{% url 'blog' %}?sort=new{% if selected_cat %}&category={{ selected_cat }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" class="btn btn-sm {% if sort != 'top' %}btn-light fw-bold text-primary border{% else %}btn-link text-muted text-decoration-none{% endif %} rounded-pill px-3">
                 <i class="fas fa-clock me-1"></i> Newest
@@ -58,17 +58,17 @@
           </div>
         </div>
 
-        <!-- Filter banner if filtered by genre or user -->
+        <!-- Filter banner if filtered by category or author -->
         {% if selected_cat or selected_author %}
         <div class="p-3 bg-white rounded-4 border shadow-sm mb-3 d-flex justify-content-between align-items-center">
           <span class="small text-muted">
-            Filtering by: <strong>{% if selected_cat %}r/{{ selected_cat }}{% endif %}{% if selected_author %}u/{{ selected_author }}{% endif %}</strong>
+            Filtering by: <strong>{% if selected_cat %}{{ selected_cat }}{% endif %}{% if selected_author %}Author: {{ selected_author }}{% endif %}</strong>
           </span>
           <a href="{% url 'blog' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Clear Filter</a>
         </div>
         {% endif %}
 
-        <!-- Threads List -->
+        <!-- Blog Posts List -->
         <div class="d-flex flex-column gap-3">
           {% for b in blogs %}
           <div class="card border-0 shadow-sm bg-white rounded-4 overflow-hidden p-3 p-md-4 transition-hover">
@@ -84,23 +84,24 @@
                 <span class="fw-bold text-dark small mt-1">{{ b.upvote_count }}</span>
               </div>
 
-              <!-- Thread Content -->
+              <!-- Post Content -->
               <div class="flex-grow-1">
                 <!-- Metadata header -->
                 <div class="d-flex align-items-center gap-2 flex-wrap small mb-2">
                   <a href="{% url 'blog' %}?category={{ b.category.name }}" class="badge bg-primary-subtle text-primary rounded-pill text-decoration-none fw-bold">
-                    r/{{ b.category.name }}
+                    {{ b.category.name }}
                   </a>
                   <span class="badge {% if b.tag == 'Question' %}bg-danger-subtle text-danger{% elif b.tag == 'Guide' %}bg-success-subtle text-success{% elif b.tag == 'Review' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-secondary{% endif %} rounded-pill">
+                    {% if b.tag == 'Question' %}<i class="fas fa-question-circle me-1"></i>{% elif b.tag == 'Guide' %}<i class="fas fa-book-open me-1"></i>{% elif b.tag == 'Review' %}<i class="fas fa-star me-1"></i>{% else %}<i class="fas fa-comments me-1"></i>{% endif %}
                     {{ b.tag }}
                   </span>
                   <span class="text-muted">• Posted by</span>
                   {% if b.author %}
                   <a href="{% url 'blog' %}?author={{ b.author.username }}" class="text-dark fw-semibold text-decoration-none">
-                    u/{{ b.author.username }}
+                    <i class="fas fa-user-circle text-primary me-1"></i>{{ b.author.username }}
                   </a>
                   {% else %}
-                  <span class="text-dark fw-semibold">Islington Admin</span>
+                  <span class="text-dark fw-semibold"><i class="fas fa-user-shield text-muted me-1"></i>Islington Admin</span>
                   {% endif %}
                   <span class="text-muted">{{ b.created_at|timesince }} ago</span>
                 </div>
@@ -129,8 +130,8 @@
                   <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-light rounded-pill px-3 border small text-secondary d-flex align-items-center gap-1">
                     <i class="fas fa-comment-alt text-primary"></i> <strong>{{ b.comment_count }}</strong> Comments
                   </a>
-                  <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 small">
-                    Join Discussion <i class="fas fa-arrow-right ms-1"></i>
+                  <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 small fw-semibold">
+                    Read &amp; Discuss <i class="fas fa-arrow-right ms-1"></i>
                   </a>
                 </div>
               </div>
@@ -139,13 +140,13 @@
           {% empty %}
           <div class="card p-5 text-center bg-white border-0 shadow-sm rounded-4">
             <div class="rounded-circle bg-light text-primary mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; font-size: 1.8rem;">
-              <i class="fas fa-comments"></i>
+              <i class="fas fa-newspaper"></i>
             </div>
-            <h5 class="fw-bold text-dark mb-1">No threads found in this genre</h5>
-            <p class="text-muted small mb-3">Be the first student to ask a question or start a discussion!</p>
+            <h5 class="fw-bold text-dark mb-1">No blogs found in this category</h5>
+            <p class="text-muted small mb-3">Be the first student to publish an article or ask a question!</p>
             <div>
               <a href="{% url 'blog_create' %}" class="btn btn-primary rounded-pill px-4 fw-bold">
-                <i class="fas fa-plus me-1"></i> Start First Thread
+                <i class="fas fa-pen-nib me-1"></i> Write the First Blog
               </a>
             </div>
           </div>
@@ -161,61 +162,64 @@
             <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
               <i class="fas fa-university"></i>
             </div>
-            <h5 class="fw-bold text-dark mb-0">About Islington Forum</h5>
+            <h5 class="fw-bold text-dark mb-0">Islington Student Hub</h5>
           </div>
           <p class="text-muted small mb-3" style="line-height: 1.6;">
-            The student-run community hub for Islington College. Ask questions about modules, trade textbooks, review laptops, and share campus tips.
+            The student-run community blog for Islington College. Ask questions about modules, share textbook tips, review laptops, and discuss campus life.
           </p>
           <div class="p-3 bg-light rounded-3 border mb-3 small d-flex justify-content-between text-center">
             <div>
               <strong class="d-block text-dark fs-6">{{ blogs|length }}</strong>
-              <span class="text-muted">Threads</span>
+              <span class="text-muted">Blogs</span>
             </div>
             <div class="border-end"></div>
             <div>
               <strong class="d-block text-primary fs-6">{{ categories|length }}</strong>
-              <span class="text-muted">Genres</span>
+              <span class="text-muted">Categories</span>
             </div>
             <div class="border-end"></div>
             <div>
-              <strong class="d-block text-success fs-6">100%</strong>
+              <strong class="d-block text-success fs-6"><i class="fas fa-check-circle me-1"></i>Verified</strong>
               <span class="text-muted">Students</span>
             </div>
           </div>
           <a href="{% url 'blog_create' %}" class="btn btn-primary btn-sm w-100 rounded-pill py-2 fw-bold shadow-sm">
-            <i class="fas fa-pen-nib me-1"></i> Create a Thread
+            <i class="fas fa-pen-nib me-1"></i> Write a Blog Post
           </a>
         </div>
 
-        <!-- Genres / Communities List -->
+        <!-- Categories List -->
         <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
-          <h6 class="fw-bold text-dark mb-3"><i class="fas fa-hashtag text-primary me-1"></i> Community Genres</h6>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold text-dark mb-0"><i class="fas fa-tags text-primary me-1"></i> Blog Categories</h6>
+            <a href="{% url 'blog' %}" class="small text-decoration-none text-primary fw-semibold">View All</a>
+          </div>
           <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
-            <li>
-              <a href="{% url 'blog' %}" class="d-flex justify-content-between align-items-center text-decoration-none py-1 text-dark fw-semibold small">
-                <span><i class="fas fa-globe text-muted me-2"></i> r/All</span>
-              </a>
-            </li>
             {% for cat in categories %}
-            <li class="border-top pt-2">
+            <li class="{% if not forloop.first %}border-top pt-2{% endif %}">
               <a href="{% url 'blog' %}?category={{ cat.name }}" class="d-flex justify-content-between align-items-center text-decoration-none py-1 text-dark small {% if selected_cat == cat.name %}fw-bold text-primary{% endif %}">
-                <span><i class="fas fa-tag text-primary me-2 opacity-75"></i> r/{{ cat.name }}</span>
+                <span><i class="fas fa-folder text-primary me-2 opacity-75"></i> {{ cat.name }}</span>
                 <span class="badge bg-light text-muted border rounded-pill">{{ cat.posts.count }}</span>
               </a>
             </li>
             {% empty %}
-            <li class="small text-muted">r/General</li>
+            <li class="small text-muted">General</li>
             {% endfor %}
           </ul>
+          
+          <!-- Category Request Note -->
+          <div class="mt-3 pt-3 border-top small text-muted">
+            <i class="fas fa-lightbulb text-warning me-1"></i> Want a new category added? Request it in any blog discussion!
+          </div>
         </div>
 
-        <!-- Rules Card -->
+        <!-- Guidelines Card -->
         <div class="card border-0 shadow-sm bg-white p-3 p-md-4 rounded-4">
-          <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt text-success me-1"></i> Community Rules</h6>
+          <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt text-success me-1"></i> Community Guidelines</h6>
           <ol class="small text-muted ps-3 mb-0" style="line-height: 1.6;">
-            <li>Keep discussions civil &amp; helpful.</li>
-            <li>No spam or irrelevant promotions.</li>
-            <li>Meet inside college blocks for item trades.</li>
+            <li>Keep discussions respectful and helpful.</li>
+            <li>No spam or unrelated advertisements.</li>
+            <li>Meet inside college blocks for item handovers.</li>
           </ol>
         </div>
       </div>

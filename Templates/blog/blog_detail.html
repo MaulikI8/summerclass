@@ -1,7 +1,7 @@
 {% extends 'master/base.html' %}
 {% load static %}
 
-{% block title %}{{ blog.title }} | Islington Community{% endblock %}
+{% block title %}{{ blog.title }} | Islington Marketplace Blogs{% endblock %}
 
 {% block content %}
 <section class="section-content padding-y-sm">
@@ -11,35 +11,36 @@
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb small">
         <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'blog' %}" class="text-decoration-none">Threads</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'blog' %}?category={{ blog.category.name }}" class="text-decoration-none">r/{{ blog.category.name }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'blog' %}" class="text-decoration-none">Blogs</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'blog' %}?category={{ blog.category.name }}" class="text-decoration-none">{{ blog.category.name }}</a></li>
         <li class="breadcrumb-item active text-truncate" style="max-width: 250px;">{{ blog.title }}</li>
       </ol>
     </nav>
 
     <div class="row g-4">
-      <!-- MAIN THREAD & DISCUSSION COLUMN -->
+      <!-- MAIN BLOG POST & DISCUSSION COLUMN -->
       <div class="col-lg-8">
         
-        <!-- Main Thread Post Card -->
+        <!-- Main Blog Post Card -->
         <div class="card border-0 shadow-sm bg-white rounded-4 p-4 p-md-5 mb-4">
           
           <!-- Header Meta -->
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
             <div class="d-flex align-items-center gap-2 flex-wrap small">
               <a href="{% url 'blog' %}?category={{ blog.category.name }}" class="badge bg-primary-subtle text-primary rounded-pill text-decoration-none fw-bold">
-                r/{{ blog.category.name }}
+                <i class="fas fa-folder me-1"></i> {{ blog.category.name }}
               </a>
               <span class="badge {% if blog.tag == 'Question' %}bg-danger-subtle text-danger{% elif blog.tag == 'Guide' %}bg-success-subtle text-success{% elif blog.tag == 'Review' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-secondary{% endif %} rounded-pill">
+                {% if blog.tag == 'Question' %}<i class="fas fa-question-circle me-1"></i>{% elif blog.tag == 'Guide' %}<i class="fas fa-book-open me-1"></i>{% elif blog.tag == 'Review' %}<i class="fas fa-star me-1"></i>{% else %}<i class="fas fa-comments me-1"></i>{% endif %}
                 {{ blog.tag }}
               </span>
               <span class="text-muted">• Posted by</span>
               {% if blog.author %}
               <a href="{% url 'blog' %}?author={{ blog.author.username }}" class="text-dark fw-bold text-decoration-none">
-                u/{{ blog.author.username }}
+                <i class="fas fa-user-circle text-primary me-1"></i> {{ blog.author.username }}
               </a>
               {% else %}
-              <span class="text-dark fw-bold">Islington Admin</span>
+              <span class="text-dark fw-bold"><i class="fas fa-user-shield text-muted me-1"></i> Islington Admin</span>
               {% endif %}
               <span class="text-muted">{{ blog.created_at|timesince }} ago</span>
             </div>
@@ -64,7 +65,7 @@
           {% endif %}
 
           <!-- Content Body -->
-          <div class="thread-body text-secondary mb-4" style="font-size: 1.05rem; line-height: 1.8;">
+          <div class="blog-body text-secondary mb-4" style="font-size: 1.05rem; line-height: 1.85;">
             {{ blog.content|linebreaks }}
           </div>
 
@@ -73,7 +74,7 @@
           <!-- Footer Actions -->
           <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <a href="{% url 'blog' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-              <i class="fas fa-arrow-left me-1"></i> Back to All Threads
+              <i class="fas fa-arrow-left me-1"></i> Back to All Blogs
             </a>
             <span class="text-muted small">
               <i class="fas fa-comments text-primary me-1"></i> {{ comments|length }} Comments in Discussion
@@ -81,10 +82,10 @@
           </div>
         </div>
 
-        <!-- COMMENTS / REPLIES SECTION -->
+        <!-- COMMENTS & DISCUSSION SECTION -->
         <div class="card border-0 shadow-sm bg-white rounded-4 p-4 p-md-5">
           <h4 class="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
-            <i class="fas fa-reply text-primary"></i> Discussion ({{ comments|length }})
+            <i class="fas fa-reply text-primary"></i> Comments &amp; Discussion ({{ comments|length }})
           </h4>
 
           <!-- Comment Input Box -->
@@ -92,11 +93,11 @@
           <form action="{% url 'add_comment' blog.id %}" method="POST" class="mb-4">
             {% csrf_token %}
             <div class="p-3 bg-light rounded-4 border">
-              <label class="form-label small text-muted mb-2">Comment as <strong class="text-primary">u/{{ user.username }}</strong></label>
-              <textarea name="content" rows="3" class="form-control rounded-3 bg-white mb-2" placeholder="What are your thoughts or answers? Join the thread..." required></textarea>
+              <label class="form-label small text-muted mb-2">Comment as <strong class="text-primary">{{ user.username }}</strong></label>
+              <textarea name="content" rows="3" class="form-control rounded-3 bg-white mb-2" placeholder="Write a comment, share your thoughts, or answer questions..." required></textarea>
               <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm">
-                  <i class="fas fa-paper-plane me-1"></i> Reply
+                  <i class="fas fa-paper-plane me-1"></i> Post Comment
                 </button>
               </div>
             </div>
@@ -104,7 +105,7 @@
           {% else %}
           <div class="p-3 bg-light rounded-4 border text-center mb-4">
             <span class="small text-muted me-2">Log in or register to join this discussion:</span>
-            <a href="{% url 'student_login' %}?next={{ request.path }}" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Sign In to Reply</a>
+            <a href="{% url 'student_login' %}?next={{ request.path }}" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Sign In to Comment</a>
           </div>
           {% endif %}
 
@@ -117,9 +118,9 @@
                   <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 0.75rem;">
                     {{ c.author.username|slice:":1"|upper }}
                   </div>
-                  <strong class="text-dark small">u/{{ c.author.username }}</strong>
+                  <strong class="text-dark small">{{ c.author.username }}</strong>
                   {% if c.author == blog.author %}
-                  <span class="badge bg-primary text-white rounded-pill" style="font-size: 0.65rem;">OP</span>
+                  <span class="badge bg-primary text-white rounded-pill" style="font-size: 0.65rem;">Author</span>
                   {% endif %}
                 </div>
                 <span class="text-muted" style="font-size: 0.72rem;">{{ c.created_at|timesince }} ago</span>
@@ -131,7 +132,7 @@
             {% empty %}
             <div class="text-center py-4 text-muted small">
               <i class="fas fa-comment-dots display-6 d-block mb-2 text-muted opacity-50"></i>
-              No comments yet. Start the conversation!
+              No comments yet. Be the first to share your thoughts!
             </div>
             {% endfor %}
           </div>
@@ -142,30 +143,38 @@
 
       <!-- SIDEBAR -->
       <div class="col-lg-4">
-        <!-- Thread Author Card -->
+        <!-- Blog Author Card -->
         <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
-          <h6 class="fw-bold text-dark mb-3"><i class="fas fa-user-circle text-primary me-1"></i> Original Poster</h6>
+          <h6 class="fw-bold text-dark mb-3"><i class="fas fa-user-circle text-primary me-1"></i> Post Author</h6>
           <div class="d-flex align-items-center gap-3 mb-3">
             <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 44px; height: 44px;">
               {{ blog.author.username|default:"A"|slice:":1"|upper }}
             </div>
             <div>
-              <strong class="text-dark d-block">u/{{ blog.author.username|default:"Admin" }}</strong>
-              <small class="text-muted">Islington Student</small>
+              <strong class="text-dark d-block">{{ blog.author.first_name|default:blog.author.username }}</strong>
+              <small class="text-muted">@{{ blog.author.username|default:"admin" }} • Islington Student</small>
             </div>
           </div>
           {% if blog.author %}
           <a href="{% url 'blog' %}?author={{ blog.author.username }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">
-            View All Threads by u/{{ blog.author.username }}
+            View All Blogs by {{ blog.author.username }}
           </a>
           {% endif %}
         </div>
 
+        <!-- Request Category Card -->
+        <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
+          <h6 class="fw-bold text-dark mb-2"><i class="fas fa-lightbulb text-warning me-1"></i> Suggest a Category</h6>
+          <p class="small text-muted mb-0" style="line-height: 1.6;">
+            Have an idea for a new blog topic or study genre? Leave a comment in any discussion post and we will add it!
+          </p>
+        </div>
+
         <!-- Safety Guidelines -->
         <div class="card border-0 shadow-sm bg-white p-4 rounded-4">
-          <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt text-success me-1"></i> Forum Guidelines</h6>
+          <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt text-success me-1"></i> Community Guidelines</h6>
           <p class="small text-muted mb-0" style="line-height: 1.6;">
-            Treat fellow students with respect. For textbook buying and selling, arrange meetups inside college blocks during class hours.
+            Keep discussions respectful and helpful. For textbook trades and purchases, arrange meetups inside college blocks during class hours.
           </p>
         </div>
       </div>
