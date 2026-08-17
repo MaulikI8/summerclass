@@ -97,7 +97,7 @@ def checkout(request):
 
     if request.method == 'POST':
         p = request.POST
-        loc = f"Home: {p.get('home_address', '')}, {p.get('delivery_city', 'Kathmandu')}" if p.get('delivery_type') == 'home_delivery' else f"Campus: {p.get('campus_block', 'Kumari Hall')}"
+        loc = f"Home (Kathmandu): {p.get('home_address', '')}" if p.get('delivery_type') == 'home_delivery' else f"Campus: {p.get('campus_block', 'Kumari Hall')}"
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
             buyer_name=p.get('buyer_name', '').strip(), buyer_phone=p.get('buyer_phone', '').strip(),
