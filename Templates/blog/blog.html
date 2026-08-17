@@ -1,149 +1,225 @@
 {% extends 'master/base.html' %}
 {% load static %}
 
-{% block title %}Campus Blogs &amp; Guides | Islington Marketplace{% endblock %}
+{% block title %}Student Community &amp; Threads | Islington Marketplace{% endblock %}
 
 {% block content %}
 <section class="section-content padding-y-sm">
   <div class="container">
-    <!-- Header & Action Bar -->
-    <div class="card mb-4 border-0 shadow-sm bg-white p-4 rounded-4">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div>
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1 small">
-              <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
-              <li class="breadcrumb-item active" aria-current="page">Blogs</li>
-            </ol>
-          </nav>
-          <h3 class="fw-bold mb-1 text-dark">
-            <i class="fas fa-newspaper text-primary me-2"></i>Campus Blogs &amp; Student Guides
-          </h3>
-          <span class="text-muted small">Articles on textbook trading, gadgets, study hacks, and student life at Islington.</span>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          {% if user.is_authenticated %}
-          <a href="{% url 'blog_create' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
-            <i class="fas fa-pen-nib"></i> Write a Blog
-          </a>
-          {% else %}
-          <a href="{% url 'student_login' %}?next={% url 'blog_create' %}" class="btn btn-outline-primary rounded-pill px-4 fw-bold">
-            <i class="fas fa-pen-nib me-1"></i> Sign in to Write
-          </a>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Author Filter Notice Banner (if filtered by user) -->
-      {% if selected_author %}
-      <div class="mt-3 p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-3">
-          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 42px; height: 42px; font-size: 1.1rem;">
-            {{ selected_author.first_name|default:selected_author.username|slice:":1"|upper }}
-          </div>
-          <div>
-            <span class="small text-muted d-block">Viewing articles by student author:</span>
-            <strong class="text-dark fs-6">{{ selected_author.first_name|default:selected_author.username }}</strong>
-            <span class="badge bg-primary-subtle text-primary rounded-pill ms-2">@{{ selected_author.username }}</span>
-          </div>
-        </div>
-        <a href="{% url 'blog' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-          <i class="fas fa-times me-1"></i> View All Authors
-        </a>
-      </div>
-      {% endif %}
-
-      <!-- Category Filter Chips -->
-      <div class="filter-chips-bar mt-3 pt-2 border-top">
-        <a href="{% url 'blog' %}{% if selected_author %}?author={{ selected_author.username }}{% endif %}" class="filter-chip {% if not selected_category %}active{% endif %}">
-          All Topics
-        </a>
-        {% for cat in categories %}
-        <a href="{% url 'blog' %}?category={{ cat.name }}{% if selected_author %}&author={{ selected_author.username }}{% endif %}" class="filter-chip {% if selected_category == cat.name %}active{% endif %}">
-          {{ cat.name }}
-        </a>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- Blog Cards Grid -->
     <div class="row g-4">
-      {% for b in blogs %}
-      <div class="col-lg-4 col-md-6">
-        <div class="card border-0 shadow-sm h-100 bg-white rounded-4 overflow-hidden card-product-grid">
-          <!-- Featured Image / Gradient Frame -->
-          <div class="img-wrap" style="height: 180px; max-height: 180px; padding: 0; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
-            {% if b.post_image %}
-            <img src="{{ b.post_image.url }}" alt="{{ b.title }}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';">
-            {% else %}
-            <div class="d-flex flex-column align-items-center justify-content-center text-white h-100 p-3 text-center">
-              <i class="fas fa-book-open display-6 mb-2 opacity-75"></i>
-              <span class="small fw-semibold opacity-90">{{ b.category.name|default:"Islington Campus" }}</span>
+      
+      <!-- MAIN FEED COLUMN -->
+      <div class="col-lg-8">
+        <!-- Community Header / Action Bar -->
+        <div class="card border-0 shadow-sm bg-white p-3 p-md-4 rounded-4 mb-3">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <h4 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                <span class="badge bg-primary rounded-circle p-2"><i class="fas fa-comments"></i></span>
+                Islington Student Threads
+              </h4>
+              <p class="text-muted small mb-0">Ask questions, share advice, discuss coursework &amp; buy/sell gear.</p>
             </div>
-            {% endif %}
-            <span class="card-category-badge">
-              {{ b.category.name|default:"Guide" }}
-            </span>
-          </div>
-
-          <!-- Card Content Body -->
-          <div class="card-body p-4 d-flex flex-column">
-            <h5 class="card-title fw-bold mb-2">
-              <a href="{% url 'blog_detail' b.id %}" class="text-dark text-decoration-none title-hover" style="line-height: 1.35;">
-                {{ b.title }}
-              </a>
-            </h5>
-
-            <p class="card-text text-muted small flex-grow-1" style="line-height: 1.6;">
-              {{ b.content|truncatewords:22 }}
-            </p>
-
-            <!-- Author & Metadata Footer -->
-            <div class="pt-3 border-top mt-auto d-flex justify-content-between align-items-center">
-              <!-- Author Link -->
-              <div class="d-flex align-items-center gap-2">
-                <div class="bg-light text-primary border rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.75rem; font-weight: bold;">
-                  {{ b.author.username|default:"Admin"|slice:":1"|upper }}
-                </div>
-                <div class="d-flex flex-column leading-none">
-                  {% if b.author %}
-                  <a href="{% url 'user_blogs' b.author.username %}" class="small fw-bold text-dark text-decoration-none" title="View all articles by this student">
-                    {{ b.author.first_name|default:b.author.username }}
-                  </a>
-                  {% else %}
-                  <span class="small fw-bold text-dark">Islington Admin</span>
-                  {% endif %}
-                  <small class="text-muted" style="font-size: 0.7rem;">{{ b.created_at|date:"M d, Y" }}</small>
-                </div>
-              </div>
-
-              <!-- Read Action -->
-              <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
-                Read <i class="fas fa-arrow-right ms-1"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="col-12">
-        <div class="card p-5 text-center bg-white border-0 shadow-sm rounded-4">
-          <div class="rounded-circle bg-light text-primary mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 72px; height: 72px; font-size: 2rem;">
-            <i class="fas fa-pen-fancy"></i>
-          </div>
-          <h4 class="fw-bold text-dark mb-1">No articles found</h4>
-          <p class="text-muted small mb-3">Be the first student to publish a helpful campus guide or textbook review!</p>
-          {% if user.is_authenticated %}
-          <div>
-            <a href="{% url 'blog_create' %}" class="btn btn-primary rounded-pill px-4 fw-bold">
-              <i class="fas fa-plus-circle me-1"></i> Write the First Blog
+            <a href="{% url 'blog_create' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+              <i class="fas fa-plus"></i> Create Thread
             </a>
           </div>
-          {% endif %}
+
+          <!-- Filter & Sort Bar (Reddit-style) -->
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3 border-top">
+            <!-- Tag Filter Pills -->
+            <div class="d-flex align-items-center gap-1 flex-wrap">
+              <a href="{% url 'blog' %}{% if selected_cat %}?category={{ selected_cat }}{% endif %}" class="filter-chip {% if not selected_tag %}active{% endif %}">
+                All
+              </a>
+              <a href="{% url 'blog' %}?tag=Discussion{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Discussion' %}active{% endif %}">
+                💬 Discussions
+              </a>
+              <a href="{% url 'blog' %}?tag=Question{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Question' %}active{% endif %}">
+                ❓ Questions
+              </a>
+              <a href="{% url 'blog' %}?tag=Guide{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Guide' %}active{% endif %}">
+                📖 Guides
+              </a>
+              <a href="{% url 'blog' %}?tag=Review{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Review' %}active{% endif %}">
+                ⭐ Reviews
+              </a>
+            </div>
+
+            <!-- Sort Toggle -->
+            <div class="d-flex align-items-center gap-1">
+              <a href="{% url 'blog' %}?sort=new{% if selected_cat %}&category={{ selected_cat }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" class="btn btn-sm {% if sort != 'top' %}btn-light fw-bold text-primary border{% else %}btn-link text-muted text-decoration-none{% endif %} rounded-pill px-3">
+                <i class="fas fa-clock me-1"></i> Newest
+              </a>
+              <a href="{% url 'blog' %}?sort=top{% if selected_cat %}&category={{ selected_cat }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" class="btn btn-sm {% if sort == 'top' %}btn-light fw-bold text-primary border{% else %}btn-link text-muted text-decoration-none{% endif %} rounded-pill px-3">
+                <i class="fas fa-fire text-danger me-1"></i> Top
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter banner if filtered by genre or user -->
+        {% if selected_cat or selected_author %}
+        <div class="p-3 bg-white rounded-4 border shadow-sm mb-3 d-flex justify-content-between align-items-center">
+          <span class="small text-muted">
+            Filtering by: <strong>{% if selected_cat %}r/{{ selected_cat }}{% endif %}{% if selected_author %}u/{{ selected_author }}{% endif %}</strong>
+          </span>
+          <a href="{% url 'blog' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Clear Filter</a>
+        </div>
+        {% endif %}
+
+        <!-- Threads List -->
+        <div class="d-flex flex-column gap-3">
+          {% for b in blogs %}
+          <div class="card border-0 shadow-sm bg-white rounded-4 overflow-hidden p-3 p-md-4 transition-hover">
+            <div class="d-flex gap-3">
+              <!-- Upvote Column -->
+              <div class="d-flex flex-column align-items-center justify-content-start" style="min-width: 44px;">
+                <form action="{% url 'toggle_upvote' b.id %}" method="POST" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center border" style="width: 38px; height: 38px;" title="Upvote">
+                    <i class="fas fa-arrow-up text-primary"></i>
+                  </button>
+                </form>
+                <span class="fw-bold text-dark small mt-1">{{ b.upvote_count }}</span>
+              </div>
+
+              <!-- Thread Content -->
+              <div class="flex-grow-1">
+                <!-- Metadata header -->
+                <div class="d-flex align-items-center gap-2 flex-wrap small mb-2">
+                  <a href="{% url 'blog' %}?category={{ b.category.name }}" class="badge bg-primary-subtle text-primary rounded-pill text-decoration-none fw-bold">
+                    r/{{ b.category.name }}
+                  </a>
+                  <span class="badge {% if b.tag == 'Question' %}bg-danger-subtle text-danger{% elif b.tag == 'Guide' %}bg-success-subtle text-success{% elif b.tag == 'Review' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-secondary{% endif %} rounded-pill">
+                    {{ b.tag }}
+                  </span>
+                  <span class="text-muted">• Posted by</span>
+                  {% if b.author %}
+                  <a href="{% url 'blog' %}?author={{ b.author.username }}" class="text-dark fw-semibold text-decoration-none">
+                    u/{{ b.author.username }}
+                  </a>
+                  {% else %}
+                  <span class="text-dark fw-semibold">Islington Admin</span>
+                  {% endif %}
+                  <span class="text-muted">{{ b.created_at|timesince }} ago</span>
+                </div>
+
+                <!-- Title -->
+                <h5 class="fw-bold mb-2">
+                  <a href="{% url 'blog_detail' b.id %}" class="text-dark text-decoration-none title-hover" style="line-height: 1.35;">
+                    {{ b.title }}
+                  </a>
+                </h5>
+
+                <!-- Snippet -->
+                <p class="text-muted small mb-3" style="line-height: 1.6;">
+                  {{ b.content|truncatewords:28 }}
+                </p>
+
+                <!-- Thumbnail if attached -->
+                {% if b.post_image %}
+                <div class="mb-3 rounded-3 overflow-hidden border" style="max-height: 220px; max-width: 420px;">
+                  <img src="{{ b.post_image.url }}" alt="{{ b.title }}" class="img-fluid w-100" style="object-fit: cover; max-height: 220px;">
+                </div>
+                {% endif %}
+
+                <!-- Footer Action Bar -->
+                <div class="d-flex align-items-center gap-3 pt-2 border-top">
+                  <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-light rounded-pill px-3 border small text-secondary d-flex align-items-center gap-1">
+                    <i class="fas fa-comment-alt text-primary"></i> <strong>{{ b.comment_count }}</strong> Comments
+                  </a>
+                  <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 small">
+                    Join Discussion <i class="fas fa-arrow-right ms-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="card p-5 text-center bg-white border-0 shadow-sm rounded-4">
+            <div class="rounded-circle bg-light text-primary mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; font-size: 1.8rem;">
+              <i class="fas fa-comments"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">No threads found in this genre</h5>
+            <p class="text-muted small mb-3">Be the first student to ask a question or start a discussion!</p>
+            <div>
+              <a href="{% url 'blog_create' %}" class="btn btn-primary rounded-pill px-4 fw-bold">
+                <i class="fas fa-plus me-1"></i> Start First Thread
+              </a>
+            </div>
+          </div>
+          {% endfor %}
         </div>
       </div>
-      {% endfor %}
+
+      <!-- SIDEBAR COLUMN -->
+      <div class="col-lg-4">
+        <!-- Community About Card -->
+        <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+              <i class="fas fa-university"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-0">About Islington Forum</h5>
+          </div>
+          <p class="text-muted small mb-3" style="line-height: 1.6;">
+            The student-run community hub for Islington College. Ask questions about modules, trade textbooks, review laptops, and share campus tips.
+          </p>
+          <div class="p-3 bg-light rounded-3 border mb-3 small d-flex justify-content-between text-center">
+            <div>
+              <strong class="d-block text-dark fs-6">{{ blogs|length }}</strong>
+              <span class="text-muted">Threads</span>
+            </div>
+            <div class="border-end"></div>
+            <div>
+              <strong class="d-block text-primary fs-6">{{ categories|length }}</strong>
+              <span class="text-muted">Genres</span>
+            </div>
+            <div class="border-end"></div>
+            <div>
+              <strong class="d-block text-success fs-6">100%</strong>
+              <span class="text-muted">Students</span>
+            </div>
+          </div>
+          <a href="{% url 'blog_create' %}" class="btn btn-primary btn-sm w-100 rounded-pill py-2 fw-bold shadow-sm">
+            <i class="fas fa-pen-nib me-1"></i> Create a Thread
+          </a>
+        </div>
+
+        <!-- Genres / Communities List -->
+        <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
+          <h6 class="fw-bold text-dark mb-3"><i class="fas fa-hashtag text-primary me-1"></i> Community Genres</h6>
+          <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+            <li>
+              <a href="{% url 'blog' %}" class="d-flex justify-content-between align-items-center text-decoration-none py-1 text-dark fw-semibold small">
+                <span><i class="fas fa-globe text-muted me-2"></i> r/All</span>
+              </a>
+            </li>
+            {% for cat in categories %}
+            <li class="border-top pt-2">
+              <a href="{% url 'blog' %}?category={{ cat.name }}" class="d-flex justify-content-between align-items-center text-decoration-none py-1 text-dark small {% if selected_cat == cat.name %}fw-bold text-primary{% endif %}">
+                <span><i class="fas fa-tag text-primary me-2 opacity-75"></i> r/{{ cat.name }}</span>
+                <span class="badge bg-light text-muted border rounded-pill">{{ cat.posts.count }}</span>
+              </a>
+            </li>
+            {% empty %}
+            <li class="small text-muted">r/General</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Rules Card -->
+        <div class="card border-0 shadow-sm bg-white p-3 p-md-4 rounded-4">
+          <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt text-success me-1"></i> Community Rules</h6>
+          <ol class="small text-muted ps-3 mb-0" style="line-height: 1.6;">
+            <li>Keep discussions civil &amp; helpful.</li>
+            <li>No spam or irrelevant promotions.</li>
+            <li>Meet inside college blocks for item trades.</li>
+          </ol>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
