@@ -562,11 +562,10 @@
             <aside class="col-lg-2 col-md-3 col-6">
               <h6 class="fw-bold text-dark mb-3">Information</h6>
               <ul class="list-unstyled d-flex flex-column gap-2 small">
+                <li><a href="{% url 'terms_and_conditions' %}" class="text-muted text-decoration-none">Terms &amp; Conditions</a></li>
+                <li><a href="{% url 'terms_and_conditions' %}" class="text-muted text-decoration-none">Trading Guidelines</a></li>
                 {% for page in pages %}
                 <li><a href="{% url 'page_detail' page.slug %}" class="text-muted text-decoration-none">{{ page.title }}</a></li>
-                {% empty %}
-                <li><a href="{% url 'home' %}" class="text-muted text-decoration-none">About Us</a></li>
-                <li><a href="{% url 'home' %}" class="text-muted text-decoration-none">Trading Guidelines</a></li>
                 {% endfor %}
               </ul>
             </aside>
