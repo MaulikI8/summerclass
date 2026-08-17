@@ -9,3 +9,6 @@ def page_detail(request, slug):
 
 def terms_and_conditions(request):
     return render(request, 'pages/terms_and_conditions.html')
+
+def privacy_policy(request):
+    return render(request, 'pages/privacy_policy.html')
