@@ -3,85 +3,36 @@
 {% block title %}Islington Marketplace | Campus Shopping & Student Trade{% endblock %}
 
 {% block content %}
-<section class="section-hero py-4 bg-light">
+<section class="section-intro py-3">
   <div class="container">
-    <div class="row g-3 align-items-stretch">
-      <div class="col-lg-8 d-flex">
-        <div class="card border-0 rounded-4 p-4 p-md-5 w-100 shadow-sm position-relative overflow-hidden text-white d-flex flex-column justify-content-between" style="background:linear-gradient(135deg,#090d16 0%,#0f172a 60%,#1e1b4b 100%);min-height:340px;">
-          <div class="position-absolute" style="top:-60px;right:-40px;width:280px;height:280px;background:radial-gradient(circle,rgba(37,99,235,0.3) 0%,transparent 70%);filter:blur(40px);pointer-events:none;"></div>
-          <div class="position-absolute" style="bottom:-40px;left:20%;width:220px;height:220px;background:radial-gradient(circle,rgba(124,58,237,0.25) 0%,transparent 70%);filter:blur(40px);pointer-events:none;"></div>
-          
-          <div class="position-relative" style="z-index:2;">
-            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);backdrop-filter:blur(8px);">
-              <span class="rounded-circle bg-success" style="width:8px;height:8px;box-shadow:0 0 8px #22c55e;"></span>
-              <span class="small fw-bold text-white-50" style="letter-spacing:0.05em;font-size:0.75rem;">ISLINGTON STUDENT COMMERCE &bull; 0% COMMISSION</span>
+    <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+      <div class="carousel-inner rounded-4 shadow-sm overflow-hidden">
+        {% for banner in banners %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %} p-4 p-md-5 {{ banner.theme_color|default:'slide-blue' }} text-white">
+          <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+              {% if banner.badge_text %}<span class="badge bg-white text-dark rounded-pill px-3 py-1 mb-2 fw-bold"><i class="fa {{ banner.badge_icon|default:'fa-star' }} text-warning me-1"></i>{{ banner.badge_text }}</span>{% endif %}
+              <h1 class="display-6 fw-bold mb-2">{{ banner.title }}</h1>
+              <p class="lead small mb-3 text-white-50">{{ banner.subtitle }}</p>
+              <div class="d-flex gap-2">
+                {% if banner.primary_btn_text %}<a href="{{ banner.primary_btn_url|default:'/products/' }}" class="btn btn-light rounded-pill px-4 fw-bold text-primary">{{ banner.primary_btn_text }}</a>{% endif %}
+                {% if banner.secondary_btn_text %}<a href="{{ banner.secondary_btn_url|default:'/products/' }}" class="btn btn-outline-light rounded-pill px-4">{{ banner.secondary_btn_text }}</a>{% endif %}
+              </div>
             </div>
-
-            <h1 class="display-6 fw-bold text-white mb-3" style="font-family:'Outfit',sans-serif;letter-spacing:-0.03em;line-height:1.18;">
-              Buy, Sell &amp; Trade Tech &amp; Textbooks <span style="background:linear-gradient(135deg,#60a5fa,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Directly on Campus.</span>
-            </h1>
-            <p class="text-white-50 small mb-4" style="line-height:1.6;max-width:520px;">
-              The verified student-to-student marketplace for Islington College. Discover textbooks, computing gear, lab modules, and electronics at student prices with Kumari Hall pickup.
-            </p>
-
-            <div class="d-flex flex-wrap gap-2">
-              <a href="{% url 'products' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
-                <i class="fas fa-shopping-bag"></i> Explore Store
-              </a>
-              {% if user.is_authenticated %}
-              <a href="{% url 'user_profile' %}?tab=add" class="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold">
-                <i class="fas fa-plus-circle me-1"></i> Post Listing
-              </a>
-              {% else %}
-              <a href="{% url 'student_login' %}" class="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold">
-                <i class="fas fa-sign-in-alt me-1"></i> Student Sign In
-              </a>
-              {% endif %}
+            {% if banner.banner_image or banner.featured_product.product_image %}
+            <div class="col-lg-4 text-center d-none d-lg-block">
+              <img src="{% if banner.banner_image %}{{ banner.banner_image.url }}{% else %}{{ banner.featured_product.product_image.url }}{% endif %}" class="img-fluid rounded-3 shadow" style="max-height:180px;object-fit:cover;" alt="Hero"/>
             </div>
-          </div>
-
-          <div class="position-relative pt-3 mt-4 border-top border-white border-opacity-10 d-flex justify-content-between align-items-center flex-wrap gap-3 small text-white-50" style="z-index:2;">
-            <div class="d-flex align-items-center gap-2"><i class="fas fa-shield-alt text-primary"></i><span>Verified Students</span></div>
-            <div class="d-flex align-items-center gap-2"><i class="fas fa-map-marker-alt text-danger"></i><span>Kumari Hall &bull; Skill Block</span></div>
-            <div class="d-flex align-items-center gap-2"><i class="fas fa-gavel text-warning"></i><span>24h Live Auctions</span></div>
+            {% endif %}
           </div>
         </div>
-      </div>
-
-      <div class="col-lg-4 d-flex flex-column gap-3">
-        {% with feat=products.0 %}
-        {% if feat %}
-        <div class="card border-0 rounded-4 p-3 bg-white shadow-sm flex-grow-1 d-flex flex-column justify-content-between">
-          <div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="badge bg-primary-subtle text-primary rounded-pill small fw-bold"><i class="fas fa-star text-warning me-1"></i> SPOTLIGHT ITEM</span>
-              <span class="badge bg-light text-muted border rounded-pill">{{ feat.category.name }}</span>
-            </div>
-            <div class="text-center p-2 rounded-3 bg-light mb-2" style="height:120px;">
-              <img src="{% if feat.product_image %}{{ feat.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" class="img-fluid h-100 object-fit-contain" alt="{{ feat.name }}"/>
-            </div>
-            <h6 class="fw-bold text-dark text-truncate mb-1">{{ feat.name }}</h6>
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="fs-5 fw-bold text-primary">Rs. {{ feat.price|floatformat:2 }}</span>
-              <small class="text-muted"><i class="fas fa-user-circle text-primary"></i> {{ feat.user.username }}</small>
-            </div>
-          </div>
-          <a href="{% url 'product_detail' feat.id %}" class="btn btn-outline-primary btn-sm rounded-pill w-100 mt-2 fw-semibold">View Listing &rarr;</a>
+        {% empty %}
+        <div class="carousel-item active p-5 bg-primary text-white text-center">
+          <h2 class="fw-bold">Welcome to Islington Student Marketplace</h2>
+          <p class="text-white-50">Verified textbooks, computing gear, electronics, and study essentials.</p>
+          <a href="{% url 'products' %}" class="btn btn-light rounded-pill px-4 fw-bold text-primary">Explore Store</a>
         </div>
-        {% endif %}
-        {% endwith %}
-
-        <div class="card border-0 rounded-4 p-3 shadow-sm text-white position-relative overflow-hidden" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="badge bg-warning text-dark rounded-pill fw-bold small"><i class="fas fa-bullhorn me-1"></i> CAMPUS REQUESTS</span>
-            <small class="text-white-50">Wanted Board</small>
-          </div>
-          <p class="small mb-2 text-white-50">Looking for textbooks or modules? Post what you need or offer yours.</p>
-          <div class="d-flex gap-2">
-            <a href="#wantedBoardSection" class="btn btn-light btn-sm rounded-pill px-3 fw-bold text-primary flex-grow-1">View Requests</a>
-            <a href="#liveBiddingSection" class="btn btn-outline-light btn-sm rounded-pill px-3"><i class="fas fa-gavel me-1"></i>Auctions</a>
-          </div>
-        </div>
+        {% endfor %}
       </div>
     </div>
   </div>
