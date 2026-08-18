@@ -4,446 +4,72 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-
     <title>{% block title %}{{ site_setting.site_title|default:"Islington Marketplace" }}{% endblock %}</title>
     <meta name="description" content="{{ site_setting.meta_description|default:'Islington Marketplace - Buy and sell textbooks, electronics, and supplies.' }}">
     <meta name="keywords" content="{{ site_setting.meta_keywords|default:'islington marketplace, student shopping, electronics, textbooks' }}">
-
-    <!-- Favicon -->
     {% if site_setting.favicon %}
     <link rel="icon" href="{{ site_setting.favicon.url }}" type="image/x-icon" />
     {% else %}
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
     {% endif %}
-
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
-    <!-- Font Awesome 6.6.0 CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <!-- Anime.js 3.2.2 CDN for High-Performance Spring & Scroll Animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
-
-    <!-- Master Stylesheet with Cache Busting -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.6">
-
-    <!-- Embedded AI Assistant Chatbot Styles (Guaranteed Instant Rendering) -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.7">
     <style>
-      .ai-chat-widget {
-        position: fixed !important;
-        bottom: 24px !important;
-        right: 24px !important;
-        z-index: 99999 !important;
-        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
-      }
-      .ai-chat-toggle-btn {
-        position: relative !important;
-        width: 60px !important;
-        height: 60px !important;
-        border-radius: 50% !important;
-        background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #7c3aed 100%) !important;
-        color: #ffffff !important;
-        border: none !important;
-        cursor: pointer !important;
-        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.45) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-      }
-      .ai-chat-toggle-btn:hover {
-        transform: scale(1.08) translateY(-2px) !important;
-        box-shadow: 0 12px 32px rgba(37, 99, 235, 0.6) !important;
-      }
-      .notif-dropdown-panel {
-        display: none !important;
-        position: absolute !important;
-        top: calc(100% + 12px) !important;
-        right: -10px !important;
-        width: 360px !important;
-        max-width: 92vw !important;
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 16px !important;
-        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15) !important;
-        z-index: 99999 !important;
-        overflow: hidden !important;
-      }
-      .notif-dropdown-panel.show,
-      .notif-dropdown-panel.active {
-        display: block !important;
-      }
-
-      /* Floating Back to Top Button */
-      #backToTopBtn {
-        position: fixed !important;
-        bottom: 24px !important;
-        left: 24px !important;
-        width: 48px !important;
-        height: 48px !important;
-        border-radius: 50% !important;
-        background: #ffffff !important;
-        color: #1e40af !important;
-        border: 1.5px solid #e2e8f0 !important;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        cursor: pointer !important;
-        z-index: 999 !important;
-        opacity: 0 !important;
-        transform: translateY(20px) scale(0.8) !important;
-        transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s !important;
-        pointer-events: none !important;
-      }
-      #backToTopBtn.visible {
-        opacity: 1 !important;
-        transform: translateY(0) scale(1) !important;
-        pointer-events: auto !important;
-      }
-      #backToTopBtn:hover {
-        background: #1e40af !important;
-        color: #ffffff !important;
-        border-color: #1e40af !important;
-        transform: translateY(-3px) scale(1.08) !important;
-        box-shadow: 0 14px 30px rgba(30, 64, 175, 0.25) !important;
-      }
-
-      /* Smooth entrance styling */
-      .reveal-fade-up {
-        opacity: 0;
-        transform: translateY(24px);
-        will-change: transform, opacity;
-      }
-      .ai-chat-btn-inner {
-        position: relative !important;
-        width: 100% !important;
-        height: 100% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 1.35rem !important;
-      }
-      .ai-sparkle-icon {
-        position: absolute !important;
-        top: 10px !important;
-        right: 12px !important;
-        font-size: 0.65rem !important;
-        color: #fbbf24 !important;
-      }
-      .ai-close-icon {
-        position: absolute !important;
-        opacity: 0 !important;
-        transform: rotate(-90deg) scale(0.5) !important;
-        transition: all 0.3s ease !important;
-      }
-      .ai-chat-toggle-btn.open .ai-chat-icon,
-      .ai-chat-toggle-btn.open .ai-sparkle-icon {
-        opacity: 0 !important;
-        transform: rotate(90deg) scale(0.5) !important;
-      }
-      .ai-chat-toggle-btn.open .ai-close-icon {
-        opacity: 1 !important;
-        transform: rotate(0deg) scale(1) !important;
-      }
-      .ai-btn-pulse {
-        position: absolute !important;
-        top: -4px !important;
-        left: -4px !important;
-        right: -4px !important;
-        bottom: -4px !important;
-        border-radius: 50% !important;
-        border: 2px solid rgba(59, 130, 246, 0.6) !important;
-        animation: pulseWave 2.4s infinite !important;
-        pointer-events: none !important;
-      }
-      @keyframes pulseWave {
-        0% { transform: scale(0.95); opacity: 0.8; }
-        70% { transform: scale(1.35); opacity: 0; }
-        100% { transform: scale(1.35); opacity: 0; }
-      }
-      .ai-btn-tooltip {
-        position: absolute !important;
-        right: 70px !important;
-        background: #0f172a !important;
-        color: #ffffff !important;
-        padding: 6px 14px !important;
-        border-radius: 9999px !important;
-        font-size: 0.78rem !important;
-        font-weight: 600 !important;
-        white-space: nowrap !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        transform: translateX(10px) !important;
-        transition: all 0.25s ease !important;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.2) !important;
-        pointer-events: none !important;
-      }
-      .ai-chat-toggle-btn:hover .ai-btn-tooltip {
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: translateX(0) !important;
-      }
-      .ai-chat-box {
-        position: absolute !important;
-        bottom: 75px !important;
-        right: 0 !important;
-        width: 380px !important;
-        max-width: calc(100vw - 32px) !important;
-        height: 540px !important;
-        max-height: calc(100vh - 120px) !important;
-        background: #ffffff !important;
-        border: 1px solid rgba(226, 232, 240, 0.9) !important;
-        border-radius: 24px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        overflow: hidden !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        transform: translateY(20px) scale(0.95) !important;
-        transform-origin: bottom right !important;
-        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-        box-shadow: 0 24px 60px -10px rgba(15, 23, 42, 0.25) !important;
-      }
-      .ai-chat-box.active {
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: translateY(0) scale(1) !important;
-      }
-      .ai-chat-header {
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #7c3aed 100%) !important;
-        padding: 16px 20px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        color: #ffffff !important;
-      }
-      .ai-avatar-badge {
-        position: relative !important;
-        width: 38px !important;
-        height: 38px !important;
-        background: rgba(255, 255, 255, 0.2) !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        border-radius: 50% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 1.1rem !important;
-        color: #ffffff !important;
-      }
-      .ai-status-dot {
-        position: absolute !important;
-        bottom: 0 !important;
-        right: 0 !important;
-        width: 10px !important;
-        height: 10px !important;
-        background: #10b981 !important;
-        border: 2px solid #ffffff !important;
-        border-radius: 50% !important;
-      }
-      .ai-status-text {
-        font-size: 0.72rem !important;
-        color: rgba(255, 255, 255, 0.85) !important;
-      }
-      .ai-online-indicator {
-        width: 6px !important;
-        height: 6px !important;
-        background: #34d399 !important;
-        border-radius: 50% !important;
-        display: inline-block !important;
-      }
-      .ai-header-btn {
-        background: rgba(255, 255, 255, 0.15) !important;
-        border: none !important;
-        width: 32px !important;
-        height: 32px !important;
-        border-radius: 50% !important;
-        color: #ffffff !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 0.82rem !important;
-        cursor: pointer !important;
-        transition: all 0.2s ease !important;
-      }
-      .ai-header-btn:hover {
-        background: rgba(255, 255, 255, 0.3) !important;
-      }
-      .ai-chat-messages {
-        flex: 1 !important;
-        padding: 16px 18px !important;
-        overflow-y: auto !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 14px !important;
-        background: #f8fafc !important;
-      }
-      .ai-msg {
-        display: flex !important;
-        gap: 10px !important;
-      }
-      .ai-msg-avatar {
-        width: 30px !important;
-        height: 30px !important;
-        border-radius: 50% !important;
-        background: linear-gradient(135deg, #1e3a8a, #2563eb) !important;
-        color: #ffffff !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 0.78rem !important;
-        flex-shrink: 0 !important;
-        margin-top: 2px !important;
-      }
-      .ai-msg-bubble {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 16px !important;
-        border-top-left-radius: 4px !important;
-        padding: 12px 15px !important;
-        font-size: 0.85rem !important;
-        color: #334155 !important;
-        line-height: 1.55 !important;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
-        max-width: 82% !important;
-      }
-      .ai-msg-user {
-        justify-content: flex-end !important;
-      }
-      .ai-msg-user .user-bubble {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-        color: #ffffff !important;
-        border-radius: 16px !important;
-        border-top-right-radius: 4px !important;
-        border: none !important;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
-        max-width: 82% !important;
-        padding: 10px 14px !important;
-        font-size: 0.85rem !important;
-      }
-      .ai-chips-wrap {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 6px !important;
-        margin-top: 4px !important;
-      }
-      .ai-chip {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        padding: 8px 12px !important;
-        font-size: 0.78rem !important;
-        font-weight: 600 !important;
-        color: #334155 !important;
-        text-align: left !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 8px !important;
-        cursor: pointer !important;
-        transition: all 0.2s ease !important;
-      }
-      .ai-chip:hover {
-        background: #eff6ff !important;
-        border-color: #bfdbfe !important;
-        color: #1e40af !important;
-      }
-      .ai-typing-indicator {
-        display: none !important;
-        gap: 10px !important;
-        align-items: center !important;
-        padding: 4px 18px 10px !important;
-        background: #f8fafc !important;
-      }
-      .ai-typing-indicator.active {
-        display: flex !important;
-      }
-      .ai-typing-bubble {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 16px !important;
-        padding: 10px 14px !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-      }
-      .ai-typing-bubble span {
-        width: 6px !important;
-        height: 6px !important;
-        background: #94a3b8 !important;
-        border-radius: 50% !important;
-        animation: typingBounce 1.2s infinite ease-in-out !important;
-      }
-      .ai-typing-bubble span:nth-child(1) { animation-delay: 0s !important; }
-      .ai-typing-bubble span:nth-child(2) { animation-delay: 0.2s !important; }
-      .ai-typing-bubble span:nth-child(3) { animation-delay: 0.4s !important; }
-      @keyframes typingBounce {
-        0%, 80%, 100% { transform: translateY(0); }
-        40% { transform: translateY(-5px); background: #3b82f6; }
-      }
-      .ai-chat-footer {
-        padding: 12px 16px !important;
-        background: #ffffff !important;
-        border-top: 1px solid #e2e8f0 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 8px !important;
-      }
-      .ai-chat-input {
-        flex: 1 !important;
-        border: 1.5px solid #e2e8f0 !important;
-        border-radius: 9999px !important;
-        padding: 9px 16px !important;
-        font-size: 0.86rem !important;
-        outline: none !important;
-        background: #f8fafc !important;
-      }
-      .ai-chat-input:focus {
-        background: #ffffff !important;
-        border-color: #3b82f6 !important;
-      }
-      .ai-chat-send-btn {
-        width: 38px !important;
-        height: 38px !important;
-        border-radius: 50% !important;
-        background: linear-gradient(135deg, #1e40af, #2563eb) !important;
-        color: #ffffff !important;
-        border: none !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 0.85rem !important;
-        cursor: pointer !important;
-      }
-      .notif-dropdown-panel {
-        display: none !important;
-        position: absolute !important;
-        top: calc(100% + 12px) !important;
-        right: -10px !important;
-        width: 360px !important;
-        max-width: 92vw !important;
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 16px !important;
-        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15) !important;
-        z-index: 99999 !important;
-        overflow: hidden !important;
-      }
-      .notif-dropdown-panel.show,
-      .notif-dropdown-panel.active {
-        display: block !important;
-      }
+      .ai-chat-widget{position:fixed!important;bottom:24px!important;right:24px!important;z-index:99999!important;font-family:'Plus Jakarta Sans',-apple-system,sans-serif!important}
+      .ai-chat-toggle-btn{position:relative!important;width:60px!important;height:60px!important;border-radius:50%!important;background:linear-gradient(135deg,#1e40af 0%,#2563eb 50%,#7c3aed 100%)!important;color:#fff!important;border:none!important;cursor:pointer!important;box-shadow:0 8px 25px rgba(37,99,235,.45)!important;display:flex!important;align-items:center!important;justify-content:center!important;transition:all .3s cubic-bezier(.34,1.56,.64,1)!important}
+      .ai-chat-toggle-btn:hover{transform:scale(1.08) translateY(-2px)!important;box-shadow:0 12px 32px rgba(37,99,235,.6)!important}
+      .notif-dropdown-panel{display:none!important;position:absolute!important;top:calc(100% + 12px)!important;right:-10px!important;width:360px!important;max-width:92vw!important;background:#fff!important;border:1px solid #e2e8f0!important;border-radius:16px!important;box-shadow:0 20px 50px rgba(15,23,42,.15)!important;z-index:99999!important;overflow:hidden!important}
+      .notif-dropdown-panel.show,.notif-dropdown-panel.active{display:block!important}
+      #backToTopBtn{position:fixed!important;bottom:24px!important;left:24px!important;width:48px!important;height:48px!important;border-radius:50%!important;background:#fff!important;color:#1e40af!important;border:1.5px solid #e2e8f0!important;box-shadow:0 10px 25px rgba(15,23,42,.12)!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:999!important;opacity:0!important;transform:translateY(20px) scale(.8)!important;transition:opacity .3s ease,transform .3s cubic-bezier(.34,1.56,.64,1),background .2s,color .2s!important;pointer-events:none!important}
+      #backToTopBtn.visible{opacity:1!important;transform:translateY(0) scale(1)!important;pointer-events:auto!important}
+      #backToTopBtn:hover{background:#1e40af!important;color:#fff!important;border-color:#1e40af!important;transform:translateY(-3px) scale(1.08)!important;box-shadow:0 14px 30px rgba(30,64,175,.25)!important}
+      .ai-chat-btn-inner{position:relative!important;width:100%!important;height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:1.35rem!important}
+      .ai-sparkle-icon{position:absolute!important;top:10px!important;right:12px!important;font-size:.65rem!important;color:#fbbf24!important}
+      .ai-close-icon{position:absolute!important;opacity:0!important;transform:rotate(-90deg) scale(.5)!important;transition:all .3s ease!important}
+      .ai-chat-toggle-btn.open .ai-chat-icon,.ai-chat-toggle-btn.open .ai-sparkle-icon{opacity:0!important;transform:rotate(90deg) scale(.5)!important}
+      .ai-chat-toggle-btn.open .ai-close-icon{opacity:1!important;transform:rotate(0) scale(1)!important}
+      .ai-btn-pulse{position:absolute!important;inset:-4px!important;border-radius:50%!important;border:2px solid rgba(59,130,246,.6)!important;animation:pulseWave 2.4s infinite!important;pointer-events:none!important}
+      @keyframes pulseWave{0%{transform:scale(.95);opacity:.8}70%,100%{transform:scale(1.35);opacity:0}}
+      .ai-btn-tooltip{position:absolute!important;right:70px!important;background:#0f172a!important;color:#fff!important;padding:6px 14px!important;border-radius:9999px!important;font-size:.78rem!important;font-weight:600!important;white-space:nowrap!important;opacity:0!important;visibility:hidden!important;transform:translateX(10px)!important;transition:all .25s ease!important;box-shadow:0 4px 14px rgba(0,0,0,.2)!important;pointer-events:none!important}
+      .ai-chat-toggle-btn:hover .ai-btn-tooltip{opacity:1!important;visibility:visible!important;transform:translateX(0)!important}
+      .ai-chat-box{position:absolute!important;bottom:75px!important;right:0!important;width:380px!important;max-width:calc(100vw - 32px)!important;height:540px!important;max-height:calc(100vh - 120px)!important;background:#fff!important;border:1px solid rgba(226,232,240,.9)!important;border-radius:24px!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;opacity:0!important;visibility:hidden!important;transform:translateY(20px) scale(.95)!important;transform-origin:bottom right!important;transition:all .35s cubic-bezier(.34,1.56,.64,1)!important;box-shadow:0 24px 60px -10px rgba(15,23,42,.25)!important}
+      .ai-chat-box.active{opacity:1!important;visibility:visible!important;transform:translateY(0) scale(1)!important}
+      .ai-chat-header{background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#7c3aed 100%)!important;padding:16px 20px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;color:#fff!important}
+      .ai-avatar-badge{position:relative!important;width:38px!important;height:38px!important;background:rgba(255,255,255,.2)!important;border:1px solid rgba(255,255,255,.3)!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:1.1rem!important;color:#fff!important}
+      .ai-status-dot{position:absolute!important;bottom:0!important;right:0!important;width:10px!important;height:10px!important;background:#10b981!important;border:2px solid #fff!important;border-radius:50%!important}
+      .ai-status-text{font-size:.72rem!important;color:rgba(255,255,255,.85)!important}
+      .ai-online-indicator{width:6px!important;height:6px!important;background:#34d399!important;border-radius:50%!important;display:inline-block!important}
+      .ai-header-btn{background:rgba(255,255,255,.15)!important;border:none!important;width:32px!important;height:32px!important;border-radius:50%!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:.82rem!important;cursor:pointer!important;transition:all .2s ease!important}
+      .ai-header-btn:hover{background:rgba(255,255,255,.3)!important}
+      .ai-chat-messages{flex:1!important;padding:16px 18px!important;overflow-y:auto!important;display:flex!important;flex-direction:column!important;gap:14px!important;background:#f8fafc!important}
+      .ai-msg{display:flex!important;gap:10px!important}
+      .ai-msg-avatar{width:30px!important;height:30px!important;border-radius:50%!important;background:linear-gradient(135deg,#1e3a8a,#2563eb)!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:.78rem!important;flex-shrink:0!important;margin-top:2px!important}
+      .ai-msg-bubble{background:#fff!important;border:1px solid #e2e8f0!important;border-radius:16px!important;border-top-left-radius:4px!important;padding:12px 15px!important;font-size:.85rem!important;color:#334155!important;line-height:1.55!important;box-shadow:0 2px 8px rgba(15,23,42,.04)!important;max-width:82%!important}
+      .ai-msg-user{justify-content:flex-end!important}
+      .ai-msg-user .user-bubble{background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%)!important;color:#fff!important;border-radius:16px!important;border-top-right-radius:4px!important;border:none!important;box-shadow:0 4px 12px rgba(37,99,235,.25)!important;max-width:82%!important;padding:10px 14px!important;font-size:.85rem!important}
+      .ai-chips-wrap{display:flex!important;flex-direction:column!important;gap:6px!important;margin-top:4px!important}
+      .ai-chip{background:#fff!important;border:1px solid #e2e8f0!important;border-radius:12px!important;padding:8px 12px!important;font-size:.78rem!important;font-weight:600!important;color:#334155!important;text-align:left!important;display:flex!important;align-items:center!important;gap:8px!important;cursor:pointer!important;transition:all .2s ease!important}
+      .ai-chip:hover{background:#eff6ff!important;border-color:#bfdbfe!important;color:#1e40af!important}
+      .ai-typing-indicator{display:none!important;gap:10px!important;align-items:center!important;padding:4px 18px 10px!important;background:#f8fafc!important}
+      .ai-typing-indicator.active{display:flex!important}
+      .ai-typing-bubble{background:#fff!important;border:1px solid #e2e8f0!important;border-radius:16px!important;padding:10px 14px!important;display:flex!important;align-items:center!important;gap:4px!important}
+      .ai-typing-bubble span{width:6px!important;height:6px!important;background:#94a3b8!important;border-radius:50%!important;animation:typingBounce 1.2s infinite ease-in-out!important}
+      .ai-typing-bubble span:nth-child(2){animation-delay:.2s!important}
+      .ai-typing-bubble span:nth-child(3){animation-delay:.4s!important}
+      @keyframes typingBounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px);background:#3b82f6}}
+      .ai-chat-footer{padding:12px 16px!important;background:#fff!important;border-top:1px solid #e2e8f0!important;display:flex!important;align-items:center!important;gap:8px!important}
+      .ai-chat-input{flex:1!important;border:1.5px solid #e2e8f0!important;border-radius:9999px!important;padding:9px 16px!important;font-size:.86rem!important;outline:none!important;background:#f8fafc!important}
+      .ai-chat-input:focus{background:#fff!important;border-color:#3b82f6!important}
+      .ai-chat-send-btn{width:38px!important;height:38px!important;border-radius:50%!important;background:linear-gradient(135deg,#1e40af,#2563eb)!important;color:#fff!important;border:none!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:.85rem!important;cursor:pointer!important}
     </style>
   </head>
   <body class="site-body">
-    <!-- ========================= HEADER ========================= -->
     <header class="section-header">
-      <!-- Top nav bar -->
       <nav class="top-bar-nav py-2">
         <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
           <div class="d-flex align-items-center gap-3 small text-muted">
@@ -463,11 +89,9 @@
         </div>
       </nav>
 
-      <!-- Main header bar -->
       <section class="header-main">
         <div class="container">
           <div class="row align-items-center g-2 g-md-3">
-            <!-- Brand Logo -->
             <div class="col-6 col-md-3 col-lg-3">
               <a href="{% url 'home' %}" class="brand-wrap text-decoration-none d-flex align-items-center gap-2">
                 {% if site_setting.logo %}
@@ -484,47 +108,57 @@
               </a>
             </div>
 
-            <!-- Profile Menu, Bell & Cart Widgets (Top Right on Mobile) -->
             <div class="col-6 col-md-auto col-lg-auto order-1 order-lg-3 ms-auto">
               <div class="d-flex justify-content-end align-items-center gap-2 gap-sm-3">
                 {% if user.is_authenticated %}
-                <!-- Dedicated Profile Dropdown -->
                 <div class="dropdown">
-                  <button class="btn btn-light border rounded-pill px-2 px-sm-3 py-1 py-sm-2 d-flex align-items-center gap-2 dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 26px; height: 26px; font-size: 0.8rem;">
-                      <i class="fas fa-user"></i>
+                  <a href="#" class="widget-header d-flex align-items-center gap-2 text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="widget-icon-btn">
+                      <i class="fas fa-user text-primary"></i>
                     </div>
-                    <span class="small fw-bold text-dark d-none d-sm-inline">{{ user.first_name|default:user.username }}</span>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2" style="min-width: 200px; border-radius: 12px;">
-                    <li><h6 class="dropdown-header text-muted small pb-1">Signed in as <strong>{{ user.username }}</strong></h6></li>
+                    <div class="d-none d-xl-block text-start leading-tight">
+                      <div class="small fw-bold text-dark">{{ user.first_name|default:user.username }}</div>
+                      <div class="text-muted" style="font-size: 0.72rem;">Student Account</div>
+                    </div>
+                    <i class="fas fa-chevron-down text-muted small d-none d-xl-inline ms-1"></i>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2" style="border-radius: 14px; min-width: 220px;">
+                    <li class="px-3 py-2 border-bottom mb-1">
+                      <div class="fw-bold text-dark">{{ user.get_full_name|default:user.username }}</div>
+                      <div class="text-muted small text-truncate" style="font-size: 0.75rem;">{{ user.email }}</div>
+                    </li>
+                    <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}"><i class="fas fa-th-large me-2 text-primary"></i> Dashboard</a></li>
+                    <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=products"><i class="fas fa-box-open me-2 text-primary"></i> My Listings</a></li>
+                    <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=add"><i class="fas fa-plus-circle me-2 text-success"></i> Post New Listing</a></li>
+                    <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=orders"><i class="fas fa-receipt me-2 text-primary"></i> My Orders</a></li>
+                    <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=wishlist"><i class="fas fa-heart me-2 text-danger"></i> Saved Wishlist</a></li>
+                    <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=recvreq"><i class="fas fa-inbox me-2 text-warning"></i> Received Offers</a></li>
+                    {% if user.is_staff or user.is_superuser %}
                     <li><hr class="dropdown-divider my-1"></li>
-                    <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}"><i class="fas fa-chart-pie me-2 text-primary"></i> Dashboard</a></li>
-                    <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=products"><i class="fas fa-boxes me-2 text-info"></i> My Products</a></li>
-                    <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=orders"><i class="fas fa-receipt me-2 text-success"></i> My Orders</a></li>
-                    <li><a class="dropdown-item py-2 rounded" href="{% url 'user_profile' %}?tab=add"><i class="fas fa-plus-circle me-2 text-warning"></i> Post New Listing</a></li>
-                    <li><a class="dropdown-item py-2 rounded" href="{% url 'blog_create' %}"><i class="fas fa-pen-nib me-2 text-primary"></i> Write a Blog</a></li>
+                    <li><a class="dropdown-item py-2 rounded text-danger fw-semibold" href="/admin/" target="_blank"><i class="fas fa-shield-alt me-2"></i> Admin Panel</a></li>
+                    {% endif %}
                     <li><hr class="dropdown-divider my-1"></li>
-                    <li><a class="dropdown-item py-2 rounded text-danger" href="{% url 'student_logout' %}"><i class="fas fa-power-off me-2"></i> Log out</a></li>
+                    <li><a class="dropdown-item py-2 rounded text-danger" href="{% url 'student_logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Log Out</a></li>
                   </ul>
                 </div>
 
-                <!-- Notification Bell -->
-                <div class="widget-header position-relative" id="notifBellWrap" style="cursor:pointer;" onclick="toggleNotifPanel()">
-                  <div class="widget-icon-btn">
-                    <i class="fas fa-bell text-warning"></i>
-                  </div>
-                  <span class="badge bg-danger widget-badge" id="notifCountBadge" style="display:none;">0</span>
-                  <div class="notif-dropdown-panel" id="notifDropdownPanel">
-                    <div class="notif-dropdown-header d-flex justify-content-between align-items-center p-3 border-bottom">
-                      <strong>Notifications</strong>
-                      <button type="button" class="btn btn-link btn-sm p-0 text-primary text-decoration-none" onclick="markAllNotifRead(event)" style="font-size:0.78rem;">Mark all read</button>
+                <div class="position-relative" id="notifBellWrap">
+                  <a href="javascript:void(0)" class="widget-header position-relative text-decoration-none" id="notifBellBtn" onclick="toggleNotifPanel(event)" title="Notifications">
+                    <div class="widget-icon-btn">
+                      <i class="fas fa-bell text-secondary"></i>
                     </div>
-                    <div class="notif-dropdown-body" id="notifDropdownBody" style="max-height: 300px; overflow-y: auto;">
-                      <div class="text-center text-muted py-4 small">
-                        <i class="fas fa-bell-slash d-block mb-2" style="font-size:1.5rem;"></i>
-                        No notifications yet
-                      </div>
+                    <span class="badge bg-danger widget-badge" id="notifCountBadge" style="display:none;">0</span>
+                  </a>
+                  <div class="notif-dropdown-panel shadow-lg" id="notifDropdownPanel">
+                    <div class="p-3 bg-primary text-white d-flex align-items-center justify-content-between">
+                      <span class="fw-bold small"><i class="fas fa-bell me-1"></i> Notifications</span>
+                      <button type="button" class="btn btn-sm btn-link text-white text-decoration-none p-0 small opacity-75" onclick="markAllNotifRead(event)">Mark all read</button>
+                    </div>
+                    <div id="notifDropdownBody" style="max-height: 320px; overflow-y: auto;">
+                      <div class="text-center text-muted py-4 small"><i class="fas fa-spinner fa-spin me-1"></i> Loading...</div>
+                    </div>
+                    <div class="p-2 bg-light text-center border-top">
+                      <a href="{% url 'user_profile' %}?tab=orders" class="small text-primary text-decoration-none fw-semibold">View All in Dashboard &rarr;</a>
                     </div>
                   </div>
                 </div>
@@ -535,14 +169,12 @@
                 </div>
                 {% endif %}
 
-                <!-- Wishlist Link -->
                 <a href="{% url 'user_profile' %}?tab=wishlist" class="widget-header position-relative text-decoration-none" title="Saved Wishlist">
                   <div class="widget-icon-btn">
                     <i class="fas fa-heart text-danger"></i>
                   </div>
                 </a>
 
-                <!-- Shopping Bag Link -->
                 <a href="{% url 'cart:cart_detail' %}" class="widget-header position-relative text-decoration-none" title="My Shopping Bag">
                   <div class="widget-icon-btn">
                     <i class="fas fa-shopping-bag text-primary"></i>
@@ -552,16 +184,9 @@
               </div>
             </div>
 
-            <!-- Categories Dropdown & Nav Links (Inline on Desktop, Compact on Mobile) -->
             <div class="col-auto col-md-auto col-lg-auto order-3 order-lg-1 d-flex align-items-center gap-2">
               <div class="category-wrap dropdown">
-                <button
-                  type="button"
-                  class="btn btn-primary dropdown-toggle d-flex align-items-center gap-1 gap-sm-2"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                  style="padding: 0.55rem 0.9rem;"
-                >
+                <button type="button" class="btn btn-primary dropdown-toggle d-flex align-items-center gap-1 gap-sm-2" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0.55rem 0.9rem;">
                   <i class="fas fa-bars"></i>
                   <span class="d-none d-sm-inline">Categories</span>
                 </button>
@@ -587,38 +212,23 @@
               </a>
             </div>
 
-            <!-- Modern Search Bar with Live Instant Auto-Suggest -->
             <div class="col col-md col-lg order-2 order-lg-2 position-relative">
               <form action="{% url 'products' %}" method="GET" class="search-wrapper" id="globalSearchForm" autocomplete="off">
-                <input
-                  type="text"
-                  name="q"
-                  id="globalSearchInput"
-                  class="form-control"
-                  placeholder="Search textbooks, gadgets, modules..."
-                  aria-label="Search"
-                  value="{{ query|default:'' }}"
-                />
-                <button class="search-btn" type="submit" title="Search">
-                  <i class="fas fa-search"></i>
-                </button>
+                <input type="text" name="q" id="globalSearchInput" class="form-control" placeholder="Search textbooks, gadgets, modules..." aria-label="Search" value="{{ query|default:'' }}" />
+                <button class="search-btn" type="submit" title="Search"><i class="fas fa-search"></i></button>
               </form>
-              <!-- Live Auto-Suggest Dropdown Panel -->
               <div id="searchSuggestBox" class="search-suggest-dropdown"></div>
             </div>
           </div>
         </div>
       </section>
     </header>
-    <!-- ========================= HEADER END // ========================= -->
 
-    <!-- Main Content -->
     <main>
       {% block content %}
       {% endblock %}
     </main>
 
-    <!-- ========================= FOOTER ========================= -->
     <footer class="section-footer mt-5">
       <div class="container">
         <section class="footer-top py-5 border-top">
@@ -689,267 +299,8 @@
         </section>
       </div>
     </footer>
-    <!-- ========================= FOOTER END // ========================= -->
 
-    <!-- Bootstrap 5 JS Bundle (for standard dropdowns) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-    <!-- Cart Sync & Notifications Script -->
-    <script>
-      function addToCart(id, name, price, img) {
-        fetch(`/cart/add/${id}/`, {
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(r => r.json())
-        .then(data => {
-          if (data.status === 'success') {
-            updateCartBadge(data.cart_count);
-            showToast('Added to Bag', (name || 'Item') + ' was added to your shopping bag.', 'success');
-          } else if (data.status === 'error') {
-            showToast('Notice', data.message || 'Cannot add item to bag.', 'error');
-          } else if (data.status === 'warning') {
-            showToast('Stock Limit', data.message || 'Maximum stock reached.', 'info');
-          }
-        })
-        .catch(() => {
-          window.location.href = `/cart/add/${id}/`;
-        });
-      }
-
-      function updateCartBadge(customCount) {
-        let el = document.getElementById('cartCountBadge');
-        if (!el) return;
-        if (customCount !== undefined) {
-          el.textContent = customCount;
-          el.style.animation = 'none';
-          el.offsetHeight;
-          el.style.animation = 'pulse-ring 0.4s ease-out';
-        } else {
-          fetch('/cart/api/count/')
-            .then(r => r.json())
-            .then(d => {
-              el.textContent = d.count || 0;
-            })
-            .catch(() => {});
-        }
-      }
-
-      /* Premium Toast Notification */
-      function showToast(title, message, type) {
-        let existing = document.getElementById('globalToast');
-        if (existing) existing.remove();
-
-        let colors = { success: '#10b981', error: '#ef4444', info: '#2563eb' };
-        let icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
-
-        let toast = document.createElement('div');
-        toast.id = 'globalToast';
-        toast.style.cssText = `
-          position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-          background: #ffffff; border-radius: 16px; padding: 14px 20px;
-          box-shadow: 0 20px 40px rgba(15,23,42,0.15), 0 0 0 1px rgba(15,23,42,0.05);
-          display: flex; align-items: center; gap: 12px; min-width: 300px; max-width: 420px;
-          transform: translateY(20px) scale(0.95); opacity: 0;
-          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-          border-left: 4px solid ${colors[type] || colors.info};
-        `;
-        toast.innerHTML = `
-          <div style="width:36px;height:36px;border-radius:10px;background:${colors[type]}15;color:${colors[type]};display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">
-            <i class="fas ${icons[type]}"></i>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:700;font-size:0.88rem;color:#0f172a;">${title}</div>
-            <div style="font-size:0.8rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${message}</div>
-          </div>
-          <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem;padding:4px;">&times;</button>
-        `;
-        document.body.appendChild(toast);
-        requestAnimationFrame(() => {
-          toast.style.transform = 'translateY(0) scale(1)';
-          toast.style.opacity = '1';
-        });
-        setTimeout(() => {
-          toast.style.transform = 'translateY(20px) scale(0.95)';
-          toast.style.opacity = '0';
-          setTimeout(() => toast.remove(), 400);
-        }, 3500);
-      }
-
-      // Sticky Header Scroll Effect
-      let header = document.querySelector('.section-header');
-      let topBar = document.querySelector('.top-bar-nav');
-      window.addEventListener('scroll', () => {
-        if (window.scrollY > 60) {
-          if (header) header.classList.add('scrolled');
-          if (topBar) topBar.style.display = 'none';
-        } else {
-          if (header) header.classList.remove('scrolled');
-          if (topBar) topBar.style.display = '';
-        }
-      }, { passive: true });
-
-      // Notifications System
-      function toggleNotifPanel(e) {
-        if (e) e.stopPropagation();
-        let p = document.getElementById('notifDropdownPanel');
-        if (p) {
-          p.classList.toggle('show');
-          p.classList.toggle('active');
-          if (p.classList.contains('show')) fetchNotifs();
-        }
-      }
-
-      function fetchNotifs() {
-        fetch('/api/notifications/')
-          .then(r => r.json())
-          .then(d => {
-            let b = document.getElementById('notifCountBadge');
-            if (b) {
-              b.textContent = d.unread_count || 0;
-              b.style.display = d.unread_count > 0 ? 'inline-block' : 'none';
-            }
-            let body = document.getElementById('notifDropdownBody');
-            if (body) {
-              if (d.notifications && d.notifications.length) {
-                body.innerHTML = d.notifications.map(n => `
-                  <div class="p-3 border-bottom ${n.is_read ? 'bg-white' : 'bg-light'}" style="transition: all 0.15s ease;">
-                    <a href="${n.link || '#'}" onclick="markOneNotif(${n.id})" class="text-decoration-none text-dark d-flex align-items-start gap-2">
-                      <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center mt-1" style="width: 30px; height: 30px; font-size: 0.8rem; flex-shrink: 0;">
-                        <i class="fas ${n.icon || 'fa-bell'}"></i>
-                      </div>
-                      <div class="flex-grow-1">
-                        <div class="fw-bold small ${n.is_read ? 'text-secondary' : 'text-dark'}">${n.title}</div>
-                        <div class="small text-muted" style="font-size: 0.78rem; line-height: 1.4;">${n.message}</div>
-                        <span class="text-muted" style="font-size: 0.7rem;">${n.time_ago || ''}</span>
-                      </div>
-                      ${!n.is_read ? '<span class="badge bg-primary rounded-circle p-1 mt-2" style="width: 8px; height: 8px;"></span>' : ''}
-                    </a>
-                  </div>
-                `).join('');
-              } else {
-                body.innerHTML = `
-                  <div class="text-center text-muted py-4 small">
-                    <i class="fas fa-bell-slash d-block mb-2" style="font-size:1.5rem;"></i>
-                    No notifications yet
-                  </div>
-                `;
-              }
-            }
-          })
-          .catch(() => {});
-      }
-
-      function markAllNotifRead(e) {
-        if (e) e.stopPropagation();
-        fetch('/api/notifications/read-all/', {
-          method: 'POST',
-          headers: { 'X-CSRFToken': getCookie('csrftoken') || '' }
-        }).then(() => fetchNotifs());
-      }
-
-      function markOneNotif(id) {
-        const formData = new FormData();
-        formData.append('id', id);
-        fetch('/api/notifications/read/', {
-          method: 'POST',
-          headers: { 'X-CSRFToken': getCookie('csrftoken') || '' },
-          body: formData
-        }).catch(() => {});
-      }
-
-      document.addEventListener('click', function(e) {
-        const wrap = document.getElementById('notifBellWrap');
-        const panel = document.getElementById('notifDropdownPanel');
-        if (panel && wrap && !wrap.contains(e.target)) {
-          panel.classList.remove('show', 'active');
-        }
-      });
-
-      document.addEventListener('DOMContentLoaded', function() {
-        fetchNotifs();
-      });
-      // Cookie & Storage Form Draft Persistence Helpers
-      function setCookie(name, value, days = 30) {
-        let expires = "";
-        if (days) {
-          let date = new Date();
-          date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-          expires = "; expires=" + date.toUTCString();
-        }
-        document.cookie = name + "=" + (encodeURIComponent(value) || "") + expires + "; path=/; SameSite=Lax";
-      }
-
-      function getCookie(name) {
-        let nameEQ = name + "=";
-        let ca = document.cookie.split(';');
-        for (let i = 0; i < ca.length; i++) {
-          let c = ca[i];
-          while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-          if (c.indexOf(nameEQ) == 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
-        }
-        return null;
-      }
-
-      // Auto-save & Auto-restore Incomplete Work on Forms
-      function bindAutoDraft(formId, storageKey) {
-        const form = document.getElementById(formId);
-        if (!form) return;
-        
-        // Restore saved draft on load
-        try {
-          const raw = localStorage.getItem(storageKey) || getCookie(storageKey);
-          if (raw) {
-            const data = JSON.parse(raw);
-            Object.keys(data).forEach(k => {
-              const el = form.elements[k];
-              if (el && el.type !== 'password' && el.type !== 'file') {
-                if (el.type === 'radio') {
-                  if (el.value === data[k]) el.checked = true;
-                } else if (el.type === 'checkbox') {
-                  el.checked = Boolean(data[k]);
-                } else if (!el.value) {
-                  el.value = data[k];
-                }
-              }
-            });
-          }
-        } catch(e) {}
-
-        // Listen for user typing / input and auto-save in real-time
-        form.addEventListener('input', () => {
-          const data = {};
-          Array.from(form.elements).forEach(el => {
-            if (el.name && el.type !== 'password' && el.type !== 'file') {
-              if (el.type === 'radio') {
-                if (el.checked) data[el.name] = el.value;
-              } else if (el.type === 'checkbox') {
-                data[el.name] = el.checked;
-              } else {
-                data[el.name] = el.value;
-              }
-            }
-          });
-          const jsonStr = JSON.stringify(data);
-          localStorage.setItem(storageKey, jsonStr);
-          setCookie(storageKey, jsonStr, 7);
-        });
-
-        // Clear draft on successful submit
-        form.addEventListener('submit', () => {
-          localStorage.removeItem(storageKey);
-          setCookie(storageKey, '', -1);
-        });
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        updateCartBadge();
-        fetchNotifs();
-      });
-    </script>
-
-    <!-- ========================= ISLINGTON AI CHATBOT WIDGET ========================= -->
     <div id="aiChatWidget" class="ai-chat-widget">
-      <!-- Chat Toggle Floating Trigger Button -->
       <button type="button" id="aiChatToggleBtn" class="ai-chat-toggle-btn" onclick="toggleAiChat()" aria-label="Open Islington AI Assistant">
         <div class="ai-chat-btn-inner">
           <i class="fas fa-sparkles ai-sparkle-icon"></i>
@@ -960,9 +311,7 @@
         <span class="ai-btn-tooltip">Ask Islington AI</span>
       </button>
 
-      <!-- Chat Main Dialog Window -->
       <div id="aiChatBox" class="ai-chat-box shadow-xl">
-        <!-- Chat Header -->
         <div class="ai-chat-header">
           <div class="d-flex align-items-center gap-2">
             <div class="ai-avatar-badge">
@@ -975,16 +324,11 @@
             </div>
           </div>
           <div class="d-flex align-items-center gap-1">
-            <button type="button" class="ai-header-btn" onclick="resetAiChat()" title="Clear Chat">
-              <i class="fas fa-rotate-right"></i>
-            </button>
-            <button type="button" class="ai-header-btn" onclick="toggleAiChat()" title="Minimize">
-              <i class="fas fa-minus"></i>
-            </button>
+            <button type="button" class="ai-header-btn" onclick="resetAiChat()" title="Clear Chat"><i class="fas fa-rotate-right"></i></button>
+            <button type="button" class="ai-header-btn" onclick="toggleAiChat()" title="Minimize"><i class="fas fa-minus"></i></button>
           </div>
         </div>
 
-        <!-- Chat Messages Container -->
         <div id="aiChatMessages" class="ai-chat-messages">
           <div class="ai-msg ai-msg-bot">
             <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
@@ -993,438 +337,268 @@
               <p class="mb-0 small text-secondary">I am your campus assistant. How can I help you with textbooks, auctions, campus pickup, or student blogs?</p>
             </div>
           </div>
-
-          <!-- Quick Suggestion Action Chips (Clean FontAwesome Icons) -->
           <div class="ai-chips-wrap" id="aiSuggestionChips">
-            <button type="button" class="ai-chip" onclick="sendAiChip('Where is campus pickup?')">
-              <i class="fas fa-map-marker-alt text-danger"></i> Campus Pickup Blocks
-            </button>
-            <button type="button" class="ai-chip" onclick="sendAiChip('How do I sell my item?')">
-              <i class="fas fa-plus-circle text-primary"></i> How to Sell Items
-            </button>
-            <button type="button" class="ai-chip" onclick="sendAiChip('How do live auctions work?')">
-              <i class="fas fa-gavel text-warning"></i> 24h Live Auctions
-            </button>
-            <button type="button" class="ai-chip" onclick="sendAiChip('What payment methods are supported?')">
-              <i class="fas fa-credit-card text-success"></i> Payment Methods
-            </button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('Where is campus pickup?')"><i class="fas fa-map-marker-alt text-danger"></i> Campus Pickup Blocks</button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('How do I sell my item?')"><i class="fas fa-plus-circle text-primary"></i> How to Sell Items</button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('How do live auctions work?')"><i class="fas fa-gavel text-warning"></i> 24h Live Auctions</button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('What payment methods are supported?')"><i class="fas fa-credit-card text-success"></i> Payment Methods</button>
           </div>
         </div>
 
-        <!-- Typing Indicator -->
         <div id="aiTypingIndicator" class="ai-typing-indicator">
           <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
-          <div class="ai-typing-bubble">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
+          <div class="ai-typing-bubble"><span></span><span></span><span></span></div>
         </div>
 
-        <!-- Chat Input Footer -->
         <form id="aiChatForm" class="ai-chat-footer" onsubmit="handleAiChatSubmit(event)">
-          <input
-            type="text"
-            id="aiChatInput"
-            class="ai-chat-input"
-            placeholder="Ask anything about the marketplace..."
-            autocomplete="off"
-          />
-          <button type="submit" id="aiChatSendBtn" class="ai-chat-send-btn" title="Send">
-            <i class="fas fa-paper-plane"></i>
-          </button>
+          <input type="text" id="aiChatInput" class="ai-chat-input" placeholder="Ask anything about the marketplace..." autocomplete="off" />
+          <button type="submit" id="aiChatSendBtn" class="ai-chat-send-btn" title="Send"><i class="fas fa-paper-plane"></i></button>
         </form>
       </div>
     </div>
 
-    <!-- AI Chatbot Client-side Knowledge Script -->
-    <script>
-      let isAiChatOpen = false;
-
-      function toggleAiChat() {
-        const box = document.getElementById('aiChatBox');
-        const btn = document.getElementById('aiChatToggleBtn');
-        isAiChatOpen = !isAiChatOpen;
-        if (isAiChatOpen) {
-          box.classList.add('active');
-          btn.classList.add('open');
-          setTimeout(() => document.getElementById('aiChatInput')?.focus(), 250);
-        } else {
-          box.classList.remove('active');
-          btn.classList.remove('open');
-        }
-      }
-
-      function resetAiChat() {
-        const msgContainer = document.getElementById('aiChatMessages');
-        msgContainer.innerHTML = `
-          <div class="ai-msg ai-msg-bot">
-            <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
-            <div class="ai-msg-bubble">
-              <p class="mb-1 fw-semibold text-dark">Chat cleared.</p>
-              <p class="mb-0 small text-secondary">How else can I assist you with Islington Marketplace?</p>
-            </div>
-          </div>
-          <div class="ai-chips-wrap" id="aiSuggestionChips">
-            <button type="button" class="ai-chip" onclick="sendAiChip('Where is campus pickup?')">
-              <i class="fas fa-map-marker-alt text-danger"></i> Campus Pickup Blocks
-            </button>
-            <button type="button" class="ai-chip" onclick="sendAiChip('How do I sell my item?')">
-              <i class="fas fa-plus-circle text-primary"></i> How to Sell Items
-            </button>
-            <button type="button" class="ai-chip" onclick="sendAiChip('How do live auctions work?')">
-              <i class="fas fa-gavel text-warning"></i> 24h Live Auctions
-            </button>
-          </div>
-        `;
-      }
-
-      function sendAiChip(text) {
-        document.getElementById('aiChatInput').value = text;
-        handleAiChatSubmit(new Event('submit'));
-      }
-
-      async function handleAiChatSubmit(e) {
-        if (e) e.preventDefault();
-        const input = document.getElementById('aiChatInput');
-        const query = input.value.trim();
-        if (!query) return;
-
-        // Append User Message
-        appendAiMessage(query, 'user');
-        input.value = '';
-
-        // Hide Suggestion Chips
-        const chips = document.getElementById('aiSuggestionChips');
-        if (chips) chips.style.display = 'none';
-
-        // Show Typing Indicator cleanly
-        const typing = document.getElementById('aiTypingIndicator');
-        typing.classList.add('active');
-        scrollAiBottom();
-
-        try {
-          // Call Backend Chatbot API Endpoint (Ready for Agentic AI)
-          const response = await fetch(`/api/chatbot/?message=${encodeURIComponent(query)}`);
-          if (response.ok) {
-            const data = await response.json();
-            typing.classList.remove('active');
-            appendAiMessage(data.reply || generateAiFallback(query), 'bot');
-            return;
-          }
-        } catch (err) {
-          // Fallback to instant local knowledge base
-        }
-
-        setTimeout(() => {
-          typing.classList.remove('active');
-          appendAiMessage(generateAiFallback(query), 'bot');
-        }, 400);
-      }
-
-      function appendAiMessage(text, sender) {
-        const container = document.getElementById('aiChatMessages');
-        const div = document.createElement('div');
-        div.className = `ai-msg ai-msg-${sender}`;
-        if (sender === 'bot') {
-          div.innerHTML = `
-            <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
-            <div class="ai-msg-bubble">${text}</div>
-          `;
-        } else {
-          div.innerHTML = `
-            <div class="ai-msg-bubble user-bubble">${escapeHtml(text)}</div>
-          `;
-        }
-        container.appendChild(div);
-        scrollAiBottom();
-      }
-
-      function scrollAiBottom() {
-        const container = document.getElementById('aiChatMessages');
-        container.scrollTop = container.scrollHeight;
-      }
-
-      function escapeHtml(str) {
-        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      }
-
-      function generateAiFallback(q) {
-        const query = q.toLowerCase();
-
-        if (query.includes('pickup') || query.includes('location') || query.includes('block') || query.includes('where')) {
-          return `
-            <strong><i class="fas fa-map-marker-alt text-danger me-1"></i> Campus Pickup Blocks:</strong><br>
-            Meet peer sellers or collect items at verified Islington campus blocks:
-            <ul class="mb-1 mt-1 ps-3 small">
-              <li>Kumari Hall</li>
-              <li>Alumini Block</li>
-              <li>Skill Block</li>
-              <li>Nepal Block</li>
-              <li>Brit House</li>
-              <li>Main Block &amp; Himal Block</li>
-            </ul>
-            <em>Campus Pickup is free and safe inside college premises.</em>
-          `;
-        }
-
-        if (query.includes('sell') || query.includes('list') || query.includes('post') || query.includes('upload')) {
-          return `
-            <strong><i class="fas fa-box-open text-primary me-1"></i> How to Sell Items:</strong><br>
-            1. Log in to your student account.<br>
-            2. Open <a href="/profile/?tab=add" class="text-primary fw-bold">Post New Listing</a>.<br>
-            3. Fill in title, price, category, and upload a clear photo.<br>
-            4. College admin reviews and approves the listing to make it live!
-          `;
-        }
-
-        if (query.includes('auction') || query.includes('bid') || query.includes('24h') || query.includes('bidding')) {
-          return `
-            <strong><i class="fas fa-gavel text-warning me-1"></i> 24-Hour Live Auctions:</strong><br>
-            • Student sellers can auction items starting from a base price.<br>
-            • Students place bids in real-time.<br>
-            • The auction closes after 24 hours and the highest bidder wins automatically.
-          `;
-        }
-
-        if (query.includes('pay') || query.includes('esewa') || query.includes('khalti') || query.includes('cod') || query.includes('cash')) {
-          return `
-            <strong><i class="fas fa-credit-card text-success me-1"></i> Payment Options:</strong><br>
-            • <strong>Cash on Campus Pickup (COD)</strong> — Pay in person when meeting at your campus block.<br>
-            • <strong>eSewa &amp; Khalti Wallet</strong> — Instant digital payment for direct deliveries.
-          `;
-        }
-
-        if (query.includes('blog') || query.includes('forum') || query.includes('discussion')) {
-          return `
-            <strong><i class="fas fa-newspaper text-primary me-1"></i> Student Blogs &amp; Community:</strong><br>
-            Visit the Blogs tab to ask questions, discuss coursework, and share notes with peers!
-          `;
-        }
-
-        return `
-          I can help you with Islington Marketplace! You can ask about:
-          <ul class="mb-0 mt-1 ps-3 small">
-            <li>Campus Pickup Blocks</li>
-            <li>Posting &amp; Selling Textbooks/Gear</li>
-            <li>24-Hour Live Auctions</li>
-            <li>Payment &amp; Delivery options</li>
-            <li>Student Blogs &amp; Discussions</li>
-          </ul>
-        `;
-      }
-
-      // Anime.js Scroll Reveals & Interactive Animations
-      function initScrollAnimations() {
-        if (typeof anime === 'undefined') return;
-
-        // Smooth staggered reveal on scroll
-        const observerOptions = { root: null, rootMargin: '0px 0px -40px 0px', threshold: 0.08 };
-
-        const revealObserver = new IntersectionObserver((entries, observer) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              const target = entry.target;
-              observer.unobserve(target);
-
-              // If container has grid children, stagger them
-              const cards = target.querySelectorAll('.product-card-col, .card-product-grid, .blog-card, .category-card');
-              if (cards.length > 0) {
-                anime({
-                  targets: cards,
-                  opacity: [0, 1],
-                  translateY: [24, 0],
-                  scale: [0.97, 1],
-                  delay: anime.stagger(50, { start: 40 }),
-                  duration: 650,
-                  easing: 'easeOutCubic'
-                });
-              } else {
-                anime({
-                  targets: target,
-                  opacity: [0, 1],
-                  translateY: [20, 0],
-                  duration: 600,
-                  easing: 'easeOutCubic'
-                });
-              }
-            }
-          });
-        }, observerOptions);
-
-        document.querySelectorAll('.section-name, .section-heading, .card-product-grid, .dashboard-panel, .blog-post-card, .hero-slide-content, .filter-chips-bar').forEach(el => {
-          el.style.willChange = 'transform, opacity';
-          revealObserver.observe(el);
-        });
-
-        // Subtle Spring Micro-interactions for interactive chips and buttons
-        document.querySelectorAll('.filter-chip, .ai-chip, .btn-card-primary, .btn-primary').forEach(btn => {
-          btn.addEventListener('mouseenter', () => {
-            anime({ targets: btn, scale: 1.03, duration: 200, easing: 'easeOutQuad' });
-          });
-          btn.addEventListener('mouseleave', () => {
-            anime({ targets: btn, scale: 1.0, duration: 200, easing: 'easeOutQuad' });
-          });
-        });
-      }
-
-      // Smooth Back to Top Scroll using Anime.js
-      function setupBackToTop() {
-        const btn = document.getElementById('backToTopBtn');
-        if (!btn) return;
-
-        window.addEventListener('scroll', () => {
-          if (window.scrollY > 280) {
-            btn.classList.add('visible');
-          } else {
-            btn.classList.remove('visible');
-          }
-        }, { passive: true });
-
-        btn.addEventListener('click', () => {
-          if (typeof anime !== 'undefined') {
-            const scrollObj = { y: window.scrollY };
-            anime({
-              targets: scrollObj,
-              y: 0,
-              duration: 650,
-              easing: 'easeInOutCubic',
-              update: () => window.scrollTo(0, scrollObj.y)
-            });
-          } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-        });
-      }
-
-      // ==========================================
-      // Live Instant Search Auto-Suggest
-      // ==========================================
-      function initLiveSearch() {
-        const searchInput = document.getElementById('globalSearchInput');
-        const suggestBox = document.getElementById('searchSuggestBox');
-        if (!searchInput || !suggestBox) return;
-
-        let debounceTimer = null;
-
-        searchInput.addEventListener('input', (e) => {
-          const query = e.target.value.trim();
-          clearTimeout(debounceTimer);
-
-          if (query.length < 2) {
-            suggestBox.innerHTML = '';
-            suggestBox.classList.remove('show');
-            return;
-          }
-
-          debounceTimer = setTimeout(() => {
-            fetch(`/products/suggest/?q=${encodeURIComponent(query)}`)
-              .then(res => res.json())
-              .then(data => {
-                if (data.results && data.results.length > 0) {
-                  let html = '';
-                  data.results.forEach(item => {
-                    html += `
-                      <a href="${item.url}" class="suggest-item">
-                        <img src="${item.image}" alt="${escapeHtml(item.name)}" class="suggest-item-img" onerror="this.src='/static/images/default.jpg';" />
-                        <div class="flex-grow-1 overflow-hidden">
-                          <div class="suggest-item-name">${escapeHtml(item.name)}</div>
-                          <div class="suggest-item-meta">
-                            <span class="badge bg-light text-secondary border px-2 py-0">${escapeHtml(item.category)}</span>
-                            <span class="suggest-item-price">Rs. ${item.price}</span>
-                          </div>
-                        </div>
-                        <i class="fas fa-chevron-right text-muted small ms-2"></i>
-                      </a>
-                    `;
-                  });
-                  html += `
-                    <a href="/products/?q=${encodeURIComponent(query)}" class="suggest-view-all">
-                      <i class="fas fa-search me-1"></i> View all results for "${escapeHtml(query)}"
-                    </a>
-                  `;
-                  suggestBox.innerHTML = html;
-                  suggestBox.classList.add('show');
-                } else {
-                  suggestBox.innerHTML = `
-                    <div class="p-3 text-center text-muted small">
-                      <i class="fas fa-search me-1"></i> No matching products found.
-                    </div>
-                  `;
-                  suggestBox.classList.add('show');
-                }
-              })
-              .catch(() => {
-                suggestBox.classList.remove('show');
-              });
-          }, 180);
-        });
-
-        // Close on click outside
-        document.addEventListener('click', (e) => {
-          if (!searchInput.contains(e.target) && !suggestBox.contains(e.target)) {
-            suggestBox.classList.remove('show');
-          }
-        });
-
-        // Close on Escape key
-        searchInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape') {
-            suggestBox.classList.remove('show');
-          }
-        });
-      }
-
-      // ==========================================
-      // Wishlist Toggle Function
-      // ==========================================
-      function toggleWishlist(productId, btnElement) {
-        {% if not user.is_authenticated %}
-        showToast('Please sign in to save items to your wishlist.', 'warning');
-        setTimeout(() => window.location.href = "{% url 'student_login' %}", 1200);
-        return;
-        {% endif %}
-
-        fetch(`/products/${productId}/wishlist/`, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': getCsrfToken(),
-            'Content-Type': 'application/json'
-          }
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'ok') {
-            const icon = btnElement ? btnElement.querySelector('i') : null;
-            if (data.action === 'added') {
-              if (btnElement) btnElement.classList.add('active');
-              if (icon) icon.className = 'fas fa-heart text-danger';
-              showToast('Added to your Wishlist!', 'success');
-              if (typeof anime !== 'undefined' && btnElement) {
-                anime({ targets: btnElement, scale: [1, 1.35, 1], duration: 400, easing: 'easeOutElastic(1, .5)' });
-              }
-            } else {
-              if (btnElement) btnElement.classList.remove('active');
-              if (icon) icon.className = 'far fa-heart text-muted';
-              showToast('Removed from Wishlist.', 'info');
-            }
-          }
-        })
-        .catch(() => {
-          showToast('Unable to update wishlist. Please try again.', 'error');
-        });
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        initScrollAnimations();
-        setupBackToTop();
-        initLiveSearch();
-      });
-    </script>
-
-    <!-- Floating Back to Top Button -->
     <button type="button" id="backToTopBtn" aria-label="Back to Top" title="Back to Top">
       <i class="fas fa-arrow-up"></i>
     </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+      function getCsrfToken(){return document.cookie.split('; ').find(r=>r.startsWith('csrftoken='))?.split('=')[1]||document.querySelector('[name=csrfmiddlewaretoken]')?.value||'';}
+      function getCookie(n){let m=document.cookie.match(new RegExp('(^| )'+n+'=([^;]+)'));return m?decodeURIComponent(m[2]):null;}
+      function setCookie(n,v,d=30){let e='';if(d){let t=new Date();t.setTime(t.getTime()+d*864e5);e='; expires='+t.toUTCString();}document.cookie=n+'='+(encodeURIComponent(v)||'')+e+'; path=/; SameSite=Lax';}
+
+      function showToast(title,message,type='info'){
+        let ex=document.getElementById('globalToast');if(ex)ex.remove();
+        let c={success:'#10b981',error:'#ef4444',info:'#2563eb',warning:'#f59e0b'};
+        let ic={success:'fa-check-circle',error:'fa-times-circle',info:'fa-info-circle',warning:'fa-exclamation-triangle'};
+        let t=document.createElement('div');t.id='globalToast';
+        t.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:99999;background:#fff;border-radius:16px;padding:14px 20px;box-shadow:0 20px 40px rgba(15,23,42,.15);display:flex;align-items:center;gap:12px;min-width:280px;max-width:420px;transform:translateY(20px) scale(.95);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);border-left:4px solid ${c[type]||c.info};`;
+        t.innerHTML=`<div style="width:36px;height:36px;border-radius:10px;background:${c[type]||c.info}15;color:${c[type]||c.info};display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;"><i class="fas ${ic[type]||ic.info}"></i></div><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:.88rem;color:#0f172a;">${title}</div><div style="font-size:.8rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${message||''}</div></div><button onclick="this.parentElement.remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem;">&times;</button>`;
+        document.body.appendChild(t);
+        requestAnimationFrame(()=>{t.style.transform='translateY(0) scale(1)';t.style.opacity='1';});
+        setTimeout(()=>{t.style.transform='translateY(20px) scale(.95)';t.style.opacity='0';setTimeout(()=>t.remove(),350);},3500);
+      }
+
+      function addToCart(id,name,price,img){
+        fetch(`/cart/add/${id}/`,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(r=>r.json()).then(d=>{
+          if(d.status==='success'){updateCartBadge(d.cart_count);showToast('Added to Bag',(name||'Item')+' added to bag.','success');}
+          else if(d.status==='error'){showToast('Notice',d.message||'Cannot add item.','error');}
+          else if(d.status==='warning'){showToast('Stock Limit',d.message||'Stock limit reached.','info');}
+        }).catch(()=>{window.location.href=`/cart/add/${id}/`;});
+      }
+
+      function updateCartBadge(count){
+        let el=document.getElementById('cartCountBadge');if(!el)return;
+        if(count!==undefined){el.textContent=count;}
+        else{fetch('/cart/api/count/').then(r=>r.json()).then(d=>{el.textContent=d.count||0;}).catch(()=>{});}
+      }
+
+      function toggleNotifPanel(e){
+        if(e)e.stopPropagation();
+        let p=document.getElementById('notifDropdownPanel');
+        if(p){p.classList.toggle('show');p.classList.toggle('active');if(p.classList.contains('show'))fetchNotifs();}
+      }
+
+      function fetchNotifs(){
+        fetch('/api/notifications/').then(r=>r.json()).then(d=>{
+          let b=document.getElementById('notifCountBadge');
+          if(b){b.textContent=d.unread_count||0;b.style.display=d.unread_count>0?'inline-block':'none';}
+          let body=document.getElementById('notifDropdownBody');
+          if(body){
+            if(d.notifications&&d.notifications.length){
+              body.innerHTML=d.notifications.map(n=>`
+                <div class="p-3 border-bottom ${n.is_read?'bg-white':'bg-light'}">
+                  <a href="${n.link||'#'}" onclick="markOneNotif(${n.id})" class="text-decoration-none text-dark d-flex align-items-start gap-2">
+                    <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center mt-1" style="width:30px;height:30px;font-size:.8rem;flex-shrink:0;">
+                      <i class="fas ${n.icon||'fa-bell'}"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="fw-bold small ${n.is_read?'text-secondary':'text-dark'}">${n.title}</div>
+                      <div class="small text-muted" style="font-size:.78rem;line-height:1.4;">${n.message}</div>
+                      <span class="text-muted" style="font-size:.7rem;">${n.time_ago||''}</span>
+                    </div>
+                    ${!n.is_read?'<span class="badge bg-primary rounded-circle p-1 mt-2" style="width:8px;height:8px;"></span>':''}
+                  </a>
+                </div>
+              `).join('');
+            }else{
+              body.innerHTML='<div class="text-center text-muted py-4 small"><i class="fas fa-bell-slash d-block mb-2 fs-4"></i>No notifications yet</div>';
+            }
+          }
+        }).catch(()=>{});
+      }
+
+      function markAllNotifRead(e){if(e)e.stopPropagation();fetch('/api/notifications/read-all/',{method:'POST',headers:{'X-CSRFToken':getCookie('csrftoken')||getCsrfToken()}}).then(()=>fetchNotifs());}
+      function markOneNotif(id){const fd=new FormData();fd.append('id',id);fetch('/api/notifications/read/',{method:'POST',headers:{'X-CSRFToken':getCookie('csrftoken')||getCsrfToken()},body:fd}).catch(()=>{});}
+
+      let isAiChatOpen=false;
+      function toggleAiChat(){
+        const box=document.getElementById('aiChatBox'),btn=document.getElementById('aiChatToggleBtn');
+        isAiChatOpen=!isAiChatOpen;
+        box.classList.toggle('active',isAiChatOpen);
+        btn.classList.toggle('open',isAiChatOpen);
+        if(isAiChatOpen)setTimeout(()=>document.getElementById('aiChatInput')?.focus(),200);
+      }
+
+      function resetAiChat(){
+        document.getElementById('aiChatMessages').innerHTML=`
+          <div class="ai-msg ai-msg-bot"><div class="ai-msg-avatar"><i class="fas fa-robot"></i></div><div class="ai-msg-bubble"><p class="mb-1 fw-semibold text-dark">Chat cleared.</p><p class="mb-0 small text-secondary">How else can I assist you with Islington Marketplace?</p></div></div>
+          <div class="ai-chips-wrap" id="aiSuggestionChips">
+            <button type="button" class="ai-chip" onclick="sendAiChip('Where is campus pickup?')"><i class="fas fa-map-marker-alt text-danger"></i> Campus Pickup Blocks</button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('How do I sell my item?')"><i class="fas fa-plus-circle text-primary"></i> How to Sell Items</button>
+            <button type="button" class="ai-chip" onclick="sendAiChip('How do live auctions work?')"><i class="fas fa-gavel text-warning"></i> 24h Live Auctions</button>
+          </div>
+        `;
+      }
+
+      function sendAiChip(t){document.getElementById('aiChatInput').value=t;handleAiChatSubmit(new Event('submit'));}
+
+      async function handleAiChatSubmit(e){
+        if(e)e.preventDefault();
+        const inp=document.getElementById('aiChatInput'),q=inp.value.trim();if(!q)return;
+        appendAiMessage(q,'user');inp.value='';
+        const chips=document.getElementById('aiSuggestionChips');if(chips)chips.style.display='none';
+        const typing=document.getElementById('aiTypingIndicator');typing.classList.add('active');scrollAiBottom();
+        try{
+          const res=await fetch(`/api/chatbot/?message=${encodeURIComponent(q)}`);
+          if(res.ok){
+            const d=await res.json();
+            typing.classList.remove('active');
+            appendAiMessage(d.reply||generateAiFallback(q),'bot');
+            return;
+          }
+        }catch(err){}
+        setTimeout(()=>{typing.classList.remove('active');appendAiMessage(generateAiFallback(q),'bot');},350);
+      }
+
+      function appendAiMessage(text,sender){
+        const c=document.getElementById('aiChatMessages'),d=document.createElement('div');
+        d.className=`ai-msg ai-msg-${sender}`;
+        d.innerHTML=sender==='bot'?`<div class="ai-msg-avatar"><i class="fas fa-robot"></i></div><div class="ai-msg-bubble">${text}</div>`:`<div class="ai-msg-bubble user-bubble">${escapeHtml(text)}</div>`;
+        c.appendChild(d);scrollAiBottom();
+      }
+      function scrollAiBottom(){const c=document.getElementById('aiChatMessages');if(c)c.scrollTop=c.scrollHeight;}
+      function escapeHtml(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+      function generateAiFallback(q){
+        const s=q.toLowerCase();
+        if(s.includes('pickup')||s.includes('location')||s.includes('block')||s.includes('where'))return `<strong><i class="fas fa-map-marker-alt text-danger me-1"></i> Campus Pickup Blocks:</strong><br>Meet peer sellers at verified Islington blocks:<ul class="mb-1 mt-1 ps-3 small"><li>Kumari Hall</li><li>Alumini Block</li><li>Skill Block</li><li>Nepal Block</li><li>Brit House</li><li>Main Block &amp; Himal Block</li></ul>`;
+        if(s.includes('sell')||s.includes('list')||s.includes('post')||s.includes('upload'))return `<strong><i class="fas fa-box-open text-primary me-1"></i> How to Sell Items:</strong><br>1. Log in to your student account.<br>2. Open <a href="/profile/?tab=add" class="text-primary fw-bold">Post New Listing</a>.<br>3. Fill details and submit for admin approval.`;
+        if(s.includes('auction')||s.includes('bid')||s.includes('24h'))return `<strong><i class="fas fa-gavel text-warning me-1"></i> 24-Hour Live Auctions:</strong><br>Sellers auction items from a starting price. Highest bidder wins after 24h.`;
+        if(s.includes('pay')||s.includes('esewa')||s.includes('khalti')||s.includes('cod'))return `<strong><i class="fas fa-credit-card text-success me-1"></i> Payment Options:</strong><br>• Cash on Campus Pickup (COD)<br>• eSewa &amp; Khalti Wallet payments.`;
+        if(s.includes('blog')||s.includes('forum'))return `<strong><i class="fas fa-newspaper text-primary me-1"></i> Student Blogs:</strong><br>Visit the Blogs tab to discuss coursework and share study tips!`;
+        return `I can help with Islington Marketplace! Ask about:<ul class="mb-0 mt-1 ps-3 small"><li>Campus Pickup Blocks</li><li>Posting Items</li><li>24-Hour Auctions</li><li>Payments</li><li>Blogs</li></ul>`;
+      }
+
+      function initScrollAnimations(){
+        if(typeof anime==='undefined')return;
+        const obs=new IntersectionObserver((entries,observer)=>{
+          entries.forEach(entry=>{
+            if(entry.isIntersecting){
+              const t=entry.target;observer.unobserve(t);
+              const cards=t.querySelectorAll('.product-card-col,.card-product-grid,.blog-card,.category-card');
+              if(cards.length>0){
+                anime({targets:cards,opacity:[0,1],translateY:[24,0],scale:[.97,1],delay:anime.stagger(50,{start:40}),duration:650,easing:'easeOutCubic'});
+              }else{
+                anime({targets:t,opacity:[0,1],translateY:[20,0],duration:600,easing:'easeOutCubic'});
+              }
+            }
+          });
+        },{threshold:.08});
+        document.querySelectorAll('.section-name,.section-heading,.card-product-grid,.dashboard-panel,.blog-post-card,.hero-slide-content,.filter-chips-bar').forEach(el=>obs.observe(el));
+        document.querySelectorAll('.filter-chip,.ai-chip,.btn-card-primary,.btn-primary').forEach(b=>{
+          b.addEventListener('mouseenter',()=>anime({targets:b,scale:1.03,duration:200,easing:'easeOutQuad'}));
+          b.addEventListener('mouseleave',()=>anime({targets:b,scale:1,duration:200,easing:'easeOutQuad'}));
+        });
+      }
+
+      function setupBackToTop(){
+        const btn=document.getElementById('backToTopBtn');if(!btn)return;
+        window.addEventListener('scroll',()=>{btn.classList.toggle('visible',window.scrollY>280);},{passive:true});
+        btn.addEventListener('click',()=>{
+          if(typeof anime!=='undefined'){
+            const s={y:window.scrollY};
+            anime({targets:s,y:0,duration:650,easing:'easeInOutCubic',update:()=>window.scrollTo(0,s.y)});
+          }else{window.scrollTo({top:0,behavior:'smooth'});}
+        });
+      }
+
+      function initLiveSearch(){
+        const inp=document.getElementById('globalSearchInput'),box=document.getElementById('searchSuggestBox');
+        if(!inp||!box)return;
+        let t=null;
+        inp.addEventListener('input',e=>{
+          const q=e.target.value.trim();clearTimeout(t);
+          if(q.length<2){box.innerHTML='';box.classList.remove('show');return;}
+          t=setTimeout(()=>{
+            fetch(`/products/suggest/?q=${encodeURIComponent(q)}`).then(r=>r.json()).then(d=>{
+              if(d.results&&d.results.length>0){
+                box.innerHTML=d.results.map(i=>`
+                  <a href="${i.url}" class="suggest-item">
+                    <img src="${i.image}" alt="${escapeHtml(i.name)}" class="suggest-item-img" onerror="this.src='/static/images/default.jpg';" />
+                    <div class="flex-grow-1 overflow-hidden">
+                      <div class="suggest-item-name">${escapeHtml(i.name)}</div>
+                      <div class="suggest-item-meta">
+                        <span class="badge bg-light text-secondary border px-2 py-0">${escapeHtml(i.category)}</span>
+                        <span class="suggest-item-price">Rs. ${i.price}</span>
+                      </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-muted small ms-2"></i>
+                  </a>
+                `).join('')+`<a href="/products/?q=${encodeURIComponent(q)}" class="suggest-view-all"><i class="fas fa-search me-1"></i> View all results for "${escapeHtml(q)}"</a>`;
+                box.classList.add('show');
+              }else{
+                box.innerHTML='<div class="p-3 text-center text-muted small"><i class="fas fa-search me-1"></i> No matching products found.</div>';
+                box.classList.add('show');
+              }
+            }).catch(()=>box.classList.remove('show'));
+          },180);
+        });
+        document.addEventListener('click',e=>{if(!inp.contains(e.target)&&!box.contains(e.target))box.classList.remove('show');});
+        inp.addEventListener('keydown',e=>{if(e.key==='Escape')box.classList.remove('show');});
+      }
+
+      function toggleWishlist(productId,btnElement){
+        {% if not user.is_authenticated %}
+        showToast('Sign In Required','Please sign in to save items to your wishlist.','warning');
+        setTimeout(()=>window.location.href="{% url 'student_login' %}",1200);
+        return;
+        {% endif %}
+        fetch(`/products/${productId}/wishlist/`,{method:'POST',headers:{'X-CSRFToken':getCsrfToken(),'Content-Type':'application/json'}})
+        .then(r=>r.json()).then(d=>{
+          if(d.status==='ok'){
+            const icon=btnElement?btnElement.querySelector('i'):null;
+            if(d.action==='added'){
+              if(btnElement)btnElement.classList.add('active');
+              if(icon)icon.className='fas fa-heart text-danger';
+              showToast('Wishlist Updated','Added to your Wishlist!','success');
+              if(typeof anime!=='undefined'&&btnElement)anime({targets:btnElement,scale:[1,1.35,1],duration:400,easing:'easeOutElastic(1, .5)'});
+            }else{
+              if(btnElement)btnElement.classList.remove('active');
+              if(icon)icon.className='far fa-heart text-muted';
+              showToast('Wishlist Updated','Removed from Wishlist.','info');
+            }
+          }
+        }).catch(()=>showToast('Error','Unable to update wishlist.','error'));
+      }
+
+      document.addEventListener('DOMContentLoaded',()=>{
+        updateCartBadge();
+        fetchNotifs();
+        initScrollAnimations();
+        setupBackToTop();
+        initLiveSearch();
+        const header=document.querySelector('.section-header'),topBar=document.querySelector('.top-bar-nav');
+        window.addEventListener('scroll',()=>{
+          if(window.scrollY>60){if(header)header.classList.add('scrolled');if(topBar)topBar.style.display='none';}
+          else{if(header)header.classList.remove('scrolled');if(topBar)topBar.style.display='';}
+        },{passive:true});
+        document.addEventListener('click',e=>{
+          const wrap=document.getElementById('notifBellWrap'),panel=document.getElementById('notifDropdownPanel');
+          if(panel&&wrap&&!wrap.contains(e.target))panel.classList.remove('show','active');
+        });
+      });
+    </script>
   </body>
 </html>
