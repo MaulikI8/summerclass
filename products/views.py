@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse
-from .models import Category, Product, TradeOffer, Wishlist
+from .models import Category, Product, TradeOffer, Wishlist, ItemRequest
 from sitesetting.models import Notification
 
 def products(request):
@@ -82,3 +82,39 @@ def respond_offer(request, offer_id, action):
         Notification.notify(offer.sender, f"Offer {status_word}: {offer.product.name}", f"The seller {request.user.username} {action}ed your offer.", 'trade_update', 'fa-handshake', '/profile/?tab=sentreq')
         messages.success(request, f"Offer marked as {status_word}.")
     return redirect('/profile/?tab=recvreq')
+
+@login_required
+def post_item_request(request):
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        budget = float(request.POST.get('budget', 0) or 0)
+        urgency = request.POST.get('urgency', 'today')
+        loc = request.POST.get('preferred_location', 'Kumari Hall').strip()
+        phone = request.POST.get('contact_phone', '').strip()
+        desc = request.POST.get('description', '').strip()
+        cat_id = request.POST.get('category')
+        cat = Category.objects.filter(id=cat_id).first() if cat_id else None
+        if title:
+            ItemRequest.objects.create(user=request.user, title=title, category=cat, budget=budget, urgency=urgency, preferred_location=loc, contact_phone=phone, description=desc)
+            Notification.notify_all(f"📢 Wanted: {title[:25]}", f"{request.user.username} is looking for this! Budget: Rs. {budget:.2f}", 'item_wanted', 'fa-bullhorn', '/#wantedBoardSection', exclude_user=request.user)
+            messages.success(request, f"Your wanted request for '{title}' has been posted!")
+    return redirect('/#wantedBoardSection')
+
+@login_required
+def fulfill_item_request(request, request_id):
+    req = get_object_or_404(ItemRequest.objects.select_related('user'), id=request_id, is_fulfilled=False)
+    if req.user == request.user:
+        messages.error(request, "You cannot fulfill your own wanted request.")
+        return redirect('/#wantedBoardSection')
+    req.is_fulfilled, req.fulfilled_by = True, request.user
+    req.save()
+    Notification.notify(req.user, f"Match Found for '{req.title[:25]}'!", f"Student {request.user.username} says they have this item! Meetup spot: {req.preferred_location}.", 'wanted_match', 'fa-handshake', '/profile/?tab=recvreq')
+    messages.success(request, f"Awesome! We notified {req.user.username} that you have '{req.title}'.")
+    return redirect('/#wantedBoardSection')
+
+@login_required
+def delete_item_request(request, request_id):
+    req = get_object_or_404(ItemRequest, id=request_id, user=request.user)
+    req.delete()
+    messages.success(request, "Item request removed.")
+    return redirect('/#wantedBoardSection')

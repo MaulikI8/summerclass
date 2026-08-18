@@ -3,9 +3,15 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.urls import path
 from django.shortcuts import redirect, get_object_or_404
-from .models import Category, Product, PendingProductReview, Order, OrderItem, Auction, Bid
+from .models import Category, Product, PendingProductReview, Order, OrderItem, Auction, Bid, ItemRequest
 from sitesetting.models import Notification
 from utils.email_microservice import EmailMicroservice
+
+@admin.register(ItemRequest)
+class ItemRequestAdmin(admin.ModelAdmin):
+    list_display = ('title', 'user', 'budget', 'urgency', 'preferred_location', 'is_fulfilled', 'created_at')
+    list_filter = ('is_fulfilled', 'urgency', 'preferred_location')
+    search_fields = ('title', 'description', 'user__username')
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

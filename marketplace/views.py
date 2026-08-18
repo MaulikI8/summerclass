@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
-from products.models import Product, Category as ProductCategory, Order, OrderItem, Auction, Bid
+from products.models import Product, Category as ProductCategory, Order, OrderItem, Auction, Bid, ItemRequest
 from blog.models import Post
 from sitesetting.models import Banner, Notification
 from utils.email_microservice import EmailMicroservice
@@ -30,11 +30,12 @@ def home(request):
     p = list(Product.objects.select_related('category').filter(status=True, is_approved=True).order_by('-created_at'))
     b = list(Post.objects.select_related('category', 'author').filter(status=True).order_by('-created_at')[:3])
     auctions = list(Auction.objects.filter(is_active=True, end_time__gt=timezone.now(), product__is_approved=True).select_related('product', 'highest_bidder', 'product__user').order_by('end_time'))
+    wanted = list(ItemRequest.objects.filter(is_fulfilled=False).select_related('user', 'category').order_by('-created_at')[:8])
     
     return render(request, 'home/home1.html', {
         'banners': Banner.objects.filter(is_active=True), 'products': p, 'featured_products': p[:8],
         'categories': ProductCategory.objects.all(), 'blogs': b, 'latest_blogs': b, 'auctions': auctions,
-        'total_products': len(p), 'total_categories': ProductCategory.objects.count(), 'total_blogs': len(b)
+        'wanted_items': wanted, 'total_products': len(p), 'total_categories': ProductCategory.objects.count(), 'total_blogs': len(b)
     })
 
 def start_auction(request, product_id):

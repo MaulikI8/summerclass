@@ -104,3 +104,20 @@ class Wishlist(models.Model):
         unique_together = ('user', 'product')
         ordering = ['-created_at']
     def __str__(self): return f"{self.user.username} saved {self.product.name}"
+
+class ItemRequest(models.Model):
+    URGENCY_CHOICES = [('today', 'Needed Today'), ('week', 'Needed This Week'), ('flexible', 'Flexible')]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='item_requests')
+    title = models.CharField(max_length=150)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+    budget = models.FloatField(default=0.0)
+    urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES, default='today')
+    preferred_location = models.CharField(max_length=100, default='Kumari Hall')
+    contact_phone = models.CharField(max_length=30, blank=True)
+    description = models.TextField(blank=True)
+    is_fulfilled = models.BooleanField(default=False)
+    fulfilled_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='fulfilled_requests')
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta: ordering = ['-created_at']
+    def __str__(self): return f"Wanted: {self.title} by {self.user.username}"
+
