@@ -440,36 +440,44 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
 
 <div class="modal fade" id="postWantedModal" tabindex="-1" aria-labelledby="postWantedModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-4 border-0 shadow-lg">
-      <div class="modal-header bg-primary text-white rounded-top-4 p-3">
-        <h5 class="modal-title fw-bold fs-6" id="postWantedModalLabel"><i class="fas fa-bullhorn me-2"></i> Post on Campus Wanted Board</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+      <div class="modal-header border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px;height:38px;background:rgba(37,99,235,0.1);color:#2563eb;">
+            <i class="fas fa-bullhorn" style="font-size:0.95rem;"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold mb-0 text-dark" id="postWantedModalLabel" style="font-size:1.05rem;">Request an Item</h5>
+            <small class="text-muted" style="font-size:0.8rem;">Post an item request to Islington College peers</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form action="{% url 'post_item_request' %}" method="POST">
         {% csrf_token %}
-        <div class="modal-body p-4">
+        <div class="modal-body px-4 py-3">
           <div class="mb-3">
-            <label class="form-label small fw-bold text-dark">What item are you looking for? <span class="text-danger">*</span></label>
-            <input type="text" name="title" class="form-control rounded-3" placeholder="e.g. Arduino Uno Kit for Embedded Systems Lab" required>
+            <label class="form-label small fw-bold text-secondary mb-1">What item are you looking for? <span class="text-danger">*</span></label>
+            <input type="text" name="title" class="form-control rounded-3 py-2" placeholder="e.g. Arduino Uno Kit for Embedded Systems Lab" required style="border-color:#e2e8f0;font-size:0.9rem;">
           </div>
           <div class="row g-2 mb-3">
             <div class="col-6">
-              <label class="form-label small fw-bold text-dark">Your Budget (Rs.) <span class="text-danger">*</span></label>
-              <input type="number" step="10" min="0" name="budget" class="form-control rounded-3" placeholder="e.g. 500" required>
+              <label class="form-label small fw-bold text-secondary mb-1">Your Budget (Rs.) <span class="text-danger">*</span></label>
+              <input type="number" step="10" min="0" name="budget" class="form-control rounded-3 py-2" placeholder="e.g. 500" required style="border-color:#e2e8f0;font-size:0.9rem;">
             </div>
             <div class="col-6">
-              <label class="form-label small fw-bold text-dark">Urgency</label>
-              <select name="urgency" class="form-select rounded-3">
-                <option value="today">⚡ Needed Today</option>
-                <option value="week" selected>📅 Needed This Week</option>
+              <label class="form-label small fw-bold text-secondary mb-1">Urgency</label>
+              <select name="urgency" class="form-select rounded-3 py-2" style="border-color:#e2e8f0;font-size:0.9rem;">
+                <option value="today">Needed Today</option>
+                <option value="week" selected>Needed This Week</option>
                 <option value="flexible">Flexible</option>
               </select>
             </div>
           </div>
           <div class="row g-2 mb-3">
             <div class="col-6">
-              <label class="form-label small fw-bold text-dark">Category</label>
-              <select name="category" class="form-select rounded-3">
+              <label class="form-label small fw-bold text-secondary mb-1">Category</label>
+              <select name="category" class="form-select rounded-3 py-2" style="border-color:#e2e8f0;font-size:0.9rem;">
                 <option value="">All Categories</option>
                 {% for cat in categories %}
                 <option value="{{ cat.id }}">{{ cat.name }}</option>
@@ -477,8 +485,8 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
               </select>
             </div>
             <div class="col-6">
-              <label class="form-label small fw-bold text-dark">Meetup Location</label>
-              <select name="preferred_location" class="form-select rounded-3">
+              <label class="form-label small fw-bold text-secondary mb-1">Meetup Location</label>
+              <select name="preferred_location" class="form-select rounded-3 py-2" style="border-color:#e2e8f0;font-size:0.9rem;">
                 <option value="Kumari Hall">Kumari Hall</option>
                 <option value="Skill Block">Skill Block</option>
                 <option value="Alumini Block">Alumini Block</option>
@@ -489,17 +497,19 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label small fw-bold text-dark">Contact Phone (Optional)</label>
-            <input type="text" name="contact_phone" class="form-control rounded-3" placeholder="e.g. 98XXXXXXXX">
+            <label class="form-label small fw-bold text-secondary mb-1">Contact Phone <span class="text-muted fw-normal">(Optional)</span></label>
+            <input type="text" name="contact_phone" class="form-control rounded-3 py-2" placeholder="e.g. 98XXXXXXXX" style="border-color:#e2e8f0;font-size:0.9rem;">
           </div>
           <div class="mb-2">
-            <label class="form-label small fw-bold text-dark">Notes / Specific Edition</label>
-            <textarea name="description" rows="2" class="form-control rounded-3" placeholder="e.g. Need 7th Edition or above with clean pages"></textarea>
+            <label class="form-label small fw-bold text-secondary mb-1">Notes / Specific Edition <span class="text-muted fw-normal">(Optional)</span></label>
+            <textarea name="description" rows="2" class="form-control rounded-3" placeholder="e.g. Need 7th Edition or above with clean pages" style="border-color:#e2e8f0;font-size:0.9rem;"></textarea>
           </div>
         </div>
-        <div class="modal-footer p-3 bg-light rounded-bottom-4 border-top">
-          <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold"><i class="fas fa-paper-plane me-1"></i> Post Request</button>
+        <div class="modal-footer px-4 py-3 border-top bg-light bg-opacity-50 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4 btn-sm fw-semibold" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4 btn-sm fw-bold">
+            <i class="fas fa-paper-plane me-1"></i> Post Request
+          </button>
         </div>
       </form>
     </div>
