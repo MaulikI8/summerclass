@@ -220,26 +220,7 @@
 </div>
 
 <script>
-  function filterByCat(c,b){
-    document.querySelectorAll('.filter-chip').forEach(el=>el.className='btn btn-sm btn-light border rounded-pill px-3 filter-chip');
-    if(b)b.className='btn btn-sm btn-primary rounded-pill px-3 filter-chip';
-    document.querySelectorAll('.product-card-col').forEach(i=>{
-      const match=(c==='all')||(c==='instock'?i.dataset.instock==='true':i.dataset.category.includes(c));
-      i.classList.toggle('d-none',!match);
-    });
-  }
-  function initAuctionTimers(){
-    document.querySelectorAll('.auction-countdown').forEach(t=>{
-      const end=new Date(t.dataset.endtime).getTime();
-      const upd=()=>{
-        const d=end-Date.now();
-        if(d<=0){t.textContent='ENDED';return;}
-        const h=Math.floor(d/36e5),m=Math.floor((d%36e5)/6e4),s=Math.floor((d%6e4)/1e3);
-        t.textContent=`${h}h:${m}m:${s}s`;
-      };
-      upd();setInterval(upd,1000);
-    });
-  }
-  document.addEventListener('DOMContentLoaded',initAuctionTimers);
+  const filterByCat=(c,b)=>{document.querySelectorAll('.filter-chip').forEach(el=>el.className='btn btn-sm btn-light border rounded-pill px-3 filter-chip');if(b)b.className='btn btn-sm btn-primary rounded-pill px-3 filter-chip';document.querySelectorAll('.product-card-col').forEach(i=>i.classList.toggle('d-none',c!=='all'&&(c==='instock'?i.dataset.instock!=='true':!i.dataset.category.includes(c))));};
+  document.querySelectorAll('.auction-countdown').forEach(t=>{const e=new Date(t.dataset.endtime).getTime(),u=()=>{const d=e-Date.now();if(d<=0){t.textContent='ENDED';return;}t.textContent=`${Math.floor(d/36e5)}h:${Math.floor((d%36e5)/6e4)}m:${Math.floor((d%6e4)/1e3)}s`;};u();setInterval(u,1000);});
 </script>
 {% endblock %}

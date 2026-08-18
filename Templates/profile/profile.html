@@ -160,21 +160,8 @@
 
 <script>
   const tabMap={dashboard:'paneDashboard',products:'paneProducts',add:'paneAdd',orders:'paneOrders',sales:'paneSales',recvreq:'paneRecvreq',sentreq:'paneSentreq',wishlist:'paneWishlist',edit:'paneEdit'};
-  function switchTab(name,btn){
-    document.querySelectorAll('.dash-pane').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.dash-side a').forEach(a=>a.classList.remove('active'));
-    document.getElementById(tabMap[name]||'paneDashboard')?.classList.add('active');
-    if(btn)btn.classList.add('active');
-  }
-  function openEdit(id,name,cat,price,stock,desc){
-    document.getElementById('editId').value=id;document.getElementById('editName').value=name;
-    document.getElementById('editPrice').value=price;document.getElementById('editStock').value=stock;
-    document.getElementById('editDesc').value=desc;
-    new bootstrap.Modal(document.getElementById('editModal')).show();
-  }
-  document.addEventListener('DOMContentLoaded',()=>{
-    const t=new URLSearchParams(location.search).get('tab');
-    if(t&&tabMap[t])switchTab(t,document.getElementById('sidebar'+t.charAt(0).toUpperCase()+t.slice(1)));
-  });
+  const switchTab=(n,b)=>{document.querySelectorAll('.dash-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.dash-side a').forEach(a=>a.classList.remove('active'));document.getElementById(tabMap[n]||'paneDashboard')?.classList.add('active');if(b)b.classList.add('active');};
+  const openEdit=(id,n,c,p,s,d)=>{editId.value=id;editName.value=n;editPrice.value=p;editStock.value=s;editDesc.value=d;new bootstrap.Modal(editModal).show();};
+  const t=new URLSearchParams(location.search).get('tab');if(t&&tabMap[t])switchTab(t,document.getElementById('sidebar'+t.charAt(0).toUpperCase()+t.slice(1)));
 </script>
 {% endblock %}

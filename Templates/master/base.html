@@ -9,24 +9,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
   <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.8">
   <style>
-    .ai-chat-widget{position:fixed;bottom:24px;right:24px;z-index:99999;font-family:'Plus Jakarta Sans',sans-serif}
-    .ai-chat-toggle-btn{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#7c3aed);color:#fff;border:none;box-shadow:0 8px 25px rgba(37,99,235,.45);display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;transition:.3s}
-    .ai-chat-toggle-btn:hover{transform:scale(1.08)}
-    .notif-dropdown-panel{display:none;position:absolute;top:calc(100% + 10px);right:-10px;width:340px;max-width:92vw;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.12);z-index:99999;overflow:hidden}
+    .ai-chat-widget{position:fixed;bottom:20px;right:20px;z-index:99999}
+    .ai-chat-toggle-btn{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#7c3aed);color:#fff;border:none;box-shadow:0 6px 20px rgba(37,99,235,.4);display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer}
+    .notif-dropdown-panel{display:none;position:absolute;top:calc(100% + 8px);right:-10px;width:320px;max-width:92vw;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 15px 35px rgba(0,0,0,.1);z-index:99999}
     .notif-dropdown-panel.show{display:block}
-    #backToTopBtn{position:fixed;bottom:24px;left:24px;width:44px;height:44px;border-radius:50%;background:#fff;color:#1e40af;border:1.5px solid #e2e8f0;box-shadow:0 8px 20px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:999;opacity:0;pointer-events:none;transition:.3s}
-    #backToTopBtn.visible{opacity:1;pointer-events:auto}
-    .ai-chat-box{position:absolute;bottom:70px;right:0;width:360px;max-width:calc(100vw - 32px);height:500px;max-height:calc(100vh - 100px);background:#fff;border:1px solid #e2e8f0;border-radius:20px;display:flex;flex-direction:column;overflow:hidden;opacity:0;visibility:hidden;transform:translateY(15px);transition:.3s;box-shadow:0 20px 50px rgba(0,0,0,.2)}
-    .ai-chat-box.active{opacity:1;visibility:visible;transform:translateY(0)}
-    .ai-msg{display:flex;gap:8px;margin-bottom:10px}
-    .ai-msg-bubble{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 14px;font-size:.84rem;color:#334155;max-width:82%}
-    .ai-msg-user{justify-content:flex-end}
-    .ai-msg-user .ai-msg-bubble{background:#2563eb;color:#fff;border:none}
-    .ai-chip{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:6px 10px;font-size:.76rem;font-weight:600;color:#334155;text-align:left;display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:4px}
-    .ai-chip:hover{background:#eff6ff;border-color:#bfdbfe;color:#1e40af}
+    #backToTopBtn{position:fixed;bottom:20px;left:20px;width:40px;height:40px;border-radius:50%;background:#fff;color:#1e40af;border:1.5px solid #e2e8f0;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:999;opacity:0;transition:.2s}
+    #backToTopBtn.visible{opacity:1}
+    .ai-chat-box{position:absolute;bottom:65px;right:0;width:340px;max-width:calc(100vw - 30px);height:460px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:.25s;box-shadow:0 15px 40px rgba(0,0,0,.15)}
+    .ai-chat-box.active{opacity:1;visibility:visible}
   </style>
 </head>
 <body class="site-body">
@@ -60,7 +52,7 @@
                 <div class="widget-icon-btn"><i class="fas fa-user text-primary"></i></div>
                 <span class="small fw-bold text-dark d-none d-xl-inline ms-1">{{ user.first_name|default:user.username }}</span>
               </a>
-              <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" style="border-radius:12px;min-width:200px;">
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="border-radius:12px;min-width:190px;">
                 <li class="px-2 py-1 border-bottom mb-1 small fw-bold text-dark">{{ user.email }}</li>
                 <li><a class="dropdown-item py-1 rounded" href="{% url 'user_profile' %}"><i class="fas fa-th-large me-2 text-primary"></i> Dashboard</a></li>
                 <li><a class="dropdown-item py-1 rounded" href="{% url 'user_profile' %}?tab=products"><i class="fas fa-box-open me-2 text-primary"></i> My Listings</a></li>
@@ -76,7 +68,7 @@
             </div>
 
             <div class="position-relative" id="notifBellWrap">
-              <a href="javascript:void(0)" class="widget-header position-relative text-decoration-none" onclick="toggleNotifPanel(event)">
+              <a href="javascript:void(0)" class="widget-header position-relative text-decoration-none" onclick="toggleNotif(event)">
                 <div class="widget-icon-btn"><i class="fas fa-bell text-secondary"></i></div>
                 <span class="badge bg-danger widget-badge" id="notifCountBadge" style="display:none;">0</span>
               </a>
@@ -85,7 +77,7 @@
                   <span class="fw-bold small"><i class="fas fa-bell me-1"></i> Notifications</span>
                   <button type="button" class="btn btn-sm btn-link text-white text-decoration-none p-0 small" onclick="markAllNotifRead(event)">Mark read</button>
                 </div>
-                <div id="notifDropdownBody" style="max-height:280px;overflow-y:auto;"><div class="p-3 text-center text-muted small">No notifications yet</div></div>
+                <div id="notifDropdownBody" style="max-height:250px;overflow-y:auto;"><div class="p-3 text-center text-muted small">No notifications</div></div>
                 <div class="p-2 bg-light text-center border-top"><a href="{% url 'user_profile' %}?tab=orders" class="small text-primary text-decoration-none fw-semibold">Dashboard &rarr;</a></div>
               </div>
             </div>
@@ -169,25 +161,20 @@
   </footer>
 
   <div id="aiChatWidget" class="ai-chat-widget">
-    <button type="button" id="aiChatToggleBtn" class="ai-chat-toggle-btn" onclick="toggleAiChat()"><i class="fas fa-comments"></i></button>
+    <button type="button" id="aiChatToggleBtn" class="ai-chat-toggle-btn" onclick="toggleAi()"><i class="fas fa-comments"></i></button>
     <div id="aiChatBox" class="ai-chat-box">
       <div class="p-3 bg-primary text-white d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2"><i class="fas fa-robot"></i><span class="fw-bold small">Islington AI Assistant</span></div>
         <div>
-          <button class="btn btn-sm text-white p-0 me-2" onclick="resetAiChat()"><i class="fas fa-rotate-right"></i></button>
-          <button class="btn btn-sm text-white p-0" onclick="toggleAiChat()"><i class="fas fa-times"></i></button>
+          <button class="btn btn-sm text-white p-0 me-2" onclick="document.getElementById('aiChatMessages').innerHTML='<div class=\'p-2 bg-light rounded small\'>Chat reset. Ask anything!</div>'"><i class="fas fa-rotate-right"></i></button>
+          <button class="btn btn-sm text-white p-0" onclick="toggleAi()"><i class="fas fa-times"></i></button>
         </div>
       </div>
-      <div id="aiChatMessages" class="p-3 flex-grow-1 overflow-auto bg-light" style="font-size:.85rem;">
-        <div class="ai-msg"><div class="ai-msg-bubble">Hello! Ask me about campus pickup blocks, selling items, 24h auctions, or student blogs.</div></div>
-        <div id="aiSuggestionChips">
-          <div class="ai-chip" onclick="sendAiChip('Where is campus pickup?')"><i class="fas fa-map-marker-alt text-danger"></i> Campus Pickup Blocks</div>
-          <div class="ai-chip" onclick="sendAiChip('How do I sell my item?')"><i class="fas fa-plus-circle text-primary"></i> How to Sell Items</div>
-          <div class="ai-chip" onclick="sendAiChip('How do live auctions work?')"><i class="fas fa-gavel text-warning"></i> 24h Live Auctions</div>
-        </div>
+      <div id="aiChatMessages" class="p-3 flex-grow-1 overflow-auto bg-light small">
+        <div class="p-2 bg-white rounded shadow-xs mb-2">Hello! Ask about campus pickup blocks, listings, auctions, or student blogs.</div>
       </div>
-      <form class="p-2 bg-white border-top d-flex gap-2" onsubmit="handleAiChatSubmit(event)">
-        <input type="text" id="aiChatInput" class="form-control form-control-sm rounded-pill" placeholder="Ask AI assistant..."/>
+      <form class="p-2 bg-white border-top d-flex gap-1" onsubmit="handleAiChat(event)">
+        <input type="text" id="aiChatInput" class="form-control form-control-sm rounded-pill" placeholder="Ask AI..."/>
         <button type="submit" class="btn btn-primary btn-sm rounded-circle px-2"><i class="fas fa-paper-plane"></i></button>
       </form>
     </div>
@@ -197,74 +184,41 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const getCsrf=()=>document.cookie.split('; ').find(r=>r.startsWith('csrftoken='))?.split('=')[1]||'';
-    const showToast=(t,m,type='info')=>{
-      const el=document.createElement('div');
-      el.className=`alert alert-${type==='error'?'danger':type} position-fixed bottom-0 end-0 m-3 shadow-lg rounded-4 p-3`;
-      el.style.zIndex=999999;el.innerHTML=`<strong>${t}</strong> ${m||''}`;
-      document.body.appendChild(el);setTimeout(()=>el.remove(),3000);
-    };
-    const addToCart=(id,name,price,img)=>{
+    const csrf=()=>document.cookie.match(/csrftoken=([^;]+)/)?.[1]||'';
+    const addToCart=(id,name,price)=>{
       fetch(`/cart/add/${id}/`,{headers:{'X-Requested-With':'XMLHttpRequest'}}).then(r=>r.json()).then(d=>{
-        if(d.status==='success'){updateCartBadge(d.cart_count);showToast('Bag Updated',name+' added!','success');}
-        else showToast('Notice',d.message||'Cannot add item','warning');
+        if(d.status==='success'){document.getElementById('cartCountBadge').textContent=d.cart_count;alert(`${name} added to bag!`);}
+        else alert(d.message||'Cannot add item');
       }).catch(()=>location.href=`/cart/add/${id}/`);
-    };
-    const updateCartBadge=(c)=>{
-      const b=document.getElementById('cartCountBadge');if(!b)return;
-      if(c!==undefined)b.textContent=c;
-      else fetch('/cart/api/count/').then(r=>r.json()).then(d=>b.textContent=d.count||0).catch(()=>{});
-    };
-    const toggleNotifPanel=(e)=>{e?.stopPropagation();document.getElementById('notifDropdownPanel')?.classList.toggle('show');fetchNotifs();};
-    const fetchNotifs=()=>{
-      fetch('/api/notifications/').then(r=>r.json()).then(d=>{
-        const b=document.getElementById('notifCountBadge');if(b){b.textContent=d.unread_count||0;b.style.display=d.unread_count>0?'inline-block':'none';}
-        const bd=document.getElementById('notifDropdownBody');if(!bd)return;
-        bd.innerHTML=(d.notifications&&d.notifications.length)?d.notifications.map(n=>`
-          <div class="p-2 border-bottom small ${n.is_read?'bg-white':'bg-light'}">
-            <a href="${n.link||'#'}" class="text-dark text-decoration-none d-block">
-              <strong>${n.title}</strong><div class="text-muted text-truncate">${n.message}</div>
-            </a>
-          </div>`).join(''):'<div class="p-3 text-center text-muted small">No notifications</div>';
-      }).catch(()=>{});
-    };
-    const markAllNotifRead=(e)=>{e?.stopPropagation();fetch('/api/notifications/read-all/',{method:'POST',headers:{'X-CSRFToken':getCsrf()}}).then(()=>fetchNotifs());};
-    let aiOpen=false;
-    const toggleAiChat=()=>{aiOpen=!aiOpen;document.getElementById('aiChatBox')?.classList.toggle('active',aiOpen);};
-    const resetAiChat=()=>{document.getElementById('aiChatMessages').innerHTML='<div class="ai-msg"><div class="ai-msg-bubble">Chat cleared. How can I help?</div></div>';};
-    const sendAiChip=(t)=>{document.getElementById('aiChatInput').value=t;handleAiChatSubmit(new Event('submit'));};
-    const handleAiChatSubmit=async(e)=>{
-      e?.preventDefault();const inp=document.getElementById('aiChatInput'),q=inp.value.trim();if(!q)return;
-      const box=document.getElementById('aiChatMessages');
-      box.innerHTML+=`<div class="ai-msg ai-msg-user"><div class="ai-msg-bubble">${q}</div></div>`;inp.value='';
-      try{
-        const r=await fetch(`/api/chatbot/?message=${encodeURIComponent(q)}`),d=await r.json();
-        box.innerHTML+=`<div class="ai-msg"><div class="ai-msg-bubble">${d.reply}</div></div>`;
-      }catch(_){box.innerHTML+=`<div class="ai-msg"><div class="ai-msg-bubble">I can help with campus pickup blocks, listings, auctions, and blogs!</div></div>`;}
-      box.scrollTop=box.scrollHeight;
     };
     const toggleWishlist=(id,btn)=>{
       {% if not user.is_authenticated %}location.href="{% url 'student_login' %}";return;{% endif %}
-      fetch(`/products/${id}/wishlist/`,{method:'POST',headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/json'}}).then(r=>r.json()).then(d=>{
-        const ic=btn?.querySelector('i');
-        if(d.action==='added'){if(ic)ic.className='fas fa-heart text-danger';showToast('Wishlist','Item saved!','success');}
-        else{if(ic)ic.className='far fa-heart text-muted';showToast('Wishlist','Item removed','info');}
+      fetch(`/products/${id}/wishlist/`,{method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/json'}}).then(r=>r.json()).then(d=>{
+        const ic=btn?.querySelector('i');if(ic)ic.className=d.action==='added'?'fas fa-heart text-danger':'far fa-heart text-muted';
       });
     };
-    document.addEventListener('DOMContentLoaded',()=>{
-      updateCartBadge();fetchNotifs();
-      const btn=document.getElementById('backToTopBtn');window.addEventListener('scroll',()=>btn?.classList.toggle('visible',window.scrollY>250));
-      const sInp=document.getElementById('globalSearchInput'),sBox=document.getElementById('searchSuggestBox');
-      sInp?.addEventListener('input',e=>{
-        const q=e.target.value.trim();if(q.length<2){sBox.innerHTML='';sBox.classList.remove('show');return;}
-        fetch(`/products/suggest/?q=${encodeURIComponent(q)}`).then(r=>r.json()).then(d=>{
-          if(d.results&&d.results.length){
-            sBox.innerHTML=d.results.map(i=>`<a href="${i.url}" class="suggest-item d-flex align-items-center gap-2 p-2 text-decoration-none border-bottom text-dark"><img src="${i.image}" width="36" height="36" class="rounded object-fit-cover"/><div><strong class="small d-block">${i.name}</strong><span class="text-primary small">Rs. ${i.price}</span></div></a>`).join('');
-            sBox.classList.add('show');
-          }else{sBox.classList.remove('show');}
-        });
+    const toggleNotif=(e)=>{e?.stopPropagation();document.getElementById('notifDropdownPanel')?.classList.toggle('show');};
+    const markAllNotifRead=()=>{fetch('/api/notifications/read-all/',{method:'POST',headers:{'X-CSRFToken':csrf()}}).then(()=>document.getElementById('notifCountBadge').style.display='none');};
+    const toggleAi=()=>document.getElementById('aiChatBox')?.classList.toggle('active');
+    const handleAiChat=async(e)=>{
+      e.preventDefault();const inp=document.getElementById('aiChatInput'),q=inp.value.trim(),box=document.getElementById('aiChatMessages');
+      if(!q)return;box.innerHTML+=`<div class="p-2 bg-primary text-white rounded mb-2 text-end">${q}</div>`;inp.value='';
+      try{
+        const r=await fetch(`/api/chatbot/?message=${encodeURIComponent(q)}`),d=await r.json();
+        box.innerHTML+=`<div class="p-2 bg-white rounded shadow-xs mb-2">${d.reply}</div>`;
+      }catch(_){box.innerHTML+=`<div class="p-2 bg-white rounded shadow-xs mb-2">I can help with campus pickup blocks, listings, and auctions!</div>`;}
+      box.scrollTop=box.scrollHeight;
+    };
+    window.addEventListener('scroll',()=>document.getElementById('backToTopBtn')?.classList.toggle('visible',window.scrollY>250));
+    document.getElementById('globalSearchInput')?.addEventListener('input',e=>{
+      const q=e.target.value.trim(),sBox=document.getElementById('searchSuggestBox');
+      if(q.length<2){sBox.innerHTML='';sBox.classList.remove('show');return;}
+      fetch(`/products/suggest/?q=${encodeURIComponent(q)}`).then(r=>r.json()).then(d=>{
+        if(d.results?.length){
+          sBox.innerHTML=d.results.map(i=>`<a href="${i.url}" class="d-flex align-items-center gap-2 p-2 text-decoration-none border-bottom text-dark"><img src="${i.image}" width="32" height="32" class="rounded object-fit-cover"/><div><strong class="small d-block">${i.name}</strong><span class="text-primary small">Rs. ${i.price}</span></div></a>`).join('');
+          sBox.classList.add('show');
+        }else sBox.classList.remove('show');
       });
-      document.addEventListener('click',e=>{if(!sInp?.contains(e.target)&&!sBox?.contains(e.target))sBox?.classList.remove('show');if(!document.getElementById('notifBellWrap')?.contains(e.target))document.getElementById('notifDropdownPanel')?.classList.remove('show');});
     });
   </script>
 </body>
