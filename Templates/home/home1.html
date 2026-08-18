@@ -1,556 +1,245 @@
 {% extends 'master/base.html' %}
 {% load static %}
-
 {% block title %}Islington Marketplace | Campus Shopping & Student Trade{% endblock %}
 
 {% block content %}
-<section class="section-intro padding-y-sm">
+<section class="section-intro py-3">
   <div class="container">
-    <div class="hero-carousel-wrap">
-      <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
-        <div class="carousel-inner">
-          {% for banner in banners %}
-          <div class="carousel-item {% if forloop.first %}active{% endif %}">
-            <div class="hero-slide-card {{ banner.theme_color|default:'slide-blue' }}">
-              <div class="hero-glow-blob top-right"></div>
-              <div class="hero-glow-blob bottom-left"></div>
-              <div class="row align-items-center w-100 g-4">
-                <div class="col-lg-8 col-md-10">
-                  <div class="hero-content">
-                    {% if banner.badge_text %}
-                    <span class="hero-badge {% if banner.theme_color == 'slide-green' %}badge-emerald{% else %}badge-amber{% endif %}">
-                      <i class="fa {{ banner.badge_icon|default:'fa-star' }}"></i> {{ banner.badge_text }}
-                    </span>
-                    {% endif %}
-                    <h1 class="hero-title">{{ banner.title }}</h1>
-                    <p class="hero-lead">{{ banner.subtitle }}</p>
-                    <div class="hero-actions">
-                      {% if banner.primary_btn_text %}
-                      <a href="{{ banner.primary_btn_url|default:'/products/' }}" class="hero-btn-primary">
-                        <i class="fa fa-shopping-bag text-primary"></i> {{ banner.primary_btn_text }}
-                      </a>
-                      {% endif %}
-                      {% if banner.secondary_btn_text %}
-                      <a href="{{ banner.secondary_btn_url|default:'/products/' }}" class="hero-btn-outline">
-                        <i class="fa fa-layer-group"></i> {{ banner.secondary_btn_text }}
-                      </a>
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-4 d-none d-lg-block">
-                  {% if banner.banner_image or banner.featured_product.product_image %}
-                  <div class="text-center position-relative">
-                    <div class="p-3 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 shadow-lg overflow-hidden" style="backdrop-filter: blur(14px);">
-                      <img src="{% if banner.banner_image %}{{ banner.banner_image.url }}{% elif banner.featured_product.product_image %}{{ banner.featured_product.product_image.url }}{% endif %}" alt="{{ banner.title }}" class="img-fluid rounded-3" style="max-height: 240px; width: 100%; object-fit: contain;">
-                      {% if banner.featured_product %}
-                      <div class="mt-2 text-center">
-                        <span class="badge bg-white text-dark fw-bold px-3 py-2 rounded-pill shadow-sm">Rs. {{ banner.featured_product.price|floatformat:2 }}</span>
-                      </div>
-                      {% endif %}
-                    </div>
-                  </div>
-                  {% else %}
-                  <div class="hero-floating-card text-white">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                      <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.25rem;"><i class="fa fa-shield-alt"></i></div>
-                      <div>
-                        <h6 class="fw-bold mb-0 text-white">100% Peer Verified</h6>
-                        <small class="text-white-50">Islington Student Network</small>
-                      </div>
-                    </div>
-                    <div class="border-top border-white border-opacity-25 pt-3 d-flex justify-content-between text-center">
-                      <div><div class="fs-4 fw-bold text-white">{{ products|length }}</div><small class="text-white-50">Active Items</small></div>
-                      <div class="border-end border-white border-opacity-25"></div>
-                      <div><div class="fs-4 fw-bold text-warning">0%</div><small class="text-white-50">Commission</small></div>
-                      <div class="border-end border-white border-opacity-25"></div>
-                      <div><div class="fs-4 fw-bold text-white">College</div><small class="text-white-50">Pickup</small></div>
-                    </div>
-                  </div>
-                  {% endif %}
-                </div>
+    <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+      <div class="carousel-inner rounded-4 shadow-sm overflow-hidden">
+        {% for banner in banners %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %} p-4 p-md-5 {{ banner.theme_color|default:'slide-blue' }} text-white">
+          <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+              {% if banner.badge_text %}<span class="badge bg-white text-dark rounded-pill px-3 py-1 mb-2 fw-bold"><i class="fa {{ banner.badge_icon|default:'fa-star' }} text-warning me-1"></i>{{ banner.badge_text }}</span>{% endif %}
+              <h1 class="display-6 fw-bold mb-2">{{ banner.title }}</h1>
+              <p class="lead small mb-3 text-white-50">{{ banner.subtitle }}</p>
+              <div class="d-flex gap-2">
+                {% if banner.primary_btn_text %}<a href="{{ banner.primary_btn_url|default:'/products/' }}" class="btn btn-light rounded-pill px-4 fw-bold text-primary">{{ banner.primary_btn_text }}</a>{% endif %}
+                {% if banner.secondary_btn_text %}<a href="{{ banner.secondary_btn_url|default:'/products/' }}" class="btn btn-outline-light rounded-pill px-4">{{ banner.secondary_btn_text }}</a>{% endif %}
               </div>
             </div>
-          </div>
-          {% empty %}
-          <div class="carousel-item active">
-            <div class="hero-slide-card slide-blue">
-              <div class="hero-glow-blob top-right"></div>
-              <div class="hero-glow-blob bottom-left"></div>
-              <div class="row align-items-center w-100 g-4">
-                <div class="col-lg-8 col-md-10">
-                  <div class="hero-content">
-                    <span class="hero-badge badge-amber"><i class="fa fa-graduation-cap"></i> Official Student Hub</span>
-                    <h1 class="hero-title">Welcome to Islington Marketplace</h1>
-                    <p class="hero-lead">Discover verified textbooks, computing gear, electronics, and college essentials at student prices.</p>
-                    <div class="hero-actions">
-                      <a href="{% url 'products' %}" class="hero-btn-primary"><i class="fa fa-shopping-bag text-primary"></i> Explore Store</a>
-                      <a href="{% url 'user_profile' %}?tab=add" class="hero-btn-outline"><i class="fa fa-plus-circle"></i> Sell an Item</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {% if banner.banner_image or banner.featured_product.product_image %}
+            <div class="col-lg-4 text-center d-none d-lg-block">
+              <img src="{% if banner.banner_image %}{{ banner.banner_image.url }}{% else %}{{ banner.featured_product.product_image.url }}{% endif %}" class="img-fluid rounded-3 shadow" style="max-height:180px;object-fit:cover;" alt="Hero"/>
             </div>
+            {% endif %}
           </div>
-          {% endfor %}
         </div>
-        <a class="hero-carousel-control prev" href="#bannerCarousel" role="button" data-bs-slide="prev" title="Previous Slide"><i class="fa fa-chevron-left"></i></a>
-        <a class="hero-carousel-control next" href="#bannerCarousel" role="button" data-bs-slide="next" title="Next Slide"><i class="fa fa-chevron-right"></i></a>
+        {% empty %}
+        <div class="carousel-item active p-5 bg-primary text-white text-center">
+          <h2 class="fw-bold">Welcome to Islington Student Marketplace</h2>
+          <p class="text-white-50">Verified textbooks, computing gear, electronics, and study essentials.</p>
+          <a href="{% url 'products' %}" class="btn btn-light rounded-pill px-4 fw-bold text-primary">Explore Store</a>
+        </div>
+        {% endfor %}
       </div>
     </div>
   </div>
 </section>
 
-<section class="section-name py-4" id="popularProductsSection">
+<section class="py-4" id="popularProductsSection">
   <div class="container">
-    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-      <div>
-        <h3 class="section-title mb-1">Explore Student Listings</h3>
-        <p class="section-subtitle mb-0">Discover verified items listed by students on campus.</p>
-      </div>
-      <a href="{% url 'products' %}" class="btn btn-outline-primary rounded-pill px-4 fw-semibold small">See All Products <i class="fa fa-arrow-right ms-1"></i></a>
-    </header>
-
-    <div class="filter-chips-bar mb-4" id="categoryFilterBar">
-      <button type="button" class="filter-chip active" data-cat="all" onclick="filterByCat('all', this)"><i class="fa fa-layer-group"></i> All Products ({{ products|length }})</button>
-      {% for cat in categories %}
-      <button type="button" class="filter-chip" data-cat="{{ cat.name|lower }}" onclick="filterByCat('{{ cat.name|lower }}', this)"><i class="fa fa-tag text-muted"></i> {{ cat.name }}</button>
-      {% endfor %}
-      <button type="button" class="filter-chip" data-cat="instock" onclick="filterByCat('instock', this)"><i class="fa fa-check-circle text-success"></i> In Stock Only</button>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div><h4 class="fw-bold mb-0">Student Listings</h4><small class="text-muted">Verified campus items for sale</small></div>
+      <a href="{% url 'products' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">View All &rarr;</a>
     </div>
 
-    <div class="row g-4" id="productGridContainer">
+    <div class="d-flex gap-2 overflow-auto pb-2 mb-3" id="categoryFilterBar">
+      <button class="btn btn-sm btn-primary rounded-pill px-3 filter-chip" onclick="filterByCat('all', this)">All ({{ products|length }})</button>
+      {% for cat in categories %}<button class="btn btn-sm btn-light border rounded-pill px-3 filter-chip" onclick="filterByCat('{{ cat.name|lower }}', this)">{{ cat.name }}</button>{% endfor %}
+      <button class="btn btn-sm btn-light border rounded-pill px-3 filter-chip" onclick="filterByCat('instock', this)">In Stock</button>
+    </div>
+
+    <div class="row g-3" id="productGridContainer">
       {% for product in products %}
-      <div class="col-lg-3 col-md-4 col-sm-6 product-card-col" data-id="{{ product.id }}" data-title="{{ product.name|lower }}" data-category="{{ product.category.name|lower }}" data-price="{{ product.price }}" data-instock="{% if product.stock > 0 %}true{% else %}false{% endif %}">
-        <div class="card card-product-grid shadow-sm">
-          <div class="position-relative">
-            <a href="{% url 'product_detail' product.id %}" class="img-wrap">
-              <img src="{% if product.product_image %}{{ product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ product.name }}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';" />
-              <span class="card-category-badge">{{ product.category.name }}</span>
-              {% if product.stock > 0 %}
-              <span class="card-stock-badge in-stock"><i class="fa fa-check-circle"></i> In Stock ({{ product.stock }})</span>
-              {% else %}
-              <span class="card-stock-badge out-of-stock"><i class="fa fa-times-circle"></i> Sold Out</span>
-              {% endif %}
+      <div class="col-lg-3 col-md-4 col-6 product-card-col" data-category="{{ product.category.name|lower }}" data-instock="{% if product.stock > 0 %}true{% else %}false{% endif %}">
+        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+          <div class="position-relative bg-light text-center p-2" style="height:170px;">
+            <a href="{% url 'product_detail' product.id %}">
+              <img src="{% if product.product_image %}{{ product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" class="img-fluid h-100 object-fit-contain" alt="{{ product.name }}"/>
             </a>
-            <button type="button" class="btn-wishlist-toggle" onclick="toggleWishlist('{{ product.id }}', this)" title="Save to Wishlist"><i class="far fa-heart text-muted"></i></button>
+            <span class="badge bg-dark bg-opacity-75 position-absolute top-0 start-0 m-2 rounded-pill small">{{ product.category.name }}</span>
+            <button type="button" class="btn btn-sm btn-light rounded-circle position-absolute top-0 end-0 m-2 shadow-sm p-1" onclick="toggleWishlist('{{ product.id }}', this)"><i class="far fa-heart text-muted"></i></button>
           </div>
-
-          <figcaption class="info-wrap">
-            <a href="{% url 'product_detail' product.id %}" class="title" title="{{ product.name }}">{{ product.name }}</a>
-            <div class="d-flex align-items-center justify-content-between mt-1">
-              <span class="price">Rs. {{ product.price|floatformat:2 }}</span>
-              <small class="text-muted"><i class="fas fa-user-circle text-primary me-1"></i> {{ product.user.first_name|default:product.user.username|default:"Student" }}</small>
-            </div>
-            <p class="card-desc">{{ product.description|default:"Verified student listing." }}</p>
-            <div class="card-action-bar">
-              <a href="{% url 'product_detail' product.id %}" class="btn-card-primary text-decoration-none">View Item</a>
-              {% if product.stock > 0 and product.user != user %}
-              <button type="button" class="btn-card-icon" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
-                <i class="fas fa-shopping-cart text-primary"></i>
-              </button>
-              {% endif %}
-            </div>
-          </figcaption>
-        </div>
-      </div>
-      {% empty %}
-      <div class="col-12 text-center py-5 bg-white rounded border">
-        <i class="fa fa-box-open display-4 text-muted mb-3 d-block"></i>
-        <h5 class="fw-bold">No products listed yet</h5>
-        <p class="text-muted small">Be the first to list a textbook, gadget, or student gear.</p>
-        <a href="{% url 'user_profile' %}?tab=add" class="btn btn-primary rounded-pill px-4">Post First Listing</a>
-      </div>
-      {% endfor %}
-    </div>
-
-    <div id="filterEmptyMessage" class="text-center py-5 d-none bg-white rounded-3 border mt-4 shadow-sm">
-      <i class="fa fa-search text-muted display-4 d-block mb-3"></i>
-      <h5 class="fw-bold text-dark">No products found</h5>
-      <p class="text-muted small">No items match your selected filter criteria.</p>
-      <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-2 px-4" onclick="filterByCat('all', document.querySelector('#categoryFilterBar button'))">Show All Products</button>
-    </div>
-  </div>
-</section>
-
-<section class="section-flow-wrap bg-soft my-4">
-  <div class="container">
-    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-      <div>
-        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2" style="font-size: 0.75rem;">DEPARTMENT CURATION</span>
-        <h3 class="section-title mb-1">Explore Categories</h3>
-        <p class="section-subtitle mb-0">Browse by category to find textbooks, electronics, and stationery.</p>
-      </div>
-      <a href="{% url 'products' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">View All</a>
-    </header>
-
-    <div class="row g-4">
-      {% for cat in categories %}
-      <div class="col-lg-3 col-md-4 col-sm-6">
-        <a href="{% url 'products' %}?category={{ cat.name }}" class="category-showcase-card shadow-sm">
-          {% if cat.category_image %}
-          <div class="category-img-box">
-            <img src="{{ cat.category_image.url }}" alt="{{ cat.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="category-fallback-icon" style="display:none; font-size: 2.8rem; color: #2563eb; align-items:center; justify-content:center; width:100%; height:100%;">
-              {% if 'elect' in cat.name|lower %}<i class="fas fa-laptop-code"></i>
-              {% elif 'cloth' in cat.name|lower or 'fash' in cat.name|lower %}<i class="fas fa-tshirt"></i>
-              {% elif 'book' in cat.name|lower or 'text' in cat.name|lower %}<i class="fas fa-book-open"></i>
-              {% elif 'access' in cat.name|lower %}<i class="fas fa-headphones"></i>
-              {% elif 'stat' in cat.name|lower %}<i class="fas fa-pen-ruler"></i>
-              {% else %}<i class="fas fa-tags"></i>{% endif %}
-            </div>
-          </div>
-          {% else %}
-          <div class="category-icon-box">
-            {% if 'elect' in cat.name|lower %}<i class="fas fa-laptop-code"></i>
-            {% elif 'cloth' in cat.name|lower or 'fash' in cat.name|lower %}<i class="fas fa-tshirt"></i>
-            {% elif 'book' in cat.name|lower or 'text' in cat.name|lower %}<i class="fas fa-book-open"></i>
-            {% elif 'access' in cat.name|lower %}<i class="fas fa-headphones"></i>
-            {% elif 'stat' in cat.name|lower %}<i class="fas fa-pen-ruler"></i>
-            {% else %}<i class="fas fa-th-large"></i>{% endif %}
-          </div>
-          {% endif %}
-          <div class="cat-name">{{ cat.name }}</div>
-          <div class="cat-count">Explore Category <i class="fa fa-arrow-right ms-1 small"></i></div>
-        </a>
-      </div>
-      {% empty %}
-      <div class="col-12"><div class="card p-4 text-center text-muted bg-white border"><p class="mb-0">No categories created yet.</p></div></div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<section class="section-name py-5">
-  <div class="container">
-    <header class="section-heading d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-      <div>
-        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1 fw-bold mb-2" style="font-size: 0.75rem;">CAMPUS LIFE &amp; GUIDES</span>
-        <h3 class="section-title mb-1">Campus Insights &amp; Advice</h3>
-        <p class="section-subtitle mb-0">Student advice, study tips, textbook recommendations, and peer news.</p>
-      </div>
-      <a href="{% url 'blog' %}" class="btn btn-outline-primary rounded-pill px-4 fw-semibold small">View All Blogs <i class="fa fa-arrow-right ms-1"></i></a>
-    </header>
-
-    <div class="row g-4">
-      {% for b in latest_blogs %}
-      <div class="col-lg-4 col-md-6">
-        <div class="card border-0 rounded-4 shadow-sm h-100 bg-white overflow-hidden" style="transition: transform 0.2s ease, box-shadow 0.2s ease;">
-          <div class="card-body d-flex flex-column p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold" style="font-size: 0.72rem;">{{ b.category.name|default:"Campus Life" }}</span>
-              <small class="text-muted"><i class="far fa-calendar-alt me-1"></i>{{ b.created_at|date:"M d, Y" }}</small>
-            </div>
-            <h5 class="fw-bold mb-2"><a href="{% url 'blog_detail' b.id %}" class="text-dark text-decoration-none">{{ b.title }}</a></h5>
-            <p class="text-muted small flex-grow-1" style="line-height: 1.6;">{{ b.content|truncatewords:20 }}</p>
-            <div class="pt-3 border-top mt-auto d-flex justify-content-between align-items-center">
-              <span class="text-muted small"><i class="far fa-clock me-1"></i>3 min read</span>
-              <a href="{% url 'blog_detail' b.id %}" class="text-primary fw-semibold small text-decoration-none">Read Article <i class="fa fa-arrow-right ms-1"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="col-12 text-center py-4 text-muted bg-white rounded border"><p class="mb-0">No blog posts available. Check back soon!</p></div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<section class="section-flow-wrap bg-soft py-5" id="liveBiddingSection">
-  <div class="container">
-    <div class="section-activity-ribbon d-flex justify-content-between align-items-center flex-wrap gap-3">
-      <div class="d-flex align-items-center gap-3">
-        <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2" style="font-size: 0.82rem; letter-spacing: 0.05em;">
-          <span class="live-indicator-dot"></span> LIVE AUCTIONS
-        </span>
-        <div>
-          <h4 class="fw-bold text-white mb-0">24-Hour Student Bidding Hub</h4>
-          <small class="text-white-50">Place real-time bids • Highest bidder wins or publisher accepts early</small>
-        </div>
-      </div>
-      <div>
-        <span class="badge bg-white text-primary px-3 py-2 rounded-pill fw-bold shadow-sm">
-          <i class="fas fa-gavel me-1"></i> {{ auctions|length }} Active Auction{{ auctions|length|pluralize }}
-        </span>
-      </div>
-    </div>
-
-    <div class="row g-4">
-      {% for auction in auctions %}
-      <div class="col-lg-6 col-md-12">
-        <div class="card auction-card shadow-sm border-0 rounded-4 overflow-hidden bg-white h-100">
-          <div class="row g-0 h-100">
-            <div class="col-sm-5 bg-light position-relative d-flex align-items-center justify-content-center p-3">
-              <a href="{% url 'product_detail' auction.product.id %}" class="d-block text-center w-100">
-                <img src="{% if auction.product.product_image %}{{ auction.product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ auction.title }}" class="img-fluid rounded-3" style="max-height: 190px; object-fit: contain;">
-              </a>
-              <span class="position-absolute top-0 start-0 m-3 badge bg-dark bg-opacity-75 rounded-pill px-2 py-1 text-white small">{{ auction.product.category.name }}</span>
-            </div>
-
-            <div class="col-sm-7 p-4 d-flex flex-column justify-content-between">
-              <div>
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <span class="text-danger small fw-bold d-flex align-items-center gap-1"><i class="fas fa-stopwatch"></i> Ends in:</span>
-                  <div class="auction-countdown badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 font-monospace fw-bold" data-endtime="{{ auction.end_time|date:'c' }}">Calculating...</div>
-                </div>
-                <h5 class="fw-bold mb-1"><a href="{% url 'product_detail' auction.product.id %}" class="text-dark text-decoration-none title-hover">{{ auction.title }}</a></h5>
-                <p class="text-muted small mb-3 text-truncate">{{ auction.product.description|default:"Verified student item open for live bidding." }}</p>
-                <div class="p-3 bg-light rounded-3 border mb-3">
-                  <div class="row align-items-center">
-                    <div class="col-6">
-                      <small class="text-muted d-block" style="font-size: 0.75rem;">Current Highest Bid</small>
-                      <span class="fs-4 fw-bold text-primary">Rs. {{ auction.current_bid|floatformat:2 }}</span>
-                    </div>
-                    <div class="col-6 text-end">
-                      <small class="text-muted d-block" style="font-size: 0.75rem;">Total Bids</small>
-                      <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1 rounded-pill"><i class="fas fa-users me-1"></i> {{ auction.bids_count }} bid{{ auction.bids_count|pluralize }}</span>
-                    </div>
-                  </div>
-                  {% if auction.highest_bidder %}
-                  <div class="mt-2 pt-2 border-top small text-muted d-flex align-items-center justify-content-between">
-                    <span>Highest Bidder:</span>
-                    <span class="fw-bold text-dark"><i class="fas fa-user-check text-success me-1"></i> {{ auction.highest_bidder.first_name|default:auction.highest_bidder.username }}</span>
-                  </div>
-                  {% endif %}
-                </div>
+          <div class="card-body p-3 d-flex flex-column justify-content-between">
+            <div>
+              <a href="{% url 'product_detail' product.id %}" class="fw-bold text-dark text-decoration-none small text-truncate d-block">{{ product.name }}</a>
+              <div class="d-flex justify-content-between align-items-center mt-1">
+                <span class="fw-bold text-primary">Rs. {{ product.price|floatformat:2 }}</span>
+                <small class="text-muted" style="font-size:.7rem;">{{ product.user.username|default:"Peer" }}</small>
               </div>
-
-              {% if user.is_authenticated and auction.product.user == user %}
-                {% if auction.highest_bidder %}
-                <form action="{% url 'accept_auction_bid' auction.id %}" method="POST">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill fw-bold py-2 shadow-sm" onclick="return confirm('Accept highest bid of Rs. {{ auction.current_bid|floatformat:2 }} from {{ auction.highest_bidder.username }} and close this auction now?');">
-                    <i class="fas fa-check-circle me-1"></i> Accept Highest Price (Rs. {{ auction.current_bid|floatformat:2 }})
-                  </button>
-                </form>
-                {% else %}
-                <div class="text-center p-2 bg-light rounded-pill border small text-muted"><i class="fas fa-info-circle me-1 text-primary"></i> Your Listing • Waiting for first bid</div>
-                {% endif %}
-              {% else %}
-                <form action="{% url 'place_bid' auction.id %}" method="POST" class="auction-bid-form">
-                  {% csrf_token %}
-                  <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 small text-muted fw-bold">Rs.</span>
-                    <input type="number" step="10" min="{{ auction.current_bid|add:10 }}" name="bid_amount" class="form-control border-start-0" placeholder="Min Rs. {{ auction.current_bid|add:10 }}" required>
-                    <button type="submit" class="btn btn-primary px-3 fw-bold"><i class="fas fa-gavel me-1"></i> Place Bid</button>
-                  </div>
-                </form>
+            </div>
+            <div class="d-flex gap-1 mt-2">
+              <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1" style="font-size:.78rem;">View</a>
+              {% if product.stock > 0 and product.user != user %}
+              <button class="btn btn-primary btn-sm rounded-circle px-2" onclick="addToCart('{{ product.id }}','{{ product.name|escapejs }}','{{ product.price }}')"><i class="fas fa-plus"></i></button>
               {% endif %}
             </div>
           </div>
         </div>
       </div>
       {% empty %}
-      <div class="col-12 text-center py-5 bg-white rounded-4 border shadow-sm">
-        <i class="fas fa-gavel display-4 text-muted mb-3 d-block"></i>
-        <h5 class="fw-bold text-dark mb-1">No live bidding right now. Come back later!</h5>
-        <p class="text-muted small mb-3">Or start your own 24-hour peer auction from your dashboard.</p>
-        {% if user.is_authenticated %}
-        <a href="{% url 'user_profile' %}?tab=products" class="btn btn-outline-primary btn-sm rounded-pill px-4"><i class="fas fa-plus-circle me-1"></i> Start a 24h Auction</a>
-        {% else %}
-        <a href="{% url 'student_login' %}" class="btn btn-outline-primary btn-sm rounded-pill px-4"><i class="fas fa-sign-in-alt me-1"></i> Sign In to Start Auctions</a>
-        {% endif %}
+      <div class="col-12 text-center py-4 text-muted bg-white rounded border">No products listed yet. <a href="{% url 'user_profile' %}?tab=add">Post one!</a></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="py-4 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div><h4 class="fw-bold mb-0">Department Categories</h4><small class="text-muted">Browse textbooks &amp; modules</small></div>
+    </div>
+    <div class="row g-2">
+      {% for cat in categories %}
+      <div class="col-lg-3 col-6">
+        <a href="{% url 'products' %}?category={{ cat.name }}" class="card border-0 shadow-sm rounded-3 p-3 text-decoration-none text-dark bg-white d-flex align-items-center gap-2 flex-row">
+          <i class="fas fa-folder text-primary fs-5"></i>
+          <span class="fw-bold small flex-grow-1">{{ cat.name }}</span>
+          <i class="fas fa-chevron-right text-muted small"></i>
+        </a>
       </div>
       {% endfor %}
     </div>
   </div>
 </section>
 
-<section class="section-name py-5" id="wantedBoardSection" style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
+<section class="py-5 bg-dark text-white" id="liveBiddingSection">
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-      <div>
-        <div class="d-flex align-items-center gap-2 mb-1">
-          <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;"><i class="fas fa-bullhorn me-1"></i> REVERSE MARKETPLACE</span>
-          <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 fw-bold" style="font-size:0.72rem;">URGENT CAMPUS NEEDS</span>
-        </div>
-        <h3 class="section-title mb-1">Campus Wanted Board</h3>
-        <p class="section-subtitle mb-0 text-muted">Looking for a textbook, lab component, or study material? Post a request or help out a peer student!</p>
-      </div>
-      <div>
-        {% if user.is_authenticated %}
-        <button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#postWantedModal">
-          <i class="fas fa-plus me-1"></i> Post Item Request
-        </button>
-        {% else %}
-        <a href="{% url 'student_login' %}" class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm">
-          <i class="fas fa-sign-in-alt me-1"></i> Sign In to Post Request
-        </a>
-        {% endif %}
-      </div>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+      <div><span class="badge bg-danger rounded-pill px-3 py-1 fw-bold me-2">&bull; LIVE</span><h4 class="d-inline fw-bold">24-Hour Student Auctions</h4></div>
+      <span class="badge bg-white bg-opacity-10 text-white rounded-pill px-3 py-1">{{ auctions|length }} Active</span>
     </div>
+    <div class="row g-3">
+      {% for a in auctions %}
+      <div class="col-lg-6">
+        <div class="card border-0 rounded-4 overflow-hidden bg-white text-dark shadow-sm h-100 p-3">
+          <div class="row g-2 align-items-center">
+            <div class="col-4 text-center bg-light rounded-3 p-2">
+              <img src="{% if a.product.product_image %}{{ a.product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" class="img-fluid" style="max-height:110px;" alt="{{ a.title }}"/>
+            </div>
+            <div class="col-8 d-flex flex-column justify-content-between">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge bg-danger-subtle text-danger rounded-pill auction-countdown small font-monospace" data-endtime="{{ a.end_time|date:'c' }}">Timer...</span>
+                <span class="small text-muted">{{ a.bids_count }} bids</span>
+              </div>
+              <h6 class="fw-bold mb-1 text-truncate">{{ a.title }}</h6>
+              <div class="fs-5 fw-bold text-primary mb-2">Rs. {{ a.current_bid|floatformat:2 }}</div>
+              {% if user.is_authenticated and a.product.user == user and a.highest_bidder %}
+              <form action="{% url 'accept_auction_bid' a.id %}" method="POST">{% csrf_token %}<button class="btn btn-success btn-sm w-100 rounded-pill fw-bold" onclick="return confirm('Accept bid of Rs. {{ a.current_bid|floatformat:2 }}?');">Accept Rs. {{ a.current_bid|floatformat:2 }}</button></form>
+              {% else %}
+              <form action="{% url 'place_bid' a.id %}" method="POST" class="d-flex gap-1">
+                {% csrf_token %}
+                <input type="number" step="10" min="{{ a.current_bid|add:10 }}" name="bid_amount" class="form-control form-control-sm rounded-pill" placeholder="Min Rs. {{ a.current_bid|add:10 }}" required/>
+                <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Bid</button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-4 bg-white bg-opacity-10 rounded-4"><p class="mb-0 text-white-50">No live auctions active right now. Start one from your dashboard!</p></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 
+<section class="py-5" id="wantedBoardSection" style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+      <div>
+        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold me-2"><i class="fas fa-bullhorn me-1"></i> WANTED BOARD</span>
+        <h4 class="d-inline fw-bold">Campus Requests</h4>
+      </div>
+      {% if user.is_authenticated %}<button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#postWantedModal">+ Post Request</button>
+      {% else %}<a href="{% url 'student_login' %}" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Sign In to Post</a>{% endif %}
+    </div>
     <div class="row g-3">
       {% for item in wanted_items %}
-      <div class="col-lg-3 col-md-6 col-sm-12">
-        <div class="card border-0 rounded-4 shadow-sm bg-white h-100 p-3 d-flex flex-column justify-content-between position-relative overflow-hidden" style="border:1px solid #e2e8f0!important;">
+      <div class="col-lg-3 col-md-6 col-12">
+        <div class="card border-0 rounded-4 shadow-sm bg-white p-3 h-100 d-flex flex-column justify-content-between" style="border:1px solid #e2e8f0!important;">
           <div>
             <div class="d-flex justify-content-between align-items-center mb-2">
-              {% if item.urgency == 'today' %}
-              <span class="badge bg-danger text-white rounded-pill px-2 py-1" style="font-size:0.68rem;font-weight:700;"><i class="fas fa-bolt me-1"></i> Needed Today</span>
-              {% elif item.urgency == 'week' %}
-              <span class="badge bg-warning text-dark rounded-pill px-2 py-1" style="font-size:0.68rem;font-weight:700;"><i class="fas fa-clock me-1"></i> Needed This Week</span>
-              {% else %}
-              <span class="badge bg-light text-secondary border rounded-pill px-2 py-1" style="font-size:0.68rem;font-weight:700;">Flexible</span>
-              {% endif %}
-              <span class="text-muted" style="font-size:0.7rem;"><i class="far fa-clock me-1"></i>{{ item.created_at|timesince }} ago</span>
+              <span class="badge {% if item.urgency == 'today' %}bg-danger{% elif item.urgency == 'week' %}bg-warning text-dark{% else %}bg-light text-secondary border{% endif %} rounded-pill small">{{ item.get_urgency_display }}</span>
+              <small class="text-muted" style="font-size:.7rem;">{{ item.created_at|timesince }} ago</small>
             </div>
-
-            <h6 class="fw-bold text-dark mb-1" style="font-size:0.95rem;line-height:1.35;">{{ item.title }}</h6>
-            {% if item.description %}
-            <p class="text-muted small mb-2 text-truncate" style="font-size:0.8rem;">{{ item.description }}</p>
-            {% endif %}
-
-            <div class="d-flex align-items-center gap-2 mb-3">
-              <span class="badge bg-primary text-white fw-bold px-2 py-1 rounded" style="font-size:0.75rem;">Budget: Rs. {{ item.budget|floatformat:2 }}</span>
-              <span class="badge bg-light text-muted border px-2 py-1 rounded" style="font-size:0.72rem;"><i class="fas fa-map-marker-alt text-danger me-1"></i>{{ item.preferred_location }}</span>
+            <h6 class="fw-bold text-dark mb-1">{{ item.title }}</h6>
+            {% if item.description %}<p class="text-muted small mb-2 text-truncate">{{ item.description }}</p>{% endif %}
+            <div class="d-flex gap-2 mb-3">
+              <span class="badge bg-primary text-white fw-bold">Budget: Rs. {{ item.budget|floatformat:2 }}</span>
+              <span class="badge bg-light text-muted border"><i class="fas fa-map-marker-alt text-danger me-1"></i>{{ item.preferred_location }}</span>
             </div>
           </div>
-
-          <div class="pt-2 border-top d-flex align-items-center justify-content-between mt-auto">
-            <div class="small text-muted d-flex align-items-center gap-1" style="font-size:0.75rem;">
-              <i class="fas fa-user-circle text-primary"></i> {{ item.user.first_name|default:item.user.username }}
-            </div>
+          <div class="pt-2 border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted"><i class="fas fa-user-circle text-primary"></i> {{ item.user.username }}</small>
             {% if user.is_authenticated and item.user == user %}
-            <form action="{% url 'delete_item_request' item.id %}" method="POST" class="d-inline">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-2 py-0" style="font-size:0.72rem;" onclick="return confirm('Remove this request?');">Delete</button>
-            </form>
+            <form action="{% url 'delete_item_request' item.id %}" method="POST" class="d-inline">{% csrf_token %}<button class="btn btn-outline-danger btn-sm rounded-pill py-0 px-2 small" onclick="return confirm('Delete request?');">Delete</button></form>
             {% else %}
-            <form action="{% url 'fulfill_item_request' item.id %}" method="POST" class="d-inline">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;" onclick="return confirm('Offer {{ item.title }} to {{ item.user.username }}? We will notify them right now.');">
-                <i class="fas fa-handshake me-1"></i> I Have This!
-              </button>
-            </form>
+            <form action="{% url 'fulfill_item_request' item.id %}" method="POST" class="d-inline">{% csrf_token %}<button class="btn btn-success btn-sm rounded-pill px-3 py-1 fw-bold small" onclick="return confirm('Offer {{ item.title }} to {{ item.user.username }}?');">I Have This!</button></form>
             {% endif %}
           </div>
         </div>
       </div>
       {% empty %}
-      <div class="col-12 text-center py-4 bg-white rounded-4 border">
-        <i class="fas fa-bullhorn text-muted display-6 mb-2 d-block"></i>
-        <h6 class="fw-bold text-dark mb-1">No active wanted requests</h6>
-        <p class="text-muted small mb-2">Need a specific book, calculator, or lab tool? Post the first request!</p>
-        {% if user.is_authenticated %}
-        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#postWantedModal">Post a Request</button>
-        {% endif %}
-      </div>
+      <div class="col-12 text-center py-4 bg-white rounded-4 border"><p class="mb-0 text-muted">No active wanted requests. Post what you need!</p></div>
       {% endfor %}
     </div>
   </div>
 </section>
 
-<div class="modal fade" id="postWantedModal" tabindex="-1" aria-labelledby="postWantedModalLabel" aria-hidden="true">
+<div class="modal fade" id="postWantedModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 border-0 shadow-lg">
-      <div class="modal-header bg-primary text-white rounded-top-4 p-3">
-        <h5 class="modal-title fw-bold fs-6" id="postWantedModalLabel"><i class="fas fa-bullhorn me-2"></i> Post on Campus Wanted Board</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header bg-primary text-white p-3">
+        <h6 class="modal-title fw-bold"><i class="fas fa-bullhorn me-1"></i> Post Wanted Request</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form action="{% url 'post_item_request' %}" method="POST">
         {% csrf_token %}
-        <div class="modal-body p-4">
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-dark">What item are you looking for? <span class="text-danger">*</span></label>
-            <input type="text" name="title" class="form-control rounded-3" placeholder="e.g. Arduino Uno Kit for Embedded Systems Lab" required>
+        <div class="modal-body p-3">
+          <div class="mb-2"><label class="small fw-bold">Item Needed *</label><input type="text" name="title" class="form-control form-control-sm rounded-3" placeholder="e.g. Arduino Uno Kit for Lab" required/></div>
+          <div class="row g-2 mb-2">
+            <div class="col-6"><label class="small fw-bold">Budget (Rs.) *</label><input type="number" step="10" name="budget" class="form-control form-control-sm rounded-3" placeholder="500" required/></div>
+            <div class="col-6"><label class="small fw-bold">Urgency</label><select name="urgency" class="form-select form-select-sm rounded-3"><option value="today">Needed Today</option><option value="week" selected>Needed This Week</option><option value="flexible">Flexible</option></select></div>
           </div>
-          <div class="row g-2 mb-3">
-            <div class="col-6">
-              <label class="form-label small fw-bold text-dark">Your Budget (Rs.) <span class="text-danger">*</span></label>
-              <input type="number" step="10" min="0" name="budget" class="form-control rounded-3" placeholder="e.g. 500" required>
-            </div>
-            <div class="col-6">
-              <label class="form-label small fw-bold text-dark">Urgency</label>
-              <select name="urgency" class="form-select rounded-3">
-                <option value="today">⚡ Needed Today</option>
-                <option value="week" selected>📅 Needed This Week</option>
-                <option value="flexible">Flexible</option>
-              </select>
-            </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6"><label class="small fw-bold">Category</label><select name="category" class="form-select form-select-sm rounded-3"><option value="">All Categories</option>{% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}</select></div>
+            <div class="col-6"><label class="small fw-bold">Pickup Block</label><select name="preferred_location" class="form-select form-select-sm rounded-3"><option value="Kumari Hall">Kumari Hall</option><option value="Skill Block">Skill Block</option><option value="Alumini Block">Alumini Block</option><option value="Nepal Block">Nepal Block</option><option value="Brit House">Brit House</option><option value="Himal / Main Block">Himal / Main Block</option></select></div>
           </div>
-          <div class="row g-2 mb-3">
-            <div class="col-6">
-              <label class="form-label small fw-bold text-dark">Category</label>
-              <select name="category" class="form-select rounded-3">
-                <option value="">All Categories</option>
-                {% for cat in categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-6">
-              <label class="form-label small fw-bold text-dark">Meetup Location</label>
-              <select name="preferred_location" class="form-select rounded-3">
-                <option value="Kumari Hall">Kumari Hall</option>
-                <option value="Skill Block">Skill Block</option>
-                <option value="Alumini Block">Alumini Block</option>
-                <option value="Nepal Block">Nepal Block</option>
-                <option value="Brit House">Brit House</option>
-                <option value="Himal / Main Block">Himal / Main Block</option>
-              </select>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-dark">Contact Phone (Optional)</label>
-            <input type="text" name="contact_phone" class="form-control rounded-3" placeholder="e.g. 98XXXXXXXX">
-          </div>
-          <div class="mb-2">
-            <label class="form-label small fw-bold text-dark">Notes / Specific Edition</label>
-            <textarea name="description" rows="2" class="form-control rounded-3" placeholder="e.g. Need 7th Edition or above with clean pages"></textarea>
-          </div>
+          <div class="mb-2"><label class="small fw-bold">Notes</label><textarea name="description" rows="2" class="form-control form-control-sm rounded-3" placeholder="Details or edition info"></textarea></div>
         </div>
-        <div class="modal-footer p-3 bg-light rounded-bottom-4 border-top">
-          <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold"><i class="fas fa-paper-plane me-1"></i> Post Request</button>
+        <div class="modal-footer p-2 bg-light border-top">
+          <button type="button" class="btn btn-sm btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold">Post Request</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-
 <script>
-  function filterByCat(catName, btnElement) {
-    const chips = document.querySelectorAll('#categoryFilterBar .filter-chip');
-    chips.forEach(c => c.classList.remove('active'));
-    if (btnElement) btnElement.classList.add('active');
-
-    const items = document.querySelectorAll('#productGridContainer .product-card-col');
-    const emptyMsg = document.getElementById('filterEmptyMessage');
-    let visible = 0;
-
-    items.forEach(item => {
-      const itemCat = item.dataset.category || '', inStock = item.dataset.instock === 'true';
-      let match = (catName === 'all') ? true : (catName === 'instock' ? inStock : itemCat.includes(catName));
-      item.classList.toggle('d-none', !match);
-      if (match) visible++;
-    });
-
-    if (emptyMsg) emptyMsg.classList.toggle('d-none', !(visible === 0 && items.length > 0));
-  }
-
-  function initAuctionTimers() {
-    document.querySelectorAll('.auction-countdown').forEach(t => {
-      const endStr = t.getAttribute('data-endtime');
-      if (!endStr) return;
-      const endTime = new Date(endStr).getTime();
-      function update() {
-        const diff = endTime - Date.now();
-        if (diff <= 0) {
-          t.textContent = 'AUCTION ENDED';
-          t.className = 'auction-countdown badge bg-secondary text-white rounded-pill px-3 py-1';
-          return;
-        }
-        const hrs = Math.floor(diff / 36e5), mins = Math.floor((diff % 36e5) / 6e4), secs = Math.floor((diff % 6e4) / 1e3);
-        t.textContent = `${hrs.toString().padStart(2, '0')}h : ${mins.toString().padStart(2, '0')}m : ${secs.toString().padStart(2, '0')}s`;
-      }
-      update();
-      setInterval(update, 1000);
+  function filterByCat(c,b){
+    document.querySelectorAll('.filter-chip').forEach(el=>el.className='btn btn-sm btn-light border rounded-pill px-3 filter-chip');
+    if(b)b.className='btn btn-sm btn-primary rounded-pill px-3 filter-chip';
+    document.querySelectorAll('.product-card-col').forEach(i=>{
+      const match=(c==='all')||(c==='instock'?i.dataset.instock==='true':i.dataset.category.includes(c));
+      i.classList.toggle('d-none',!match);
     });
   }
-
-  document.addEventListener('DOMContentLoaded', initAuctionTimers);
+  function initAuctionTimers(){
+    document.querySelectorAll('.auction-countdown').forEach(t=>{
+      const end=new Date(t.dataset.endtime).getTime();
+      const upd=()=>{
+        const d=end-Date.now();
+        if(d<=0){t.textContent='ENDED';return;}
+        const h=Math.floor(d/36e5),m=Math.floor((d%36e5)/6e4),s=Math.floor((d%6e4)/1e3);
+        t.textContent=`${h}h:${m}m:${s}s`;
+      };
+      upd();setInterval(upd,1000);
+    });
+  }
+  document.addEventListener('DOMContentLoaded',initAuctionTimers);
 </script>
 {% endblock %}

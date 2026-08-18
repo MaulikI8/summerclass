@@ -1,155 +1,60 @@
 {% extends 'master/base.html' %}
 {% load static %}
-
-{% block title %}Campus Blogs &amp; Community | Islington Marketplace{% endblock %}
+{% block title %}Campus Blogs | Islington Marketplace{% endblock %}
 
 {% block content %}
-<section class="section-content padding-y-sm">
-  <div class="container">
-    <div class="row g-4">
-      <div class="col-lg-8">
-        <div class="card border-0 shadow-sm bg-white p-3 p-md-4 rounded-4 mb-3">
-          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-              <h4 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
-                <span class="badge bg-primary rounded-circle p-2"><i class="fas fa-newspaper"></i></span>
-                Islington Student Blogs &amp; Community
-              </h4>
-              <p class="text-muted small mb-0">Ask questions, share advice, discuss coursework, and post campus guides.</p>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div><h4 class="fw-bold mb-0">Student Community Blogs</h4><small class="text-muted">Discussions, study guides, reviews &amp; coursework Q&amp;A</small></div>
+    <a href="{% url 'blog_create' %}" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold"><i class="fas fa-pen me-1"></i> Write Blog</a>
+  </div>
+
+  <div class="d-flex gap-2 overflow-auto pb-2 mb-3">
+    <a href="{% url 'blog' %}" class="btn btn-sm {% if not selected_tag %}btn-primary{% else %}btn-light border{% endif %} rounded-pill px-3">All</a>
+    <a href="{% url 'blog' %}?tag=Discussion" class="btn btn-sm {% if selected_tag == 'Discussion' %}btn-primary{% else %}btn-light border{% endif %} rounded-pill px-3">Discussions</a>
+    <a href="{% url 'blog' %}?tag=Question" class="btn btn-sm {% if selected_tag == 'Question' %}btn-primary{% else %}btn-light border{% endif %} rounded-pill px-3">Questions</a>
+    <a href="{% url 'blog' %}?tag=Guide" class="btn btn-sm {% if selected_tag == 'Guide' %}btn-primary{% else %}btn-light border{% endif %} rounded-pill px-3">Guides</a>
+    <a href="{% url 'blog' %}?tag=Review" class="btn btn-sm {% if selected_tag == 'Review' %}btn-primary{% else %}btn-light border{% endif %} rounded-pill px-3">Reviews</a>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="d-flex flex-column gap-3">
+        {% for b in blogs %}
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+          <div class="d-flex gap-3">
+            <div class="text-center" style="width:40px;">
+              <form action="{% url 'toggle_upvote' b.id %}" method="POST">{% csrf_token %}<button class="btn btn-sm btn-light border rounded-circle p-1" style="width:34px;height:34px;"><i class="fas fa-arrow-up text-primary"></i></button></form>
+              <strong class="small d-block mt-1">{{ b.upvote_count }}</strong>
             </div>
-            <a href="{% url 'blog_create' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2"><i class="fas fa-pen-nib"></i> Write a Blog</a>
-          </div>
-
-          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3 border-top">
-            <div class="d-flex align-items-center gap-1 flex-wrap">
-              <a href="{% url 'blog' %}{% if selected_cat %}?category={{ selected_cat }}{% endif %}" class="filter-chip {% if not selected_tag %}active{% endif %}">All</a>
-              <a href="{% url 'blog' %}?tag=Discussion{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Discussion' %}active{% endif %}"><i class="fas fa-comments me-1"></i> Discussions</a>
-              <a href="{% url 'blog' %}?tag=Question{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Question' %}active{% endif %}"><i class="fas fa-question-circle me-1"></i> Questions</a>
-              <a href="{% url 'blog' %}?tag=Guide{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Guide' %}active{% endif %}"><i class="fas fa-book-open me-1"></i> Guides</a>
-              <a href="{% url 'blog' %}?tag=Review{% if selected_cat %}&category={{ selected_cat }}{% endif %}" class="filter-chip {% if selected_tag == 'Review' %}active{% endif %}"><i class="fas fa-star me-1"></i> Reviews</a>
-            </div>
-
-            <div class="d-flex align-items-center gap-1">
-              <a href="{% url 'blog' %}?sort=new{% if selected_cat %}&category={{ selected_cat }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" class="btn btn-sm {% if sort != 'top' %}btn-light fw-bold text-primary border{% else %}btn-link text-muted text-decoration-none{% endif %} rounded-pill px-3"><i class="fas fa-clock me-1"></i> Newest</a>
-              <a href="{% url 'blog' %}?sort=top{% if selected_cat %}&category={{ selected_cat }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" class="btn btn-sm {% if sort == 'top' %}btn-light fw-bold text-primary border{% else %}btn-link text-muted text-decoration-none{% endif %} rounded-pill px-3"><i class="fas fa-fire text-danger me-1"></i> Top</a>
-            </div>
-          </div>
-        </div>
-
-        {% if selected_cat or selected_author %}
-        <div class="p-3 bg-white rounded-4 border shadow-sm mb-3 d-flex justify-content-between align-items-center">
-          <span class="small text-muted">Filtering by: <strong>{% if selected_cat %}{{ selected_cat }}{% endif %}{% if selected_author %}Author: {{ selected_author }}{% endif %}</strong></span>
-          <a href="{% url 'blog' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Clear Filter</a>
-        </div>
-        {% endif %}
-
-        <div class="d-flex flex-column gap-3">
-          {% for b in blogs %}
-          <div class="card border-0 shadow-sm bg-white rounded-4 overflow-hidden p-3 p-md-4 transition-hover">
-            <div class="d-flex gap-3">
-              <div class="d-flex flex-column align-items-center justify-content-start" style="min-width: 44px;">
-                <form action="{% url 'toggle_upvote' b.id %}" method="POST" class="d-inline">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center border" style="width: 38px; height: 38px;" title="Upvote">
-                    <i class="fas fa-arrow-up text-primary"></i>
-                  </button>
-                </form>
-                <span class="fw-bold text-dark small mt-1">{{ b.upvote_count }}</span>
+            <div class="flex-grow-1">
+              <div class="d-flex gap-2 align-items-center small mb-1">
+                <span class="badge bg-primary-subtle text-primary rounded-pill">{{ b.category.name }}</span>
+                <span class="badge bg-secondary-subtle text-secondary rounded-pill">{{ b.tag }}</span>
+                <small class="text-muted">&bull; {{ b.author.username|default:"Admin" }} &bull; {{ b.created_at|timesince }} ago</small>
               </div>
-
-              <div class="flex-grow-1">
-                <div class="d-flex align-items-center gap-2 flex-wrap small mb-2">
-                  <a href="{% url 'blog' %}?category={{ b.category.name }}" class="badge bg-primary-subtle text-primary rounded-pill text-decoration-none fw-bold">{{ b.category.name }}</a>
-                  <span class="badge {% if b.tag == 'Question' %}bg-danger-subtle text-danger{% elif b.tag == 'Guide' %}bg-success-subtle text-success{% elif b.tag == 'Review' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-secondary{% endif %} rounded-pill">
-                    {% if b.tag == 'Question' %}<i class="fas fa-question-circle me-1"></i>{% elif b.tag == 'Guide' %}<i class="fas fa-book-open me-1"></i>{% elif b.tag == 'Review' %}<i class="fas fa-star me-1"></i>{% else %}<i class="fas fa-comments me-1"></i>{% endif %}
-                    {{ b.tag }}
-                  </span>
-                  <span class="text-muted">&bull; Posted by</span>
-                  {% if b.author %}
-                  <a href="{% url 'blog' %}?author={{ b.author.username }}" class="text-dark fw-semibold text-decoration-none"><i class="fas fa-user-circle text-primary me-1"></i>{{ b.author.username }}</a>
-                  {% else %}
-                  <span class="text-dark fw-semibold"><i class="fas fa-user-shield text-muted me-1"></i>Islington Admin</span>
-                  {% endif %}
-                  <span class="text-muted">{{ b.created_at|timesince }} ago</span>
-                </div>
-
-                <h5 class="fw-bold mb-2">
-                  <a href="{% url 'blog_detail' b.id %}" class="text-dark text-decoration-none title-hover" style="line-height: 1.35;">{{ b.title }}</a>
-                </h5>
-                <p class="text-muted small mb-3" style="line-height: 1.6;">{{ b.content|truncatewords:28 }}</p>
-
-                {% if b.post_image %}
-                <div class="mb-3 rounded-3 overflow-hidden border" style="max-height: 220px; max-width: 420px;">
-                  <img src="{{ b.post_image.url }}" alt="{{ b.title }}" class="img-fluid w-100" style="object-fit: cover; max-height: 220px;">
-                </div>
-                {% endif %}
-
-                <div class="d-flex align-items-center gap-3 pt-2 border-top">
-                  <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-light rounded-pill px-3 border small text-secondary d-flex align-items-center gap-1">
-                    <i class="fas fa-comment-alt text-primary"></i> <strong>{{ b.comment_count }}</strong> Comments
-                  </a>
-                  <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 small fw-semibold">Read &amp; Discuss <i class="fas fa-arrow-right ms-1"></i></a>
-                </div>
+              <h6 class="fw-bold mb-1"><a href="{% url 'blog_detail' b.id %}" class="text-dark text-decoration-none">{{ b.title }}</a></h6>
+              <p class="text-muted small mb-2">{{ b.content|truncatewords:24 }}</p>
+              <div class="d-flex justify-content-between align-items-center pt-2 border-top small">
+                <span class="text-muted"><i class="fas fa-comment me-1 text-primary"></i>{{ b.comment_count }} comments</span>
+                <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Read &rarr;</a>
               </div>
             </div>
           </div>
-          {% empty %}
-          <div class="card p-5 text-center bg-white border-0 shadow-sm rounded-4">
-            <div class="rounded-circle bg-light text-primary mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; font-size: 1.8rem;"><i class="fas fa-newspaper"></i></div>
-            <h5 class="fw-bold text-dark mb-1">No blogs found</h5>
-            <p class="text-muted small mb-3">Be the first student to publish an article or ask a question!</p>
-            <div><a href="{% url 'blog_create' %}" class="btn btn-primary rounded-pill px-4 fw-bold"><i class="fas fa-pen-nib me-1"></i> Write the First Blog</a></div>
-          </div>
-          {% endfor %}
         </div>
+        {% empty %}
+        <div class="text-center py-5 text-muted bg-white rounded-4 border"><p class="mb-2">No blog posts yet.</p><a href="{% url 'blog_create' %}" class="btn btn-primary btn-sm rounded-pill px-3">Write First Post</a></div>
+        {% endfor %}
       </div>
-
-      <div class="col-lg-4">
-        <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
-          <div class="d-flex align-items-center gap-2 mb-3">
-            <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;"><i class="fas fa-university"></i></div>
-            <h5 class="fw-bold text-dark mb-0">Islington Student Hub</h5>
-          </div>
-          <p class="text-muted small mb-3" style="line-height: 1.6;">The student-run community blog for Islington College. Ask questions about modules, share textbook tips, and discuss campus life.</p>
-          <div class="p-3 bg-light rounded-3 border mb-3 small d-flex justify-content-between text-center">
-            <div><strong class="d-block text-dark fs-6">{{ blogs|length }}</strong><span class="text-muted">Blogs</span></div>
-            <div class="border-end"></div>
-            <div><strong class="d-block text-primary fs-6">{{ categories|length }}</strong><span class="text-muted">Categories</span></div>
-            <div class="border-end"></div>
-            <div><strong class="d-block text-success fs-6"><i class="fas fa-check-circle me-1"></i>Verified</strong><span class="text-muted">Students</span></div>
-          </div>
-          <a href="{% url 'blog_create' %}" class="btn btn-primary btn-sm w-100 rounded-pill py-2 fw-bold shadow-sm"><i class="fas fa-pen-nib me-1"></i> Write a Blog Post</a>
-        </div>
-
-        <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="fw-bold text-dark mb-0"><i class="fas fa-tags text-primary me-1"></i> Blog Categories</h6>
-            <a href="{% url 'blog' %}" class="small text-decoration-none text-primary fw-semibold">View All</a>
-          </div>
-          <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
-            {% for cat in categories %}
-            <li class="{% if not forloop.first %}border-top pt-2{% endif %}">
-              <a href="{% url 'blog' %}?category={{ cat.name }}" class="d-flex justify-content-between align-items-center text-decoration-none py-1 text-dark small {% if selected_cat == cat.name %}fw-bold text-primary{% endif %}">
-                <span><i class="fas fa-folder text-primary me-2 opacity-75"></i> {{ cat.name }}</span>
-                <span class="badge bg-light text-muted border rounded-pill">{{ cat.posts.count }}</span>
-              </a>
-            </li>
-            {% empty %}
-            <li class="small text-muted">General</li>
-            {% endfor %}
-          </ul>
-        </div>
-
-        <div class="card border-0 shadow-sm bg-white p-3 p-md-4 rounded-4">
-          <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt text-success me-1"></i> Community Guidelines</h6>
-          <ol class="small text-muted ps-3 mb-0" style="line-height: 1.6;">
-            <li>Keep discussions respectful and helpful.</li>
-            <li>No spam or unrelated advertisements.</li>
-            <li>Meet inside college blocks for item handovers.</li>
-          </ol>
+    </div>
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+        <h6 class="fw-bold mb-2">Categories</h6>
+        <div class="d-flex flex-column gap-1 small">
+          {% for c in categories %}<a href="{% url 'blog' %}?category={{ c.name }}" class="text-decoration-none text-muted py-1 border-bottom d-flex justify-content-between"><span>{{ c.name }}</span><span class="badge bg-light text-dark">{{ c.posts.count }}</span></a>{% endfor %}
         </div>
       </div>
     </div>
   </div>
-</section>
+</div>
 {% endblock %}

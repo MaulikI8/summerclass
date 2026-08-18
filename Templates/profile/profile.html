@@ -1,645 +1,180 @@
 {% extends 'master/base.html' %}
 {% load static %}
-
 {% block title %}Student Dashboard | Islington Marketplace{% endblock %}
 
 {% block content %}
 <style>
-  .dashboard-sidebar{background:#fff;border:1px solid #e4e4e4;border-radius:12px;overflow:hidden}
-  .dashboard-sidebar .sidebar-item{display:block;padding:11px 18px;color:#444;text-decoration:none;font-size:.9rem;font-weight:500;border-left:3px solid transparent;transition:all .15s ease}
-  .dashboard-sidebar .sidebar-item:hover{background:#f0f4ff;color:var(--primary);border-left-color:var(--primary)}
-  .dashboard-sidebar .sidebar-item.active{background:var(--primary);color:#fff;border-left-color:var(--primary);font-weight:600}
-  .dashboard-sidebar .sidebar-item i{width:18px;text-align:center;margin-right:8px;font-size:.85rem}
-  .sidebar-divider{border-top:1px solid #e4e4e4;margin:0}
-  .sidebar-logout{display:block;padding:12px 18px;text-align:center;color:#555;text-decoration:none;font-size:.88rem;font-weight:600;border-top:1px solid #e4e4e4;transition:all .15s ease}
-  .sidebar-logout:hover{background:#fff0f0;color:#dc3545}
-  .sidebar-logout i{margin-right:6px}
-  .stat-card{background:#fff;border:1px solid #e4e4e4;border-radius:12px;padding:20px;text-align:center}
-  .stat-card .stat-title{font-size:.88rem;font-weight:600;color:#333;margin-bottom:6px}
-  .stat-card .stat-number{font-size:1.6rem;font-weight:700;color:#111}
-  .stat-card .stat-link{font-size:.82rem;color:var(--primary);text-decoration:none;display:inline-block;margin-top:6px}
-  .dashboard-panel{background:#fff;border:1px solid #e4e4e4;border-radius:12px}
-  .dashboard-panel .panel-header{padding:16px 20px;border-bottom:1px solid #e4e4e4}
-  .dashboard-panel .panel-header h5{font-weight:700;margin:0;font-size:1.05rem;color:#222}
-  .dashboard-panel .panel-body{padding:20px}
-  .product-status-bar{display:flex;gap:16px;flex-wrap:wrap;font-size:.88rem;margin-bottom:14px}
-  .product-status-bar span{color:#555;font-weight:500}
-  .product-status-bar .count-label{font-weight:700}
-  .product-status-bar .count-approved{color:#28a745}
-  .btn-manage{font-size:.85rem;padding:6px 16px;font-weight:600;border-radius:8px}
-  .dashboard-tab-pane{display:none}
-  .dashboard-tab-pane.active{display:block}
-  .settings-form .form-label{font-weight:600;font-size:.85rem;color:#333;margin-bottom:4px}
-  .settings-form .form-control,.settings-form .form-select{border-radius:8px;border:1px solid #d0d0d0;padding:9px 12px;font-size:.9rem}
-  .settings-form .form-control:focus,.settings-form .form-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .dash-side a{display:block;padding:9px 15px;color:#444;text-decoration:none;font-size:.86rem;font-weight:500;border-radius:8px;margin-bottom:2px}
+  .dash-side a:hover{background:#eff6ff;color:#2563eb}
+  .dash-side a.active{background:#2563eb;color:#fff;font-weight:600}
+  .dash-pane{display:none}.dash-pane.active{display:block}
 </style>
 
-<section class="section-content padding-y-sm py-4">
-  <div class="container">
-    {% if messages %}
-    <div class="mb-3">
-      {% for msg in messages %}
-      <div class="alert {% if msg.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center gap-2" role="alert">
-        <i class="fa {% if msg.tags == 'error' %}fa-exclamation-circle text-danger{% else %}fa-check-circle text-success{% endif %} fs-5"></i>
-        <span>{{ msg }}</span>
-        <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
+<div class="container py-4">
+  {% if messages %}{% for m in messages %}<div class="alert alert-{% if m.tags == 'error' %}danger{% else %}success{% endif %} rounded-3 py-2 small mb-3">{{ m }}</div>{% endfor %}{% endif %}
 
-    <div class="row g-4">
-      <div class="col-lg-3 col-md-4">
-        <div class="dashboard-sidebar shadow-sm">
-          <a href="javascript:void(0)" class="sidebar-item active" id="sidebarDashboard" onclick="switchDashboardTab('dashboard', this)"><i class="fas fa-chart-pie"></i> Dashboard</a>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarProducts" onclick="switchDashboardTab('products', this)"><i class="fas fa-boxes"></i> My Products</a>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarAddProduct" onclick="switchDashboardTab('addproduct', this)"><i class="fas fa-plus-circle text-primary"></i> Post New Listing</a>
-          <div class="sidebar-divider"></div>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarOrders" onclick="switchDashboardTab('orders', this)"><i class="fas fa-receipt"></i> My Orders</a>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarSales" onclick="switchDashboardTab('sales', this)"><i class="fas fa-chart-line"></i> My Sales</a>
-          <div class="sidebar-divider"></div>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarSentReq" onclick="switchDashboardTab('sentreq', this)"><i class="fas fa-paper-plane"></i> My Sent Requests</a>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarRecvReq" onclick="switchDashboardTab('recvreq', this)"><i class="fas fa-inbox"></i> My Received Requests</a>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarWishlist" onclick="switchDashboardTab('wishlist', this)"><i class="fas fa-heart text-danger"></i> Saved Wishlist ({{ user_wishlist|length }})</a>
-          <div class="sidebar-divider"></div>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarMessages" onclick="switchDashboardTab('messages', this)"><i class="fas fa-envelope"></i> Messages</a>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarSent" onclick="switchDashboardTab('sent', this)"><i class="fas fa-share-square"></i> Sent</a>
-          <div class="sidebar-divider"></div>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarEdit" onclick="switchDashboardTab('edit', this)"><i class="fas fa-user-edit"></i> Edit Profile</a>
-          <a href="javascript:void(0)" class="sidebar-item" id="sidebarPassword" onclick="switchDashboardTab('password', this)"><i class="fas fa-key"></i> Change Password</a>
-          {% if profile_user.is_authenticated %}
-          <a href="{% url 'student_logout' %}" class="sidebar-logout"><i class="fas fa-power-off"></i> Log out</a>
-          {% else %}
-          <a href="{% url 'student_login' %}" class="sidebar-logout text-primary"><i class="fas fa-sign-in-alt"></i> Student Sign In</a>
-          {% endif %}
+  <div class="row g-3">
+    <div class="col-lg-3 col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white dash-side">
+        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;">{{ profile_user.username|slice:":1"|upper }}</div>
+          <div class="overflow-hidden"><strong class="d-block text-truncate small">{{ profile_user.get_full_name|default:profile_user.username }}</strong><small class="text-muted">{{ profile_user.email }}</small></div>
         </div>
-      </div>
-
-      <div class="col-lg-9 col-md-8">
-        <div class="dashboard-tab-pane active" id="tabDashboard">
-          <div class="p-3 bg-white rounded-3 border mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-3">
-              <div class="brand-icon-wrap" style="width: 44px; height: 44px;"><i class="fa fa-user-graduate"></i></div>
-              <div>
-                <span class="text-muted small">Logged in student:</span>
-                <h5 class="fw-bold mb-0 text-dark">{% if profile_user.is_authenticated %}{{ profile_user.get_full_name|default:profile_user.username }}{% else %}Guest Student (Not Logged In){% endif %}</h5>
-              </div>
-            </div>
-            {% if not profile_user.is_authenticated %}
-            <a href="{% url 'student_login' %}" class="btn btn-primary btn-sm rounded-pill px-3">Sign In to Post Items</a>
-            {% else %}
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm rounded-pill px-3" onclick="switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'))"><i class="fa fa-plus-circle me-1"></i> Post New Listing</a>
-            {% endif %}
-          </div>
-
-          <div class="row g-3 mb-4">
-            <div class="col-md-4">
-              <div class="stat-card">
-                <div class="stat-title">My Active Listings</div>
-                <div class="stat-number text-primary">{{ user_products|length }}</div>
-                <a href="javascript:void(0)" class="stat-link" onclick="switchDashboardTab('products', document.getElementById('sidebarProducts'))">View Listings</a>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="stat-card">
-                <div class="stat-title">My Orders</div>
-                <div class="stat-number text-primary">{{ user_orders|length }}</div>
-                <a href="javascript:void(0)" class="stat-link" onclick="switchDashboardTab('orders', document.getElementById('sidebarOrders'))">View Orders</a>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="stat-card">
-                <div class="stat-title">My Sales</div>
-                <div class="stat-number text-success">{{ user_sales|length }}</div>
-                <a href="javascript:void(0)" class="stat-link" onclick="switchDashboardTab('sales', document.getElementById('sidebarSales'))">View Sales</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="dashboard-panel">
-            <div class="panel-header d-flex justify-content-between align-items-center">
-              <h5>My Products Summary</h5>
-              <button type="button" class="btn btn-primary btn-sm rounded-pill" onclick="switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'))"><i class="fa fa-plus me-1"></i> Post Item</button>
-            </div>
-            <div class="panel-body">
-              <div class="product-status-bar">
-                <span>Total Items: <span class="count-label">{{ user_products|length }}</span></span>
-                <span>Active in Store: <span class="count-label count-approved">{{ user_products|length }}</span></span>
-                <span>Sold / Inactive: <span class="count-label count-inactive">0</span></span>
-              </div>
-              <div class="d-flex gap-2">
-                <a href="javascript:void(0)" class="btn btn-outline-primary btn-manage" onclick="switchDashboardTab('products', document.getElementById('sidebarProducts'))">Manage My Items</a>
-                <a href="javascript:void(0)" class="btn btn-primary btn-manage" onclick="switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'))">List New Item</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabProducts">
-          <div class="dashboard-panel">
-            <div class="panel-header d-flex justify-content-between align-items-center">
-              <h5>My Listed Products ({{ user_products|length }})</h5>
-              <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" onclick="switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'))"><i class="fa fa-plus me-1"></i> Post New Listing</button>
-            </div>
-            <div class="panel-body">
-              {% if user_products %}
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="table-light">
-                    <tr><th>#</th><th>Product Item</th><th>Category</th><th>Price</th><th>Stock</th><th>Review Status</th><th style="width: 140px;">Actions</th></tr>
-                  </thead>
-                  <tbody>
-                    {% for prod in user_products %}
-                    <tr>
-                      <td class="text-muted small">{{ forloop.counter }}</td>
-                      <td>
-                        <div class="d-flex align-items-center gap-2">
-                          <img src="{% if prod.product_image %}{{ prod.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ prod.name }}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid #e4e4e4;">
-                          <div>
-                            <a href="{% url 'product_detail' prod.id %}" class="text-dark fw-bold text-decoration-none d-block" style="font-size: 0.92rem;">{{ prod.name }}</a>
-                            <small class="text-muted">{{ prod.created_at|date:"M d, Y" }}</small>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="text-muted small">{{ prod.category.name }}</td>
-                      <td class="fw-bold text-primary" style="font-size: 0.95rem;">Rs. {{ prod.price|floatformat:2 }}</td>
-                      <td>
-                        {% if prod.stock > 0 %}<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">{{ prod.stock }} In Stock</span>
-                        {% else %}<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Sold Out</span>{% endif %}
-                      </td>
-                      <td>
-                        {% if prod.is_approved and prod.status %}<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill"><i class="fa fa-check-circle me-1"></i> Live</span>
-                        {% elif not prod.is_approved %}<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill"><i class="fa fa-clock me-1"></i> Pending Review</span>
-                        {% else %}<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Hidden</span>{% endif %}
-                      </td>
-                      <td>
-                        <div class="d-flex gap-1 align-items-center">
-                          <form action="{% url 'start_auction' prod.id %}" method="POST" class="d-inline" onsubmit="return confirm('Start 24-hour live auction for {{ prod.name|escapejs }}?');">
-                            {% csrf_token %}
-                            <input type="hidden" name="starting_bid" value="{{ prod.price }}">
-                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Start 24h Live Auction" style="font-size: 0.78rem; padding: 4px 8px;"><i class="fas fa-gavel text-danger"></i> Auction</button>
-                          </form>
-                          <a href="{% url 'product_detail' prod.id %}" class="btn btn-sm btn-outline-primary" title="View in Store" style="font-size: 0.78rem; padding: 4px 8px;"><i class="fa fa-eye"></i></a>
-                          <button type="button" class="btn btn-sm btn-outline-secondary" title="Edit Listing" style="font-size: 0.78rem; padding: 4px 8px;" onclick="openEditProductModal('{{ prod.id }}', '{{ prod.name|escapejs }}', '{{ prod.category.id }}', '{{ prod.price }}', '{{ prod.stock }}', '{{ prod.description|escapejs }}')"><i class="fa fa-edit"></i></button>
-                          <button type="button" class="btn btn-sm btn-outline-danger" title="Delete Listing" style="font-size: 0.78rem; padding: 4px 8px;" onclick="confirmDeleteProduct('{{ prod.id }}', '{{ prod.name|escapejs }}')"><i class="fa fa-trash"></i></button>
-                        </div>
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              {% else %}
-              <div class="text-center py-5 text-muted">
-                <i class="fa fa-box-open text-muted display-4 d-block mb-3"></i>
-                <h5 class="fw-bold text-dark">You have not listed any items yet</h5>
-                <p class="small mb-3">Sell your textbooks, lab gear, or gadgets to fellow Islington peers.</p>
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-4" onclick="switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'))"><i class="fa fa-plus-circle me-1"></i> Post Your First Listing</button>
-              </div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabAddProduct">
-          <div class="dashboard-panel">
-            <div class="panel-header"><h5><i class="fa fa-plus-circle text-primary me-2"></i> Post New Listing (Student Marketplace)</h5></div>
-            <div class="panel-body">
-              {% if not profile_user.is_authenticated %}
-              <div class="alert alert-warning rounded-3 border-0"><i class="fa fa-exclamation-triangle me-1"></i> Please <a href="{% url 'student_login' %}" class="fw-bold text-dark">Sign In</a> to post listings.</div>
-              {% else %}
-              <form method="POST" action="{% url 'user_profile' %}" enctype="multipart/form-data" class="settings-form" id="addProductForm">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="add_product">
-                <div class="row g-3 mb-3">
-                  <div class="col-md-8">
-                    <label class="form-label">Item Title <span class="text-danger">*</span></label>
-                    <input type="text" name="name" class="form-control" placeholder="e.g. Discrete Mathematics 7th Edition Textbook" required>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Category <span class="text-danger">*</span></label>
-                    <select name="category" class="form-select" required>
-                      <option value="" disabled selected>Select category...</option>
-                      {% for cat in categories %}
-                      <option value="{{ cat.id }}">{{ cat.name }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                </div>
-                <div class="row g-3 mb-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Resale Price (Rs.) <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-end-0 text-muted">Rs.</span>
-                      <input type="number" name="price" step="0.01" min="0" class="form-control border-start-0" placeholder="e.g. 750" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Available Stock / Quantity</label>
-                    <input type="number" name="stock" min="1" value="1" class="form-control" required>
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Item Description &amp; Condition</label>
-                  <textarea name="description" rows="4" class="form-control" placeholder="Mention item condition, edition, and collection point." required></textarea>
-                </div>
-                <div class="mb-4">
-                  <label class="form-label">Product Photo</label>
-                  <input type="file" name="product_image" class="form-control" accept="image/*" onchange="previewUploadImage(this)">
-                  <div id="imagePreviewContainer" class="mt-2 d-none"><img id="imagePreviewEl" src="" alt="Preview" class="rounded border" style="max-height: 140px; object-fit: contain;"></div>
-                </div>
-                <div class="form-check form-switch mb-4 p-3 bg-light rounded-3 border">
-                  <input class="form-check-input ms-0 me-2" type="checkbox" name="start_as_auction" value="1" id="startAsAuctionCheck">
-                  <label class="form-check-label fw-bold text-dark" for="startAsAuctionCheck">Start as a 24-Hour Live Auction</label>
-                </div>
-                <div class="d-flex gap-2">
-                  <button type="submit" class="btn btn-primary btn-manage px-4 py-2"><i class="fa fa-check-circle me-1"></i> Publish Listing to Marketplace</button>
-                  <button type="reset" class="btn btn-outline-secondary btn-manage px-3" onclick="document.getElementById('imagePreviewContainer').classList.add('d-none'); localStorage.removeItem('islington_add_product_draft');">Reset</button>
-                </div>
-              </form>
-              <script>
-                document.addEventListener('DOMContentLoaded', () => {
-                  if (typeof bindAutoDraft === 'function') bindAutoDraft('addProductForm', 'islington_add_product_draft');
-                });
-              </script>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabOrders">
-          <div class="dashboard-panel">
-            <div class="panel-header d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">My Orders ({{ user_orders|length }})</h5>
-              <a href="{% url 'products' %}" class="btn btn-outline-primary btn-sm rounded-pill">Shop More</a>
-            </div>
-            <div class="panel-body">
-              {% if user_orders %}
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="table-light">
-                    <tr><th>Order ID</th><th>Items</th><th>Meetup Location</th><th>Total</th><th>Status</th></tr>
-                  </thead>
-                  <tbody>
-                    {% for ord in user_orders %}
-                    <tr>
-                      <td><strong class="text-primary">#{{ ord.id }}</strong><br><small class="text-muted">{{ ord.created_at|date:"M d, Y" }}</small></td>
-                      <td>{% for item in ord.items.all %}<div class="small fw-semibold">{{ item.quantity }}x {{ item.product_name }}</div>{% endfor %}</td>
-                      <td class="small">{{ ord.meetup_location }}<br><span class="text-muted">{{ ord.meetup_time }}</span></td>
-                      <td><strong class="text-dark">Rs. {{ ord.total_amount|floatformat:2 }}</strong></td>
-                      <td><span class="badge bg-success-subtle text-success border border-success px-2 py-1 rounded-pill">{{ ord.order_status|title }}</span></td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              {% else %}
-              <div class="text-center py-5 text-muted">
-                <i class="fas fa-receipt display-4 mb-3 d-block"></i>
-                <h6 class="fw-bold text-dark">No orders yet</h6>
-                <a href="{% url 'products' %}" class="btn btn-primary btn-sm rounded-pill px-4">Browse Campus Store</a>
-              </div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabSales">
-          <div class="dashboard-panel">
-            <div class="panel-header d-flex justify-content-between align-items-center"><h5 class="mb-0">My Sales ({{ user_sales|length }})</h5></div>
-            <div class="panel-body">
-              {% if user_sales %}
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="table-light"><tr><th>Order Ref</th><th>Item Sold</th><th>Buyer Info</th><th>Meetup Handover</th><th>Amount</th></tr></thead>
-                  <tbody>
-                    {% for sale in user_sales %}
-                    <tr>
-                      <td><strong class="text-primary">#{{ sale.order.id }}</strong><br><small class="text-muted">{{ sale.order.created_at|date:"M d, Y" }}</small></td>
-                      <td><strong class="text-dark">{{ sale.quantity }}x {{ sale.product_name }}</strong></td>
-                      <td class="small">{{ sale.order.buyer_name }}<br><span class="text-muted">{{ sale.order.buyer_phone }}</span></td>
-                      <td class="small">{{ sale.order.meetup_location }}<br><span class="text-muted">{{ sale.order.meetup_time }}</span></td>
-                      <td><strong class="text-success">Rs. {{ sale.price|floatformat:2 }}</strong></td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              {% else %}
-              <div class="text-center py-5 text-muted"><i class="fas fa-chart-line display-4 mb-3 d-block"></i><h6 class="fw-bold text-dark">No sales yet</h6></div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabSentreq">
-          <div class="dashboard-panel">
-            <div class="panel-header"><h5><i class="fas fa-paper-plane text-primary me-2"></i> My Sent Trade &amp; Price Offers</h5></div>
-            <div class="panel-body p-3">
-              {% if user_sent_offers %}
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="table-light small"><tr><th>Product</th><th>Seller</th><th>Offer Type</th><th>Your Offer</th><th>Status</th><th>Date</th></tr></thead>
-                  <tbody>
-                    {% for off in user_sent_offers %}
-                    <tr>
-                      <td><a href="{% url 'product_detail' off.product.id %}" class="fw-bold text-dark text-decoration-none small">{{ off.product.name }}</a></td>
-                      <td class="small">@{{ off.receiver.username }}</td>
-                      <td><span class="badge bg-light text-dark border rounded-pill small">{{ off.get_offer_type_display }}</span></td>
-                      <td class="small">{% if off.offer_type == 'price' %}<strong class="text-primary">Rs. {{ off.offered_price|floatformat:2 }}</strong>{% else %}<span class="text-muted">{{ off.trade_item_desc|truncatewords:10 }}</span>{% endif %}</td>
-                      <td>
-                        {% if off.status == 'accepted' %}<span class="badge bg-success rounded-pill px-3 py-1"><i class="fas fa-check-circle me-1"></i> Accepted</span>
-                        {% elif off.status == 'declined' %}<span class="badge bg-danger rounded-pill px-3 py-1"><i class="fas fa-times-circle me-1"></i> Declined</span>
-                        {% else %}<span class="badge bg-warning text-dark rounded-pill px-3 py-1"><i class="fas fa-clock me-1"></i> Pending</span>{% endif %}
-                      </td>
-                      <td class="small text-muted">{{ off.created_at|date:"M d, Y" }}</td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              {% else %}
-              <div class="text-center py-5 text-muted"><i class="fa fa-paper-plane display-4 mb-3 d-block"></i><h6 class="fw-bold text-dark">No sent offers</h6></div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabRecvreq">
-          <div class="dashboard-panel">
-            <div class="panel-header"><h5><i class="fas fa-inbox text-primary me-2"></i> Received Trade &amp; Price Offers</h5></div>
-            <div class="panel-body p-3">
-              {% if user_recv_offers %}
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="table-light small"><tr><th>Product</th><th>Buyer</th><th>Offer Type</th><th>Offer Details</th><th>Status</th><th>Action</th></tr></thead>
-                  <tbody>
-                    {% for off in user_recv_offers %}
-                    <tr>
-                      <td><a href="{% url 'product_detail' off.product.id %}" class="fw-bold text-dark text-decoration-none small">{{ off.product.name }}</a></td>
-                      <td class="small"><strong>{{ off.sender.first_name|default:off.sender.username }}</strong><br><span class="text-muted">@{{ off.sender.username }}</span></td>
-                      <td><span class="badge bg-light text-dark border rounded-pill small">{{ off.get_offer_type_display }}</span></td>
-                      <td class="small">{% if off.offer_type == 'price' %}<strong class="text-primary fs-6">Rs. {{ off.offered_price|floatformat:2 }}</strong><small class="text-muted d-block">(Listed: Rs. {{ off.product.price|floatformat:2 }})</small>{% else %}<p class="mb-0 text-dark small" style="max-width: 250px;">{{ off.trade_item_desc }}</p>{% endif %}</td>
-                      <td>
-                        {% if off.status == 'accepted' %}<span class="badge bg-success rounded-pill px-3 py-1"><i class="fas fa-check-circle me-1"></i> Accepted</span>
-                        {% elif off.status == 'declined' %}<span class="badge bg-danger rounded-pill px-3 py-1"><i class="fas fa-times-circle me-1"></i> Declined</span>
-                        {% else %}<span class="badge bg-warning text-dark rounded-pill px-3 py-1"><i class="fas fa-clock me-1"></i> Pending</span>{% endif %}
-                      </td>
-                      <td>
-                        {% if off.status == 'pending' %}
-                        <div class="d-flex gap-1">
-                          <a href="{% url 'respond_offer' off.id 'accept' %}" class="btn btn-sm btn-success rounded-pill px-3 fw-bold"><i class="fas fa-check me-1"></i> Accept</a>
-                          <a href="{% url 'respond_offer' off.id 'decline' %}" class="btn btn-sm btn-outline-danger rounded-pill px-2"><i class="fas fa-times"></i></a>
-                        </div>
-                        {% else %}<span class="small text-muted">Completed</span>{% endif %}
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              {% else %}
-              <div class="text-center py-5 text-muted"><i class="fa fa-inbox display-4 mb-3 d-block"></i><h6 class="fw-bold text-dark">No received offers</h6></div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabWishlist">
-          <div class="dashboard-panel">
-            <div class="panel-header d-flex justify-content-between align-items-center">
-              <div>
-                <h5>My Saved Wishlist</h5>
-                <p class="text-muted small mb-0">Items you've bookmarked to buy or trade later.</p>
-              </div>
-              <span class="badge bg-danger rounded-pill px-3 py-2"><i class="fas fa-heart me-1"></i> {{ user_wishlist|length }} Item{{ user_wishlist|length|pluralize }}</span>
-            </div>
-            <div class="panel-body">
-              {% if user_wishlist %}
-              <div class="row g-3">
-                {% for w in user_wishlist %}
-                <div class="col-md-6 col-lg-4" id="wishlistRow{{ w.product.id }}">
-                  <div class="card card-product-grid shadow-sm h-100 position-relative">
-                    <a href="{% url 'product_detail' w.product.id %}" class="img-wrap">
-                      <img src="{% if w.product.product_image %}{{ w.product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ w.product.name }}" loading="lazy" onerror="this.src='/static/images/default.jpg';" />
-                      <span class="card-category-badge">{{ w.product.category.name }}</span>
-                    </a>
-                    <figcaption class="info-wrap">
-                      <a href="{% url 'product_detail' w.product.id %}" class="title" title="{{ w.product.name }}">{{ w.product.name }}</a>
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="price">Rs. {{ w.product.price|floatformat:2 }}</span>
-                        <small class="text-muted"><i class="fas fa-user-circle text-primary me-1"></i> {{ w.product.user.first_name|default:w.product.user.username }}</small>
-                      </div>
-                      <div class="card-action-bar">
-                        <a href="{% url 'product_detail' w.product.id %}" class="btn-card-primary text-decoration-none">View</a>
-                        {% if w.product.stock > 0 and w.product.user != user %}
-                        <button type="button" class="btn-card-icon" onclick="addToCart('{{ w.product.id }}', '{{ w.product.name|escapejs }}', '{{ w.product.price }}', '{% if w.product.product_image %}{{ w.product.product_image.url }}{% endif %}')" title="Add to Bag"><i class="fas fa-shopping-cart text-primary"></i></button>
-                        {% endif %}
-                        <button type="button" class="btn btn-outline-danger btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;" onclick="toggleWishlist('{{ w.product.id }}'); document.getElementById('wishlistRow{{ w.product.id }}').remove();" title="Remove from Wishlist"><i class="fas fa-trash-alt"></i></button>
-                      </div>
-                    </figcaption>
-                  </div>
-                </div>
-                {% endfor %}
-              </div>
-              {% else %}
-              <div class="text-center py-5 text-muted">
-                <i class="fa fa-heart-broken display-4 mb-3 d-block" style="color: #cbd5e1;"></i>
-                <h6 class="fw-bold text-dark">Your wishlist is empty</h6>
-                <a href="{% url 'products' %}" class="btn btn-outline-primary btn-sm rounded-pill px-4"><i class="fas fa-shopping-bag me-1"></i> Browse Products</a>
-              </div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabMessages">
-          <div class="dashboard-panel">
-            <div class="panel-header d-flex justify-content-between align-items-center">
-              <h5>Campus Inquiries &amp; Messages</h5>
-              <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" onclick="toggleAiChat()"><i class="fa fa-comments me-1"></i> Open Live Assistant</button>
-            </div>
-            <div class="panel-body p-4">
-              <div class="p-3 bg-light rounded-3 border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="brand-icon-wrap" style="width: 44px; height: 44px;"><i class="fa fa-user-graduate"></i></div>
-                  <div>
-                    <h6 class="fw-bold mb-0 text-dark">Islington Peer Support &amp; Seller Hub</h6>
-                    <small class="text-muted">Chat active across campus listings</small>
-                  </div>
-                </div>
-                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="toggleAiChat()">Continue Chat <i class="fa fa-arrow-right ms-1"></i></button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabSent">
-          <div class="dashboard-panel">
-            <div class="panel-header"><h5>Sent Inquiries</h5></div>
-            <div class="panel-body p-4 text-center text-muted">
-              <i class="fa fa-paper-plane display-4 d-block mb-3"></i>
-              <h6 class="fw-bold text-dark">Sent Product Inquiries</h6>
-              <button type="button" class="btn btn-primary btn-sm rounded-pill px-4" onclick="toggleAiChat()"><i class="fa fa-comments me-1"></i> View Messages in Chat</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabEdit">
-          <div class="dashboard-panel">
-            <div class="panel-header"><h5>Edit Profile</h5></div>
-            <div class="panel-body">
-              <form method="POST" action="{% url 'user_profile' %}" class="settings-form">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="update_profile">
-                <div class="row g-3 mb-3">
-                  <div class="col-md-6"><label class="form-label">First Name</label><input type="text" name="first_name" class="form-control" value="{{ profile_user.first_name }}" placeholder="First name"></div>
-                  <div class="col-md-6"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-control" value="{{ profile_user.last_name }}" placeholder="Last name"></div>
-                </div>
-                <div class="mb-3"><label class="form-label">Email Address</label><input type="email" name="email" class="form-control" value="{{ profile_user.email }}" placeholder="email@example.com"></div>
-                <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" value="{{ profile_user.username }}" disabled style="background: #f5f5f5;"></div>
-                <button type="submit" class="btn btn-primary btn-manage px-4">Save Changes</button>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <div class="dashboard-tab-pane" id="tabPassword">
-          <div class="dashboard-panel">
-            <div class="panel-header"><h5>Change Password</h5></div>
-            <div class="panel-body">
-              <form class="settings-form" onsubmit="event.preventDefault(); alert('Password changes are securely verified.');">
-                <div class="mb-3"><label class="form-label">Current Password</label><input type="password" class="form-control" placeholder="Enter current password"></div>
-                <div class="mb-3"><label class="form-label">New Password</label><input type="password" class="form-control" placeholder="Enter new password"></div>
-                <div class="mb-3"><label class="form-label">Confirm New Password</label><input type="password" class="form-control" placeholder="Confirm new password"></div>
-                <button type="submit" class="btn btn-primary btn-manage px-4">Update Password</button>
-              </form>
-            </div>
-          </div>
-        </div>
-
+        <a href="javascript:void(0)" class="active" onclick="switchTab('dashboard',this)"><i class="fas fa-chart-pie me-2"></i> Overview</a>
+        <a href="javascript:void(0)" id="sidebarProducts" onclick="switchTab('products',this)"><i class="fas fa-boxes me-2"></i> My Listings ({{ user_products|length }})</a>
+        <a href="javascript:void(0)" id="sidebarAdd" onclick="switchTab('add',this)"><i class="fas fa-plus-circle text-success me-2"></i> Post Listing</a>
+        <a href="javascript:void(0)" id="sidebarOrders" onclick="switchTab('orders',this)"><i class="fas fa-receipt me-2"></i> My Orders ({{ user_orders|length }})</a>
+        <a href="javascript:void(0)" id="sidebarSales" onclick="switchTab('sales',this)"><i class="fas fa-chart-line me-2"></i> My Sales ({{ user_sales|length }})</a>
+        <a href="javascript:void(0)" id="sidebarRecvReq" onclick="switchTab('recvreq',this)"><i class="fas fa-inbox me-2"></i> Received Offers</a>
+        <a href="javascript:void(0)" id="sidebarSentReq" onclick="switchTab('sentreq',this)"><i class="fas fa-paper-plane me-2"></i> Sent Offers</a>
+        <a href="javascript:void(0)" id="sidebarWishlist" onclick="switchTab('wishlist',this)"><i class="fas fa-heart text-danger me-2"></i> Wishlist ({{ user_wishlist|length }})</a>
+        <a href="javascript:void(0)" onclick="switchTab('edit',this)"><i class="fas fa-user-edit me-2"></i> Edit Profile</a>
+        <hr class="my-2"/>
+        <a href="{% url 'student_logout' %}" class="text-danger"><i class="fas fa-sign-out-alt me-2"></i> Log Out</a>
       </div>
     </div>
-  </div>
-</section>
 
-<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg rounded-4">
-      <div class="modal-header border-bottom">
-        <h5 class="modal-title fw-bold" id="editProductModalLabel"><i class="fa fa-edit text-primary me-2"></i> Edit Product Listing</h5>
-        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="col-lg-9 col-md-8">
+      <div class="dash-pane active" id="paneDashboard">
+        <div class="row g-3 mb-3">
+          <div class="col-4"><div class="card p-3 text-center rounded-4 border-0 shadow-sm bg-white"><small class="text-muted">Listings</small><h4 class="fw-bold text-primary mb-0">{{ user_products|length }}</h4></div></div>
+          <div class="col-4"><div class="card p-3 text-center rounded-4 border-0 shadow-sm bg-white"><small class="text-muted">Orders</small><h4 class="fw-bold text-primary mb-0">{{ user_orders|length }}</h4></div></div>
+          <div class="col-4"><div class="card p-3 text-center rounded-4 border-0 shadow-sm bg-white"><small class="text-muted">Sales</small><h4 class="fw-bold text-success mb-0">{{ user_sales|length }}</h4></div></div>
+        </div>
+        <div class="card p-4 rounded-4 border-0 shadow-sm bg-white text-center">
+          <h5 class="fw-bold">Welcome, {{ profile_user.first_name|default:profile_user.username }}!</h5>
+          <p class="text-muted small">Manage your college listings, respond to peer trades, and track your campus orders.</p>
+          <div class="d-flex justify-content-center gap-2">
+            <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="switchTab('add',document.getElementById('sidebarAdd'))">+ Post Item</button>
+            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="switchTab('products',document.getElementById('sidebarProducts'))">Manage Listings</button>
+          </div>
+        </div>
       </div>
-      <div class="modal-body p-4">
-        <form method="POST" action="{% url 'user_profile' %}" enctype="multipart/form-data" class="settings-form">
-          {% csrf_token %}
-          <input type="hidden" name="action" value="edit_product">
-          <input type="hidden" name="product_id" id="editProductId">
-          <div class="row g-3 mb-3">
-            <div class="col-md-8"><label class="form-label">Title <span class="text-danger">*</span></label><input type="text" name="name" id="editProductName" class="form-control" required></div>
-            <div class="col-md-4">
-              <label class="form-label">Category <span class="text-danger">*</span></label>
-              <select name="category" id="editProductCategory" class="form-select" required>
-                {% for cat in categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
-                {% endfor %}
-              </select>
+
+      <div class="dash-pane" id="paneProducts">
+        <div class="card rounded-4 border-0 shadow-sm p-3 bg-white">
+          <div class="d-flex justify-content-between align-items-center mb-3"><h6 class="fw-bold mb-0">My Listed Products</h6><button class="btn btn-primary btn-sm rounded-pill px-3" onclick="switchTab('add',document.getElementById('sidebarAdd'))">+ Post</button></div>
+          {% if user_products %}
+          <div class="table-responsive"><table class="table table-hover align-middle small mb-0"><thead class="table-light"><tr><th>Item</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+            {% for p in user_products %}
+            <tr>
+              <td><strong class="d-block">{{ p.name }}</strong><small class="text-muted">{{ p.category.name }}</small></td>
+              <td>Rs. {{ p.price|floatformat:2 }}</td>
+              <td>{{ p.stock }}</td>
+              <td>{% if p.is_approved %}<span class="badge bg-success rounded-pill">Live</span>{% else %}<span class="badge bg-warning text-dark rounded-pill">Pending</span>{% endif %}</td>
+              <td>
+                <div class="d-flex gap-1">
+                  <a href="{% url 'product_detail' p.id %}" class="btn btn-sm btn-light border"><i class="fa fa-eye"></i></a>
+                  <button class="btn btn-sm btn-outline-secondary" onclick="openEdit('{{ p.id }}','{{ p.name|escapejs }}','{{ p.category.id }}','{{ p.price }}','{{ p.stock }}','{{ p.description|escapejs }}')"><i class="fa fa-edit"></i></button>
+                  <form method="POST" action="{% url 'user_profile' %}" class="d-inline" onsubmit="return confirm('Delete listing?');">{% csrf_token %}<input type="hidden" name="action" value="delete_product"/><input type="hidden" name="product_id" value="{{ p.id }}"/><button class="btn btn-sm btn-outline-danger"><i class="fa fa-trash"></i></button></form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody></table></div>
+          {% else %}<p class="text-muted text-center py-4 mb-0">No listings yet.</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="dash-pane" id="paneAdd">
+        <div class="card rounded-4 border-0 shadow-sm p-4 bg-white">
+          <h6 class="fw-bold mb-3"><i class="fas fa-plus-circle text-success me-1"></i> Post New Listing</h6>
+          <form method="POST" action="{% url 'user_profile' %}" enctype="multipart/form-data">
+            {% csrf_token %}<input type="hidden" name="action" value="add_product"/>
+            <div class="row g-2 mb-2">
+              <div class="col-md-8"><label class="small fw-bold">Title *</label><input type="text" name="name" class="form-control form-control-sm rounded-3" required/></div>
+              <div class="col-md-4"><label class="small fw-bold">Category *</label><select name="category" class="form-select form-select-sm rounded-3" required><option value="">Select...</option>{% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}</select></div>
             </div>
-          </div>
-          <div class="row g-3 mb-3">
-            <div class="col-md-6"><label class="form-label">Price (Rs.) <span class="text-danger">*</span></label><input type="number" name="price" id="editProductPrice" step="0.01" min="0" class="form-control" required></div>
-            <div class="col-md-6"><label class="form-label">Stock Quantity</label><input type="number" name="stock" id="editProductStock" min="0" class="form-control" required></div>
-          </div>
-          <div class="mb-3"><label class="form-label">Description</label><textarea name="description" id="editProductDescription" rows="3" class="form-control" required></textarea></div>
-          <div class="mb-4"><label class="form-label">Replace Image (Optional)</label><input type="file" name="product_image" class="form-control" accept="image/*"></div>
-          <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4">Save Changes</button>
-          </div>
-        </form>
+            <div class="row g-2 mb-2">
+              <div class="col-6"><label class="small fw-bold">Price (Rs.) *</label><input type="number" step="0.01" name="price" class="form-control form-control-sm rounded-3" required/></div>
+              <div class="col-6"><label class="small fw-bold">Stock *</label><input type="number" name="stock" value="1" min="1" class="form-control form-control-sm rounded-3" required/></div>
+            </div>
+            <div class="mb-2"><label class="small fw-bold">Description *</label><textarea name="description" rows="3" class="form-control form-control-sm rounded-3" required></textarea></div>
+            <div class="mb-3"><label class="small fw-bold">Photo</label><input type="file" name="product_image" class="form-control form-control-sm rounded-3" accept="image/*"/></div>
+            <div class="form-check mb-3"><input class="form-check-input" type="checkbox" name="start_as_auction" value="1" id="chkAuc"/><label class="form-check-label small fw-bold" for="chkAuc">Start as 24-Hour Live Auction</label></div>
+            <button class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">Publish Listing</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="dash-pane" id="paneOrders">
+        <div class="card rounded-4 border-0 shadow-sm p-3 bg-white">
+          <h6 class="fw-bold mb-3">My Orders</h6>
+          {% if user_orders %}<div class="table-responsive"><table class="table table-hover align-middle small mb-0"><thead class="table-light"><tr><th>ID</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody>{% for o in user_orders %}<tr><td>#{{ o.id }}</td><td>{% for i in o.items.all %}{{ i.quantity }}x {{ i.product_name }}<br/>{% endfor %}</td><td>Rs. {{ o.total_amount|floatformat:2 }}</td><td><span class="badge bg-success rounded-pill">{{ o.order_status }}</span></td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="text-muted text-center py-4 mb-0">No orders yet.</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="dash-pane" id="paneSales">
+        <div class="card rounded-4 border-0 shadow-sm p-3 bg-white">
+          <h6 class="fw-bold mb-3">My Sales</h6>
+          {% if user_sales %}<div class="table-responsive"><table class="table table-hover align-middle small mb-0"><thead class="table-light"><tr><th>Order</th><th>Item</th><th>Buyer</th><th>Amount</th></tr></thead><tbody>{% for s in user_sales %}<tr><td>#{{ s.order.id }}</td><td>{{ s.quantity }}x {{ s.product_name }}</td><td>{{ s.order.buyer_name }}</td><td>Rs. {{ s.price|floatformat:2 }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="text-muted text-center py-4 mb-0">No sales recorded yet.</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="dash-pane" id="paneRecvreq">
+        <div class="card rounded-4 border-0 shadow-sm p-3 bg-white">
+          <h6 class="fw-bold mb-3">Received Offers</h6>
+          {% if user_recv_offers %}<div class="table-responsive"><table class="table table-hover align-middle small mb-0"><thead class="table-light"><tr><th>Item</th><th>Buyer</th><th>Offer</th><th>Action</th></tr></thead><tbody>{% for off in user_recv_offers %}<tr><td>{{ off.product.name }}</td><td>{{ off.sender.username }}</td><td>{% if off.offer_type == 'price' %}Rs. {{ off.offered_price }}{% else %}{{ off.trade_item_desc }}{% endif %}</td><td>{% if off.status == 'pending' %}<a href="{% url 'respond_offer' off.id 'accept' %}" class="btn btn-sm btn-success rounded-pill px-2 py-0">Accept</a> <a href="{% url 'respond_offer' off.id 'decline' %}" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-0">Decline</a>{% else %}<span class="badge bg-light text-muted">{{ off.status }}</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="text-muted text-center py-4 mb-0">No offers received.</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="dash-pane" id="paneSentreq">
+        <div class="card rounded-4 border-0 shadow-sm p-3 bg-white">
+          <h6 class="fw-bold mb-3">Sent Offers</h6>
+          {% if user_sent_offers %}<div class="table-responsive"><table class="table table-hover align-middle small mb-0"><thead class="table-light"><tr><th>Item</th><th>Seller</th><th>Offer</th><th>Status</th></tr></thead><tbody>{% for off in user_sent_offers %}<tr><td>{{ off.product.name }}</td><td>{{ off.receiver.username }}</td><td>{% if off.offer_type == 'price' %}Rs. {{ off.offered_price }}{% else %}{{ off.trade_item_desc }}{% endif %}</td><td><span class="badge bg-light text-dark border">{{ off.status }}</span></td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="text-muted text-center py-4 mb-0">No sent offers.</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="dash-pane" id="paneWishlist">
+        <div class="card rounded-4 border-0 shadow-sm p-3 bg-white">
+          <h6 class="fw-bold mb-3">Saved Wishlist</h6>
+          <div class="row g-2">{% for w in user_wishlist %}<div class="col-md-4 col-6"><div class="card p-2 border rounded-3 text-center"><strong class="small text-truncate d-block">{{ w.product.name }}</strong><span class="text-primary small fw-bold">Rs. {{ w.product.price }}</span><a href="{% url 'product_detail' w.product.id %}" class="btn btn-outline-primary btn-sm rounded-pill mt-2">View</a></div></div>{% empty %}<p class="text-muted text-center py-4 mb-0">Wishlist empty.</p>{% endfor %}</div>
+        </div>
+      </div>
+
+      <div class="dash-pane" id="paneEdit">
+        <div class="card rounded-4 border-0 shadow-sm p-4 bg-white">
+          <h6 class="fw-bold mb-3">Edit Profile</h6>
+          <form method="POST" action="{% url 'user_profile' %}">
+            {% csrf_token %}<input type="hidden" name="action" value="update_profile"/>
+            <div class="row g-2 mb-2"><div class="col-6"><label class="small fw-bold">First Name</label><input type="text" name="first_name" class="form-control form-control-sm rounded-3" value="{{ profile_user.first_name }}"/></div><div class="col-6"><label class="small fw-bold">Last Name</label><input type="text" name="last_name" class="form-control form-control-sm rounded-3" value="{{ profile_user.last_name }}"/></div></div>
+            <div class="mb-3"><label class="small fw-bold">Email</label><input type="email" name="email" class="form-control form-control-sm rounded-3" value="{{ profile_user.email }}"/></div>
+            <button class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">Save Changes</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content border-0 shadow-lg rounded-4 text-center p-4">
-      <div class="text-danger mb-3"><i class="fa fa-trash-alt display-4"></i></div>
-      <h5 class="fw-bold mb-2">Delete Listing?</h5>
-      <p class="text-muted small mb-4">Are you sure you want to remove <strong id="deleteProductNameText"></strong>?</p>
-      <form method="POST" action="{% url 'user_profile' %}">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="delete_product">
-        <input type="hidden" name="product_id" id="deleteProductId">
-        <div class="d-flex gap-2 justify-content-center">
-          <button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-danger btn-sm rounded-pill px-4">Yes, Delete</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content rounded-4 border-0 shadow-lg p-3">
+  <h6 class="fw-bold mb-2">Edit Listing</h6>
+  <form method="POST" action="{% url 'user_profile' %}" enctype="multipart/form-data">
+    {% csrf_token %}<input type="hidden" name="action" value="edit_product"/><input type="hidden" name="product_id" id="editId"/>
+    <div class="mb-2"><label class="small fw-bold">Title</label><input type="text" name="name" id="editName" class="form-control form-control-sm rounded-3" required/></div>
+    <div class="row g-2 mb-2"><div class="col-6"><label class="small fw-bold">Price</label><input type="number" step="0.01" name="price" id="editPrice" class="form-control form-control-sm rounded-3" required/></div><div class="col-6"><label class="small fw-bold">Stock</label><input type="number" name="stock" id="editStock" class="form-control form-control-sm rounded-3" required/></div></div>
+    <div class="mb-2"><label class="small fw-bold">Description</label><textarea name="description" id="editDesc" rows="2" class="form-control form-control-sm rounded-3"></textarea></div>
+    <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-sm btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button><button class="btn btn-sm btn-primary rounded-pill px-4 fw-bold">Save</button></div>
+  </form>
+</div></div></div>
 
 <script>
-  const tabMap = {
-    'dashboard':  'tabDashboard',
-    'products':   'tabProducts',
-    'addproduct': 'tabAddProduct',
-    'orders':     'tabOrders',
-    'sales':      'tabSales',
-    'sentreq':    'tabSentreq',
-    'recvreq':    'tabRecvreq',
-    'wishlist':   'tabWishlist',
-    'messages':   'tabMessages',
-    'sent':       'tabSent',
-    'edit':       'tabEdit',
-    'password':   'tabPassword',
-  };
-
-  function switchDashboardTab(tabName, sidebarEl) {
-    document.querySelectorAll('.dashboard-tab-pane').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.dashboard-sidebar .sidebar-item').forEach(i => i.classList.remove('active'));
-    const targetId = tabMap[tabName];
-    if (targetId) {
-      const el = document.getElementById(targetId);
-      if (el) el.classList.add('active');
-    }
-    if (sidebarEl) sidebarEl.classList.add('active');
+  const tabMap={dashboard:'paneDashboard',products:'paneProducts',add:'paneAdd',orders:'paneOrders',sales:'paneSales',recvreq:'paneRecvreq',sentreq:'paneSentreq',wishlist:'paneWishlist',edit:'paneEdit'};
+  function switchTab(name,btn){
+    document.querySelectorAll('.dash-pane').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.dash-side a').forEach(a=>a.classList.remove('active'));
+    document.getElementById(tabMap[name]||'paneDashboard')?.classList.add('active');
+    if(btn)btn.classList.add('active');
   }
-
-  function previewUploadImage(input) {
-    const container = document.getElementById('imagePreviewContainer'), imgEl = document.getElementById('imagePreviewEl');
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = e => { imgEl.src = e.target.result; container.classList.remove('d-none'); };
-      reader.readAsDataURL(input.files[0]);
-    }
+  function openEdit(id,name,cat,price,stock,desc){
+    document.getElementById('editId').value=id;document.getElementById('editName').value=name;
+    document.getElementById('editPrice').value=price;document.getElementById('editStock').value=stock;
+    document.getElementById('editDesc').value=desc;
+    new bootstrap.Modal(document.getElementById('editModal')).show();
   }
-
-  function openEditProductModal(id, name, catId, price, stock, desc) {
-    document.getElementById('editProductId').value = id;
-    document.getElementById('editProductName').value = name;
-    document.getElementById('editProductCategory').value = catId;
-    document.getElementById('editProductPrice').value = price;
-    document.getElementById('editProductStock').value = stock;
-    document.getElementById('editProductDescription').value = desc;
-    new bootstrap.Modal(document.getElementById('editProductModal')).show();
-  }
-
-  function confirmDeleteProduct(id, name) {
-    document.getElementById('deleteProductId').value = id;
-    document.getElementById('deleteProductNameText').innerText = `"${name}"`;
-    new bootstrap.Modal(document.getElementById('deleteProductModal')).show();
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const tab = new URLSearchParams(window.location.search).get('tab');
-    if (tab === 'add' || tab === 'addproduct') switchDashboardTab('addproduct', document.getElementById('sidebarAddProduct'));
-    else if (tab === 'products') switchDashboardTab('products', document.getElementById('sidebarProducts'));
-    else if (tab === 'orders') switchDashboardTab('orders', document.getElementById('sidebarOrders'));
-    else if (tab === 'sales') switchDashboardTab('sales', document.getElementById('sidebarSales'));
-    else if (tab === 'wishlist') switchDashboardTab('wishlist', document.getElementById('sidebarWishlist'));
+  document.addEventListener('DOMContentLoaded',()=>{
+    const t=new URLSearchParams(location.search).get('tab');
+    if(t&&tabMap[t])switchTab(t,document.getElementById('sidebar'+t.charAt(0).toUpperCase()+t.slice(1)));
   });
 </script>
 {% endblock %}

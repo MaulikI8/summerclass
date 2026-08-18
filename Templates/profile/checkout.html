@@ -1,216 +1,62 @@
 {% extends 'master/base.html' %}
 {% load static %}
-
-{% block title %}Checkout & Order Placement | Islington Marketplace{% endblock %}
+{% block title %}Checkout | Islington Marketplace{% endblock %}
 
 {% block content %}
-<section class="section-content padding-y py-5 bg-light">
-  <div class="container">
-    <div class="row g-4 justify-content-center">
-      <div class="col-lg-7 col-md-12">
-        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
-          <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-            <div class="brand-icon-wrap" style="width: 44px; height: 44px; font-size: 1.2rem;"><i class="fas fa-shopping-bag text-primary"></i></div>
-            <div>
-              <h4 class="fw-bold mb-0 text-dark">Checkout &amp; Order Placement</h4>
-              <small class="text-muted">Direct student-to-student verified trade</small>
-            </div>
+<div class="container py-4">
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <h4 class="fw-bold mb-3"><i class="fas fa-lock text-primary me-2"></i> Checkout</h4>
+        <form method="POST" action="{% url 'checkout' %}">
+          {% csrf_token %}
+          <h6 class="fw-bold small text-muted text-uppercase mb-2">1. Student Contact</h6>
+          <div class="row g-2 mb-3">
+            <div class="col-6"><label class="small fw-bold">Name *</label><input type="text" name="buyer_name" class="form-control form-control-sm rounded-3" value="{{ user.get_full_name|default:user.username }}" required/></div>
+            <div class="col-6"><label class="small fw-bold">Phone *</label><input type="tel" name="buyer_phone" class="form-control form-control-sm rounded-3" placeholder="98XXXXXXXX" required/></div>
+            <div class="col-12"><label class="small fw-bold">Email</label><input type="email" name="buyer_email" class="form-control form-control-sm rounded-3" value="{{ user.email }}"/></div>
           </div>
 
-          {% if messages %}
-          <div class="mb-3">
-            {% for msg in messages %}
-            <div class="alert {% if msg.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} py-2 small rounded-3 border-0 d-flex align-items-center gap-2">
-              <i class="fas {% if msg.tags == 'error' %}fa-exclamation-circle text-danger{% else %}fa-check-circle text-success{% endif %}"></i>
-              <span>{{ msg }}</span>
-            </div>
-            {% endfor %}
+          <h6 class="fw-bold small text-muted text-uppercase mb-2">2. Delivery Location</h6>
+          <div class="d-flex gap-2 mb-3">
+            <label class="p-2 border rounded-3 flex-grow-1 small"><input type="radio" name="delivery_type" value="campus_pickup" checked onchange="document.getElementById('blkWrap').style.display='block';document.getElementById('homeWrap').style.display='none';"/> <strong>Campus Pickup</strong></label>
+            <label class="p-2 border rounded-3 flex-grow-1 small"><input type="radio" name="delivery_type" value="home_delivery" onchange="document.getElementById('blkWrap').style.display='none';document.getElementById('homeWrap').style.display='block';"/> <strong>Kathmandu Delivery</strong></label>
           </div>
-          {% endif %}
 
-          <form method="POST" action="{% url 'checkout' %}" id="checkoutForm" onsubmit="return handleCheckoutSubmit(event)">
-            {% csrf_token %}
-            <input type="hidden" name="cart_json" id="hiddenCartJson">
+          <div id="blkWrap" class="row g-2 mb-3">
+            <div class="col-6"><label class="small fw-bold">Islington Block</label><select name="campus_block" class="form-select form-select-sm rounded-3"><option value="Kumari Hall">Kumari Hall</option><option value="Skill Block">Skill Block</option><option value="Alumni Block">Alumni Block</option><option value="Nepal Block">Nepal Block</option><option value="Brit House">Brit House</option><option value="Main/Himal Block">Main / Himal Block</option></select></div>
+            <div class="col-6"><label class="small fw-bold">Meetup Time</label><select name="meetup_time" class="form-select form-select-sm rounded-3"><option value="Morning">Morning (10 AM - 12 PM)</option><option value="Afternoon">Afternoon (1 PM - 3 PM)</option><option value="Evening">Evening (4 PM - 6 PM)</option></select></div>
+          </div>
 
-            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-user-circle text-primary me-2"></i> 1. Contact Information</h6>
-            <div class="row g-3 mb-4">
-              <div class="col-md-6">
-                <label class="form-label small fw-semibold text-muted">Full Name *</label>
-                <input type="text" name="buyer_name" class="form-control rounded-3" value="{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% endif %}" placeholder="e.g. Maulik Joshi" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label small fw-semibold text-muted">Phone / WhatsApp *</label>
-                <input type="tel" name="buyer_phone" class="form-control rounded-3" placeholder="e.g. 9801234567" required>
-              </div>
-              <div class="col-12">
-                <label class="form-label small fw-semibold text-muted">Email Address</label>
-                <input type="email" name="buyer_email" class="form-control rounded-3" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" placeholder="name@islington.edu.np">
-              </div>
-            </div>
+          <div id="homeWrap" class="mb-3" style="display:none;">
+            <label class="small fw-bold">Kathmandu Address &amp; Landmark *</label>
+            <input type="text" name="home_address" class="form-control form-control-sm rounded-3" placeholder="e.g. House 12, Kamalpokhari"/>
+          </div>
 
-            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-truck text-primary me-2"></i> 2. Delivery &amp; Collection Method</h6>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label class="p-3 border rounded-3 d-flex align-items-center gap-3 cursor-pointer w-100 bg-white shadow-xs" id="campusPickupOptionCard" onclick="selectDeliveryType('campus_pickup')" style="cursor: pointer;">
-                  <input type="radio" name="delivery_type" value="campus_pickup" checked id="deliveryCampusRadio" class="form-check-input mt-0" onchange="selectDeliveryType(this.value)">
-                  <div>
-                    <strong class="d-block text-dark small"><i class="fas fa-building text-primary me-1"></i> Campus Collection</strong>
-                    <small class="text-muted">Pick up at an Islington Block</small>
-                  </div>
-                </label>
-              </div>
-              <div class="col-md-6">
-                <label class="p-3 border rounded-3 d-flex align-items-center gap-3 cursor-pointer w-100 bg-white shadow-xs" id="homeDeliveryOptionCard" onclick="selectDeliveryType('home_delivery')" style="cursor: pointer;">
-                  <input type="radio" name="delivery_type" value="home_delivery" id="deliveryHomeRadio" class="form-check-input mt-0" onchange="selectDeliveryType(this.value)">
-                  <div>
-                    <strong class="d-block text-dark small"><i class="fas fa-home text-success me-1"></i> Home Delivery</strong>
-                    <small class="text-muted">Delivery in Kathmandu Valley</small>
-                  </div>
-                </label>
-              </div>
-            </div>
+          <h6 class="fw-bold small text-muted text-uppercase mb-2">3. Payment Option</h6>
+          <div class="d-flex flex-column gap-2 mb-3">
+            <label class="p-2 border rounded-3 d-flex align-items-center gap-2 small"><input type="radio" name="payment_method" value="esewa_sandbox" checked/> <span class="badge bg-success">eSewa</span> eSewa Online Payment</label>
+            <label class="p-2 border rounded-3 d-flex align-items-center gap-2 small"><input type="radio" name="payment_method" value="khalti_sandbox"/> <span class="badge bg-primary">Khalti</span> Khalti Wallet Payment</label>
+            <label class="p-2 border rounded-3 d-flex align-items-center gap-2 small"><input type="radio" name="payment_method" value="cod"/> <span class="badge bg-secondary">COD</span> Cash on Campus Collection</label>
+          </div>
 
-            <div id="campusBlockFields" class="row g-3 mb-4">
-              <div class="col-md-6">
-                <label class="form-label small fw-semibold text-muted">Select College Block *</label>
-                <select name="campus_block" id="campusBlockSelect" class="form-select rounded-3">
-                  <option value="Kumari Hall" selected>Kumari Hall</option>
-                  <option value="Alumni Block">Alumni Block</option>
-                  <option value="Skill Block">Skill Block</option>
-                  <option value="Nepal Block">Nepal Block</option>
-                  <option value="Brit House">Brit House</option>
-                  <option value="Main Block">Main Block</option>
-                  <option value="Himal Block">Himal Block</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label small fw-semibold text-muted">Preferred Time Slot *</label>
-                <select name="meetup_time" class="form-select rounded-3">
-                  <option value="Morning (10:00 AM - 12:00 PM)" selected>Morning (10:00 AM - 12:00 PM)</option>
-                  <option value="Afternoon (1:00 PM - 3:00 PM)">Afternoon (1:00 PM - 3:00 PM)</option>
-                  <option value="Evening (4:00 PM - 6:00 PM)">Evening (4:00 PM - 6:00 PM)</option>
-                </select>
-              </div>
-            </div>
-
-            <div id="homeDeliveryFields" class="row g-3 mb-4" style="display: none;">
-              <div class="col-md-8">
-                <label class="form-label small fw-semibold text-muted">Home Delivery Address &amp; Landmark (Kathmandu Valley) *</label>
-                <input type="text" name="home_address" id="homeAddressInput" class="form-control rounded-3" placeholder="e.g. House No. 45, Kamalpokhari (Near City Center)">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label small fw-semibold text-muted">Preferred Timing</label>
-                <select name="home_delivery_time" class="form-select rounded-3">
-                  <option value="Anytime (9:00 AM - 6:00 PM)" selected>Anytime (9 AM - 6 PM)</option>
-                  <option value="Morning (9:00 AM - 1:00 PM)">Morning (9 AM - 1 PM)</option>
-                  <option value="Evening (2:00 PM - 6:00 PM)">Evening (2 PM - 6 PM)</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row g-3 mb-4">
-              <div class="col-12">
-                <label class="form-label small fw-semibold text-muted">Order Notes / Instructions (Optional)</label>
-                <input type="text" name="notes" class="form-control rounded-3" placeholder="Special pickup/delivery request">
-              </div>
-            </div>
-
-            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-credit-card text-primary me-2"></i> 3. Payment Method</h6>
-            <div class="d-flex flex-column gap-2 mb-4">
-              <label class="payment-option-card d-flex align-items-center gap-3 p-3 rounded-3 border bg-white cursor-pointer" style="cursor: pointer;">
-                <input type="radio" name="payment_method" value="esewa_sandbox" checked class="form-check-input mt-0">
-                <div class="flex-grow-1">
-                  <div class="d-flex align-items-center gap-2"><span class="badge bg-success px-2 py-1">eSewa</span><strong class="small text-dark">eSewa Online Payment</strong></div>
-                  <small class="text-muted d-block">Instant digital payment</small>
-                </div>
-              </label>
-
-              <label class="payment-option-card d-flex align-items-center gap-3 p-3 rounded-3 border bg-white cursor-pointer" style="cursor: pointer;">
-                <input type="radio" name="payment_method" value="khalti_sandbox" class="form-check-input mt-0">
-                <div class="flex-grow-1">
-                  <div class="d-flex align-items-center gap-2"><span class="badge bg-primary px-2 py-1" style="background:#5c2d91 !important;">Khalti</span><strong class="small text-dark">Khalti Wallet</strong></div>
-                  <small class="text-muted d-block">Instant wallet payment</small>
-                </div>
-              </label>
-
-              <label class="payment-option-card d-flex align-items-center gap-3 p-3 rounded-3 border bg-white cursor-pointer" style="cursor: pointer;">
-                <input type="radio" name="payment_method" value="cod" class="form-check-input mt-0">
-                <div class="flex-grow-1">
-                  <div class="d-flex align-items-center gap-2"><span class="badge bg-secondary px-2 py-1">COD</span><strong class="small text-dark">Cash on Collection / Delivery</strong></div>
-                  <small class="text-muted d-block">Pay when meeting at campus block or on home delivery</small>
-                </div>
-              </label>
-            </div>
-
-            <button type="submit" id="placeOrderBtn" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-sm py-3">
-              <i class="fas fa-lock me-2"></i> Place Order Securely
-            </button>
-          </form>
-        </div>
+          <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">Place Order &bull; Rs. {{ total|floatformat:2 }}</button>
+        </form>
       </div>
+    </div>
 
-      <div class="col-lg-5">
-        <div class="card border-0 shadow-sm bg-white rounded-4 p-4 sticky-top" style="top: 90px;">
-          <h5 class="fw-bold text-dark mb-3">Order Summary</h5>
-          <div class="d-flex flex-column gap-3 mb-3">
-            {% for item in cart_items %}
-            <div class="d-flex align-items-center gap-3 pb-2 border-bottom">
-              <img src="{% if item.product.product_image %}{{ item.product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="{{ item.product.name }}">
-              <div class="flex-grow-1 overflow-hidden">
-                <div class="fw-semibold small text-truncate text-dark">{{ item.product.name }}</div>
-                <span class="text-muted small">Qty: {{ item.quantity }} &times; Rs. {{ item.product.price|floatformat:2 }}</span>
-              </div>
-              <strong class="text-primary small">Rs. {{ item.sub_total|floatformat:2 }}</strong>
-            </div>
-            {% endfor %}
-          </div>
-          <div class="d-flex justify-content-between text-muted small mb-2"><span>Subtotal</span><span class="fw-semibold text-dark">Rs. {{ total|floatformat:2 }}</span></div>
-          <div class="d-flex justify-content-between text-muted small mb-2"><span>Collection / Delivery Fee</span><span class="text-success fw-bold" id="deliveryStatusLabel">FREE (Campus Collection)</span></div>
-          <hr class="my-3">
-          <div class="d-flex justify-content-between align-items-center mb-0"><span class="fw-bold text-dark">Total Payable</span><span class="h4 fw-bold text-primary mb-0">Rs. {{ total|floatformat:2 }}</span></div>
-          <div class="p-3 bg-light rounded-3 mt-3 border small text-muted">
-            <i class="fas fa-shield-alt text-success me-1"></i> <strong>Safe Student Commerce:</strong> All orders are verified. Both buyer and seller receive confirmation emails.
-          </div>
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+        <h6 class="fw-bold mb-2">Order Items ({{ item_count }})</h6>
+        {% for item in cart_items %}
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom small">
+          <div><strong>{{ item.quantity }}x</strong> {{ item.product.name }}</div>
+          <div class="text-primary fw-bold">Rs. {{ item.sub_total|floatformat:2 }}</div>
         </div>
+        {% endfor %}
+        <div class="d-flex justify-content-between pt-2 fs-5 fw-bold text-dark"><span>Total:</span><span class="text-primary">Rs. {{ total|floatformat:2 }}</span></div>
       </div>
     </div>
   </div>
-</section>
-
-<script>
-function selectDeliveryType(type) {
-  const campusFields = document.getElementById('campusBlockFields'), homeFields = document.getElementById('homeDeliveryFields');
-  const campusRadio = document.getElementById('deliveryCampusRadio'), homeRadio = document.getElementById('deliveryHomeRadio');
-  const homeInput = document.getElementById('homeAddressInput'), deliveryStatus = document.getElementById('deliveryStatusLabel');
-  const campusCard = document.getElementById('campusPickupOptionCard'), homeCard = document.getElementById('homeDeliveryOptionCard');
-
-  if (type === 'home_delivery') {
-    if (homeRadio) homeRadio.checked = true;
-    if (campusFields) { campusFields.style.display = 'none'; campusFields.classList.add('d-none'); }
-    if (homeFields) { homeFields.style.display = 'flex'; homeFields.classList.remove('d-none'); }
-    if (homeInput) homeInput.required = true;
-    if (deliveryStatus) deliveryStatus.textContent = 'Home Delivery';
-    if (homeCard) homeCard.classList.add('border-primary', 'bg-light');
-    if (campusCard) campusCard.classList.remove('border-primary', 'bg-light');
-  } else {
-    if (campusRadio) campusRadio.checked = true;
-    if (campusFields) { campusFields.style.display = 'flex'; campusFields.classList.remove('d-none'); }
-    if (homeFields) { homeFields.style.display = 'none'; homeFields.classList.add('d-none'); }
-    if (homeInput) homeInput.required = false;
-    if (deliveryStatus) deliveryStatus.textContent = 'FREE (Campus Collection)';
-    if (campusCard) campusCard.classList.add('border-primary', 'bg-light');
-    if (homeCard) homeCard.classList.remove('border-primary', 'bg-light');
-  }
-}
-
-function handleCheckoutSubmit(e) {
-  return true;
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof bindAutoDraft === 'function') bindAutoDraft('checkoutForm', 'islington_checkout_draft');
-  const checkedDelivery = document.querySelector('input[name="delivery_type"]:checked');
-  if (checkedDelivery) selectDeliveryType(checkedDelivery.value);
-});
-</script>
+</div>
 {% endblock %}

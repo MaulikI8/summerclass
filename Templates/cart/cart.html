@@ -1,121 +1,54 @@
 {% extends 'master/base.html' %}
 {% load static %}
-
-{% block title %}My Shopping Bag | Islington Marketplace{% endblock %}
+{% block title %}Shopping Bag | Islington Marketplace{% endblock %}
 
 {% block content %}
-<section class="section-content padding-y py-5 bg-light">
-  <div class="container">
-    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-      <div>
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb mb-1 small">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'products' %}" class="text-decoration-none">Store</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Shopping Bag</li>
-          </ol>
-        </nav>
-        <h3 class="fw-bold text-dark mb-0">My Shopping Bag</h3>
-      </div>
-      {% if cart_items %}
-      <a href="{% url 'cart:clear_cart' %}" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Are you sure you want to clear your shopping bag?')">
-        <i class="fas fa-trash-alt me-1"></i> Clear Bag
-      </a>
-      {% endif %}
-    </div>
-
-    {% if messages %}
-    <div class="mb-4">
-      {% for msg in messages %}
-      <div class="alert {% if msg.tags == 'error' %}alert-danger{% elif msg.tags == 'warning' %}alert-warning{% else %}alert-success{% endif %} py-2 px-3 small rounded-3 border-0 d-flex align-items-center gap-2">
-        <i class="fas {% if msg.tags == 'error' %}fa-exclamation-circle text-danger{% elif msg.tags == 'warning' %}fa-exclamation-triangle text-warning{% else %}fa-check-circle text-success{% endif %}"></i>
-        <span>{{ msg }}</span>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    <div class="row g-4">
-      {% if cart_items %}
-      <div class="col-lg-8 col-md-12">
-        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-          <div class="table-responsive">
-            <table class="table align-middle mb-0">
-              <thead>
-                <tr class="text-muted small text-uppercase border-bottom">
-                  <th style="min-width: 240px;">Product</th>
-                  <th class="text-center" style="width: 120px;">Price</th>
-                  <th class="text-center" style="width: 140px;">Quantity</th>
-                  <th class="text-end" style="width: 120px;">Subtotal</th>
-                  <th class="text-center" style="width: 60px;"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for item in cart_items %}
-                <tr>
-                  <td>
-                    <div class="d-flex align-items-center gap-3">
-                      <img src="{% if item.product.product_image %}{{ item.product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ item.product.name }}" style="width: 64px; height: 64px; object-fit: contain; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px;" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';">
-                      <div>
-                        <a href="{% url 'product_detail' item.product.id %}" class="fw-bold text-dark text-decoration-none d-block title-hover">{{ item.product.name }}</a>
-                        <small class="text-muted">
-                          {% if item.product.category %}{{ item.product.category.name }}{% else %}General{% endif %}
-                          {% if item.product.user %}&bull; Seller: {{ item.product.user.first_name|default:item.product.user.username }}{% endif %}
-                        </small>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="text-center fw-semibold text-dark">Rs. {{ item.product.price|floatformat:2 }}</td>
-                  <td class="text-center">
-                    <div class="d-inline-flex align-items-center border rounded-pill p-1 bg-light">
-                      <a href="{% url 'cart:remove_from_cart' item.product.id %}" class="btn btn-sm btn-link text-dark p-0 px-2 text-decoration-none"><i class="fas fa-minus small"></i></a>
-                      <span class="px-2 fw-bold small text-dark">{{ item.quantity }}</span>
-                      <a href="{% url 'cart:add_to_cart' item.product.id %}" class="btn btn-sm btn-link text-dark p-0 px-2 text-decoration-none"><i class="fas fa-plus small"></i></a>
-                    </div>
-                  </td>
-                  <td class="text-end fw-bold text-primary">Rs. {{ item.sub_total|floatformat:2 }}</td>
-                  <td class="text-center">
-                    <a href="{% url 'cart:delete_cart_item' item.product.id %}" class="btn btn-sm text-danger p-0 border-0 bg-transparent" title="Remove Item" onclick="return confirm('Remove {{ item.product.name }} from bag?')"><i class="fas fa-trash-alt"></i></a>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg-4 col-md-12">
-        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 90px;">
-          <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom">Order Summary</h5>
-          <div class="d-flex flex-column gap-3 small mb-4">
-            <div class="d-flex justify-content-between text-muted"><span>Items Count:</span><strong class="text-dark">{{ item_count }} item{{ item_count|pluralize }}</strong></div>
-            <div class="d-flex justify-content-between text-muted"><span>Subtotal:</span><strong class="text-dark fs-6">Rs. {{ total|floatformat:2 }}</strong></div>
-            <div class="d-flex justify-content-between text-muted"><span>Campus Delivery:</span><strong class="text-success">FREE</strong></div>
-            <div class="border-top pt-3 d-flex justify-content-between fs-5 fw-bold text-dark"><span>Total Payable:</span><span class="text-primary">Rs. {{ total|floatformat:2 }}</span></div>
-          </div>
-          <a href="{% url 'checkout' %}" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm mb-3 d-flex align-items-center justify-content-center gap-2">
-            <span>Proceed to Checkout</span>
-            <i class="fas fa-arrow-right"></i>
-          </a>
-          <a href="{% url 'products' %}" class="btn btn-outline-secondary w-100 py-2 rounded-pill small fw-semibold text-decoration-none"><i class="fas fa-plus me-1"></i> Continue Shopping</a>
-          <div class="p-3 bg-light rounded-3 mt-4 border small text-muted">
-            <div class="d-flex align-items-center gap-2 mb-1 fw-bold text-dark"><i class="fas fa-shield-alt text-success"></i> Safe Student Commerce</div>
-            <span>Verified trades inside Islington College campus or fast Kathmandu home delivery.</span>
-          </div>
-        </div>
-      </div>
-      {% else %}
-      <div class="col-12">
-        <div class="card border-0 shadow-sm rounded-4 p-5 bg-white text-center">
-          <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 86px; height: 86px; font-size: 2.2rem; color: #94a3b8;"><i class="fas fa-shopping-bag"></i></div>
-          <h4 class="fw-bold text-dark mb-2">Your shopping bag is empty</h4>
-          <p class="text-muted small mb-4 mx-auto" style="max-width: 460px;">You haven't added any student items yet. Explore textbooks, computing gear, and course materials posted by Islington students.</p>
-          <div><a href="{% url 'products' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm"><i class="fas fa-search me-1"></i> Browse Marketplace Listings</a></div>
-        </div>
-      </div>
-      {% endif %}
-    </div>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold mb-0">My Shopping Bag</h4>
+    {% if cart_items %}<a href="{% url 'cart:clear_cart' %}" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Clear shopping bag?')">Clear Bag</a>{% endif %}
   </div>
-</section>
+
+  <div class="row g-3">
+    {% if cart_items %}
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+        <div class="table-responsive">
+          <table class="table align-middle small mb-0">
+            <thead class="table-light"><tr><th>Item</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead>
+            <tbody>
+              {% for i in cart_items %}
+              <tr>
+                <td><strong>{{ i.product.name }}</strong><small class="text-muted d-block">{{ i.product.category.name }}</small></td>
+                <td>Rs. {{ i.product.price|floatformat:2 }}</td>
+                <td>
+                  <div class="d-inline-flex align-items-center border rounded-pill px-2 py-1 bg-light">
+                    <a href="{% url 'cart:remove_from_cart' i.product.id %}" class="text-dark text-decoration-none px-1">-</a>
+                    <span class="px-2 fw-bold">{{ i.quantity }}</span>
+                    <a href="{% url 'cart:add_to_cart' i.product.id %}" class="text-dark text-decoration-none px-1">+</a>
+                  </div>
+                </td>
+                <td class="fw-bold text-primary">Rs. {{ i.sub_total|floatformat:2 }}</td>
+                <td><a href="{% url 'cart:delete_cart_item' i.product.id %}" class="text-danger" onclick="return confirm('Remove item?')"><i class="fas fa-trash"></i></a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+        <h6 class="fw-bold mb-3">Order Summary</h6>
+        <div class="d-flex justify-content-between small text-muted mb-2"><span>Total Items:</span><strong>{{ item_count }}</strong></div>
+        <div class="d-flex justify-content-between small text-muted mb-3"><span>Delivery:</span><strong class="text-success">FREE (Campus/Kathmandu)</strong></div>
+        <div class="d-flex justify-content-between fs-5 fw-bold border-top pt-2 mb-3"><span>Total:</span><span class="text-primary">Rs. {{ total|floatformat:2 }}</span></div>
+        <a href="{% url 'checkout' %}" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">Proceed to Checkout &rarr;</a>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5 text-muted bg-white rounded-4 border"><h5 class="fw-bold text-dark">Shopping Bag is Empty</h5><a href="{% url 'products' %}" class="btn btn-primary btn-sm rounded-pill px-4 mt-2">Browse Store</a></div>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

@@ -1,126 +1,19 @@
 {% extends 'master/base.html' %}
-{% load static %}
-
-{% block title %}Terms &amp; Conditions | Islington Marketplace{% endblock %}
+{% block title %}Terms & Conditions | Islington Marketplace{% endblock %}
 
 {% block content %}
-<section class="section-content padding-y-sm">
-  <div class="container">
-    <nav aria-label="breadcrumb" class="mb-3">
-      <ol class="breadcrumb small">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Terms &amp; Conditions</li>
-      </ol>
-    </nav>
-
-    <div class="card border-0 shadow-sm bg-white p-4 p-md-5 rounded-4 mb-4">
-      <div class="d-flex align-items-center gap-3">
-        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; font-size: 1.5rem; flex-shrink: 0;"><i class="fas fa-file-contract"></i></div>
-        <div>
-          <h2 class="fw-bold mb-1 text-dark">Terms &amp; Conditions</h2>
-          <p class="text-muted small mb-0">Islington Student Marketplace &bull; Last updated: August 2026</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="row g-4">
-      <div class="col-lg-8">
-        <div class="card border-0 shadow-sm bg-white p-4 p-md-5 rounded-4 text-secondary" style="font-size: 0.95rem; line-height: 1.8;">
-          <div class="mb-4">
-            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-university text-primary me-2"></i> 1. Platform Purpose &amp; Eligibility</h5>
-            <p><strong>Islington Marketplace</strong> is an exclusive student-driven platform designed to facilitate peer-to-peer textbook trading, computing gadget sales, academic discussion blogs, and campus commerce for students of Islington College, Kathmandu.</p>
-            <p>By registering an account or browsing listings, you agree to comply with these Terms and Conditions and all applicable college codes of conduct.</p>
-          </div>
-          <hr class="my-4">
-          <div class="mb-4">
-            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-user-check text-primary me-2"></i> 2. Student Accounts &amp; Email Verification</h5>
-            <ul class="ps-3 mb-0">
-              <li>Users must register with an authentic student email address and verify their account using a 6-digit Email OTP code.</li>
-              <li>You are solely responsible for maintaining the confidentiality of your account credentials.</li>
-              <li>Impersonation of college staff, student leaders, or other students is strictly prohibited.</li>
-            </ul>
-          </div>
-          <hr class="my-4">
-          <div class="mb-4">
-            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-boxes text-primary me-2"></i> 3. Product Listings &amp; Moderation</h5>
-            <ul class="ps-3 mb-0">
-              <li>All item listings are submitted for administrative review before going live.</li>
-              <li>Sellers must accurately describe item condition.</li>
-              <li>Prohibited items include: hazardous materials, non-academic illegal goods, and counterfeit electronics.</li>
-              <li>Listing prices must reflect fair student pricing in Nepalese Rupees (NPR).</li>
-            </ul>
-          </div>
-          <hr class="my-4">
-          <div class="mb-4">
-            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-gavel text-primary me-2"></i> 4. 24-Hour Live Student Auctions</h5>
-            <ul class="ps-3 mb-0">
-              <li>Sellers can initiate a 24-hour live auction on approved inventory items with a minimum starting price.</li>
-              <li>All bids placed by authenticated students are binding.</li>
-              <li>The highest bidder at the expiration of the 24-hour window (or upon early seller acceptance) wins the item.</li>
-            </ul>
-          </div>
-          <hr class="my-4">
-          <div class="mb-4">
-            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-map-marked-alt text-primary me-2"></i> 5. Safe Campus Meetups &amp; Pickup Blocks</h5>
-            <p>Peer handovers must take place inside official Islington College locations:</p>
-            <div class="p-3 bg-light rounded-3 border mb-3">
-              <strong class="text-dark d-block mb-1">Approved Campus Pickup Locations:</strong>
-              <div class="row g-2 small text-dark">
-                <div class="col-md-6"><i class="fas fa-check-circle text-success me-1"></i> Kumari Hall</div>
-                <div class="col-md-6"><i class="fas fa-check-circle text-success me-1"></i> Alumini Block</div>
-                <div class="col-md-6"><i class="fas fa-check-circle text-success me-1"></i> Skill Block</div>
-                <div class="col-md-6"><i class="fas fa-check-circle text-success me-1"></i> Nepal Block</div>
-                <div class="col-md-6"><i class="fas fa-check-circle text-success me-1"></i> Brit House</div>
-                <div class="col-md-6"><i class="fas fa-check-circle text-success me-1"></i> Main Block &amp; Himal Block</div>
-              </div>
-            </div>
-          </div>
-          <hr class="my-4">
-          <div class="mb-4">
-            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-credit-card text-primary me-2"></i> 6. Payments &amp; Settlement</h5>
-            <ul class="ps-3 mb-0">
-              <li><strong>Cash on Campus Pickup (COD):</strong> Buyers pay sellers directly upon physical inspection.</li>
-              <li><strong>Digital Wallets (eSewa / Khalti Sandbox):</strong> Provided for online order settlement.</li>
-              <li>Islington Marketplace operates with 0% seller commission fees.</li>
-            </ul>
-          </div>
-          <hr class="my-4">
-          <div class="mb-0">
-            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-comments text-primary me-2"></i> 7. Blog &amp; Community Forum Code of Conduct</h5>
-            <ul class="ps-3 mb-0">
-              <li>Treat fellow students and moderators with respect and professional courtesy.</li>
-              <li>Do not post defamatory content, hate speech, or harassment.</li>
-              <li>Discussion of modules and coursework concepts is encouraged.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg-4">
-        <div class="card border-0 shadow-sm bg-primary text-white p-4 rounded-4 mb-4">
-          <h5 class="fw-bold mb-2"><i class="fas fa-shield-alt me-2"></i> Student Safety Guarantee</h5>
-          <p class="small text-white-50 mb-3" style="line-height: 1.6;">Every student seller and buyer is verified with email OTP authentication. Trade with confidence inside college blocks.</p>
-          <a href="{% url 'products' %}" class="btn btn-light text-primary fw-bold btn-sm w-100 rounded-pill py-2">Explore Marketplace <i class="fas fa-arrow-right ms-1"></i></a>
-        </div>
-        <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
-          <h6 class="fw-bold text-dark mb-3"><i class="fas fa-headset text-primary me-2"></i> Need Help?</h6>
-          <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
-            <li><i class="fas fa-envelope text-primary me-2"></i> <a href="mailto:info@islingtonmarket.np" class="text-decoration-none text-dark">info@islingtonmarket.np</a></li>
-            <li><i class="fas fa-phone text-primary me-2"></i> +977-1-4412345</li>
-            <li><i class="fas fa-map-marker-alt text-primary me-2"></i> Kamalpokhari, Kathmandu</li>
-          </ul>
-        </div>
-        <div class="card border-0 shadow-sm bg-white p-4 rounded-4">
-          <h6 class="fw-bold text-dark mb-3"><i class="fas fa-link text-primary me-2"></i> Quick Links</h6>
-          <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
-            <li><a href="{% url 'home' %}" class="text-decoration-none text-dark"><i class="fas fa-chevron-right text-muted me-2 small"></i> Home Page</a></li>
-            <li><a href="{% url 'products' %}" class="text-decoration-none text-dark"><i class="fas fa-chevron-right text-muted me-2 small"></i> Browse Products</a></li>
-            <li><a href="{% url 'blog' %}" class="text-decoration-none text-dark"><i class="fas fa-chevron-right text-muted me-2 small"></i> Community Blogs</a></li>
-            <li><a href="{% url 'user_profile' %}?tab=add" class="text-decoration-none text-dark"><i class="fas fa-chevron-right text-muted me-2 small"></i> Post an Item for Sale</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
+<div class="container py-4">
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-3">
+    <h4 class="fw-bold mb-1"><i class="fas fa-file-contract text-primary me-2"></i> Terms &amp; Conditions</h4>
+    <small class="text-muted">Student Trade Guidelines &bull; Islington College Kathmandu</small>
   </div>
-</section>
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white small text-secondary">
+    <h6 class="fw-bold text-dark">1. Platform Rules</h6>
+    <p>Islington Marketplace is exclusively for student-to-student peer commerce, textbook swaps, and academic discussions.</p>
+    <h6 class="fw-bold text-dark">2. Approved Pickup Blocks</h6>
+    <p>Kumari Hall, Skill Block, Alumini Block, Nepal Block, Brit House, and Main / Himal Block.</p>
+    <h6 class="fw-bold text-dark">3. Fair Trading</h6>
+    <p>Zero commissions on all student sales. Respectful communication required on all community blogs and listings.</p>
+  </div>
+</div>
 {% endblock %}
