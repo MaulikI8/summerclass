@@ -363,13 +363,13 @@ a:hover {
 }
 
 /* ==========================================================================
-   Hero Banner Carousel (Ultra-Modern Glassmorphic Hero)
+   Hero Banner Carousel
    ========================================================================== */
 
 .hero-carousel-wrap {
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     overflow: hidden;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
     position: relative;
 }
 
@@ -383,45 +383,71 @@ a:hover {
     color: #ffffff;
 }
 
+/* Dot-grid texture overlay on every slide */
+.hero-slide-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 22px 22px;
+    pointer-events: none;
+    z-index: 1;
+}
+
 .carousel-item.active .hero-content {
     animation: fadeInUp 0.7s ease-out 0.15s both;
 }
 
+/* --- Theme backgrounds: dark-first with a single accent corner glow --- */
 .hero-slide-card.slide-blue {
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
+    background:
+        radial-gradient(ellipse 80% 70% at 95% 10%, rgba(37,99,235,0.35) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 5% 90%, rgba(59,130,246,0.15) 0%, transparent 50%),
+        linear-gradient(160deg, #020617 0%, #0f172a 40%, #111827 100%);
 }
 
 .hero-slide-card.slide-green {
-    background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%);
+    background:
+        radial-gradient(ellipse 80% 70% at 95% 10%, rgba(16,185,129,0.30) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 5% 90%, rgba(52,211,153,0.12) 0%, transparent 50%),
+        linear-gradient(160deg, #020617 0%, #0f172a 40%, #111827 100%);
 }
 
 .hero-slide-card.slide-purple {
-    background: linear-gradient(135deg, #3b0764 0%, #6d28d9 50%, #8b5cf6 100%);
+    background:
+        radial-gradient(ellipse 80% 70% at 95% 10%, rgba(124,58,237,0.35) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 5% 90%, rgba(167,139,250,0.12) 0%, transparent 50%),
+        linear-gradient(160deg, #020617 0%, #0f172a 40%, #111827 100%);
 }
 
-/* Ambient glow blobs inside hero */
+/* Ambient glow blobs — color adapts per theme */
 .hero-glow-blob {
     position: absolute;
-    width: 350px;
-    height: 350px;
+    width: 300px;
+    height: 300px;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.35;
+    filter: blur(90px);
+    opacity: 0.25;
     pointer-events: none;
     z-index: 1;
 }
 
 .hero-glow-blob.top-right {
-    top: -100px;
-    right: -50px;
-    background: #60a5fa;
+    top: -80px;
+    right: -40px;
 }
 
 .hero-glow-blob.bottom-left {
-    bottom: -100px;
-    left: -50px;
-    background: #fbbf24;
+    bottom: -80px;
+    left: -30px;
 }
+
+.slide-blue .hero-glow-blob.top-right  { background: #3b82f6; }
+.slide-blue .hero-glow-blob.bottom-left { background: #1d4ed8; opacity: 0.15; }
+.slide-green .hero-glow-blob.top-right  { background: #10b981; }
+.slide-green .hero-glow-blob.bottom-left { background: #059669; opacity: 0.15; }
+.slide-purple .hero-glow-blob.top-right  { background: #8b5cf6; }
+.slide-purple .hero-glow-blob.bottom-left { background: #7c3aed; opacity: 0.15; }
 
 .hero-content {
     position: relative;
@@ -434,32 +460,27 @@ a:hover {
     align-items: center;
     gap: 0.4rem;
     padding: 0.4rem 0.9rem;
-    background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.22), rgba(255,255,255,0.12));
-    background-size: 200% auto;
-    animation: shimmer 3s ease-in-out infinite;
+    background: rgba(255,255,255,0.07);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--radius-full);
     font-size: 0.78rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #ffffff;
+    color: rgba(255,255,255,0.9);
     margin-bottom: 1rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .hero-badge.badge-amber {
-    background: rgba(245, 158, 11, 0.25);
-    border-color: rgba(245, 158, 11, 0.45);
-    color: #fef3c7;
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #fde68a;
 }
 
 .hero-badge.badge-emerald {
-    background: rgba(16, 185, 129, 0.25);
-    border-color: rgba(16, 185, 129, 0.45);
-    color: #d1fae5;
+    border-color: rgba(52, 211, 153, 0.35);
+    color: #a7f3d0;
 }
 
 .hero-title {
@@ -468,13 +489,13 @@ a:hover {
     line-height: 1.15;
     margin-bottom: 0.85rem;
     color: #ffffff;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    letter-spacing: -0.03em;
 }
 
 .hero-lead {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.85);
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.55);
     margin-bottom: 1.8rem;
     font-weight: 400;
 }
@@ -494,7 +515,7 @@ a:hover {
     border-radius: var(--radius-full);
     border: none;
     font-size: 0.95rem;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -505,14 +526,14 @@ a:hover {
     background: #f8fafc;
     color: var(--primary);
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22);
 }
 
 .hero-btn-outline {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: #ffffff;
     font-weight: 600;
     padding: 0.75rem 1.6rem;
@@ -525,18 +546,18 @@ a:hover {
 }
 
 .hero-btn-outline:hover {
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.16);
     color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.6);
+    border-color: rgba(255, 255, 255, 0.45);
     transform: translateY(-2px);
 }
 
 /* Floating Hero Graphic/Stats Container */
 .hero-floating-card {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
@@ -544,24 +565,24 @@ a:hover {
     z-index: 2;
 }
 
-/* Sleek Carousel Navigation Arrows */
+/* Carousel Navigation — bottom-right, non-intrusive */
 .hero-carousel-control {
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 46px;
-    height: 46px;
+    bottom: 20px;
+    top: auto;
+    transform: none;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba(255,255,255,0.7);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
-    opacity: 0.85;
+    font-size: 0.85rem;
     transition: all var(--transition-fast);
     z-index: 10;
     text-decoration: none;
