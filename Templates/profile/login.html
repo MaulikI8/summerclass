@@ -10,9 +10,7 @@
       <div class="col-lg-5 col-md-7 col-sm-10">
         <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white">
           <div class="text-center mb-4">
-            <div class="brand-icon-wrap mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.3rem;">
-              <i class="fa fa-graduation-cap"></i>
-            </div>
+            <div class="brand-icon-wrap mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.3rem;"><i class="fa fa-graduation-cap"></i></div>
             <h3 class="fw-bold text-dark mb-1">Student Sign In</h3>
             <p class="text-muted small">Sign in to list items, manage products, and chat with peers.</p>
           </div>
@@ -39,9 +37,7 @@
             </div>
 
             <div class="mb-4">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="form-label fw-semibold small text-dark mb-0">Password</label>
-              </div>
+              <div class="d-flex justify-content-between align-items-center mb-1"><label class="form-label fw-semibold small text-dark mb-0">Password</label></div>
               <div class="input-group">
                 <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted"><i class="fa fa-lock"></i></span>
                 <input type="password" name="password" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="••••••••" required>
@@ -65,16 +61,16 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    bindAutoDraft('studentLoginForm', 'islington_login_draft');
-    const uInput = document.getElementById('loginUsernameInput');
-    if (!uInput.value) {
-        const remembered = getCookie('islington_last_username');
-        if (remembered) uInput.value = remembered;
-    }
-    const form = document.getElementById('studentLoginForm');
-    form.addEventListener('submit', () => {
-        if (uInput.value) setCookie('islington_last_username', uInput.value.trim(), 30);
-    });
+  if (typeof bindAutoDraft === 'function') bindAutoDraft('studentLoginForm', 'islington_login_draft');
+  const uInput = document.getElementById('loginUsernameInput');
+  if (!uInput.value && typeof getCookie === 'function') {
+    const remembered = getCookie('islington_last_username');
+    if (remembered) uInput.value = remembered;
+  }
+  const form = document.getElementById('studentLoginForm');
+  form.addEventListener('submit', () => {
+    if (uInput.value && typeof setCookie === 'function') setCookie('islington_last_username', uInput.value.trim(), 30);
+  });
 });
 </script>
 {% endblock %}

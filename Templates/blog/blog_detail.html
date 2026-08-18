@@ -6,8 +6,6 @@
 {% block content %}
 <section class="section-content padding-y-sm">
   <div class="container">
-    
-    <!-- Breadcrumb Navigation -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb small">
         <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
@@ -18,13 +16,8 @@
     </nav>
 
     <div class="row g-4">
-      <!-- MAIN BLOG POST & DISCUSSION COLUMN -->
       <div class="col-lg-8">
-        
-        <!-- Main Blog Post Card -->
         <div class="card border-0 shadow-sm bg-white rounded-4 p-4 p-md-5 mb-4">
-          
-          <!-- Header Meta -->
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
             <div class="d-flex align-items-center gap-2 flex-wrap small">
               <a href="{% url 'blog' %}?category={{ blog.category.name }}" class="badge bg-primary-subtle text-primary rounded-pill text-decoration-none fw-bold">
@@ -34,18 +27,15 @@
                 {% if blog.tag == 'Question' %}<i class="fas fa-question-circle me-1"></i>{% elif blog.tag == 'Guide' %}<i class="fas fa-book-open me-1"></i>{% elif blog.tag == 'Review' %}<i class="fas fa-star me-1"></i>{% else %}<i class="fas fa-comments me-1"></i>{% endif %}
                 {{ blog.tag }}
               </span>
-              <span class="text-muted">• Posted by</span>
+              <span class="text-muted">&bull; Posted by</span>
               {% if blog.author %}
-              <a href="{% url 'blog' %}?author={{ blog.author.username }}" class="text-dark fw-bold text-decoration-none">
-                <i class="fas fa-user-circle text-primary me-1"></i> {{ blog.author.username }}
-              </a>
+              <a href="{% url 'blog' %}?author={{ blog.author.username }}" class="text-dark fw-bold text-decoration-none"><i class="fas fa-user-circle text-primary me-1"></i> {{ blog.author.username }}</a>
               {% else %}
               <span class="text-dark fw-bold"><i class="fas fa-user-shield text-muted me-1"></i> Islington Admin</span>
               {% endif %}
               <span class="text-muted">{{ blog.created_at|timesince }} ago</span>
             </div>
 
-            <!-- Upvote Button -->
             <form action="{% url 'toggle_upvote' blog.id %}" method="POST" class="d-inline">
               {% csrf_token %}
               <button type="submit" class="btn {% if has_upvoted %}btn-primary text-white{% else %}btn-outline-primary{% endif %} btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1">
@@ -54,51 +44,37 @@
             </form>
           </div>
 
-          <!-- Title -->
           <h2 class="fw-bold text-dark mb-4" style="line-height: 1.3;">{{ blog.title }}</h2>
 
-          <!-- Featured Image if attached -->
           {% if blog.post_image %}
           <div class="mb-4 rounded-4 overflow-hidden border text-center">
             <img src="{{ blog.post_image.url }}" alt="{{ blog.title }}" class="img-fluid w-100" style="max-height: 420px; object-fit: cover;">
           </div>
           {% endif %}
 
-          <!-- Content Body -->
           <div class="blog-body text-secondary mb-4" style="font-size: 1.05rem; line-height: 1.85;">
             {{ blog.content|linebreaks }}
           </div>
 
           <hr class="my-4">
 
-          <!-- Footer Actions -->
           <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <a href="{% url 'blog' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-              <i class="fas fa-arrow-left me-1"></i> Back to All Blogs
-            </a>
-            <span class="text-muted small">
-              <i class="fas fa-comments text-primary me-1"></i> {{ comments|length }} Comments in Discussion
-            </span>
+            <a href="{% url 'blog' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-arrow-left me-1"></i> Back to All Blogs</a>
+            <span class="text-muted small"><i class="fas fa-comments text-primary me-1"></i> {{ comments|length }} Comments</span>
           </div>
         </div>
 
-        <!-- COMMENTS & DISCUSSION SECTION -->
         <div class="card border-0 shadow-sm bg-white rounded-4 p-4 p-md-5">
-          <h4 class="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
-            <i class="fas fa-reply text-primary"></i> Comments &amp; Discussion ({{ comments|length }})
-          </h4>
+          <h4 class="fw-bold text-dark mb-4 d-flex align-items-center gap-2"><i class="fas fa-reply text-primary"></i> Comments &amp; Discussion ({{ comments|length }})</h4>
 
-          <!-- Comment Input Box -->
           {% if user.is_authenticated %}
           <form action="{% url 'add_comment' blog.id %}" method="POST" class="mb-4">
             {% csrf_token %}
             <div class="p-3 bg-light rounded-4 border">
               <label class="form-label small text-muted mb-2">Comment as <strong class="text-primary">{{ user.username }}</strong></label>
-              <textarea name="content" rows="3" class="form-control rounded-3 bg-white mb-2" placeholder="Write a comment, share your thoughts, or answer questions..." required></textarea>
+              <textarea name="content" rows="3" class="form-control rounded-3 bg-white mb-2" placeholder="Write a comment, share your thoughts..." required></textarea>
               <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm">
-                  <i class="fas fa-paper-plane me-1"></i> Post Comment
-                </button>
+                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm"><i class="fas fa-paper-plane me-1"></i> Post Comment</button>
               </div>
             </div>
           </form>
@@ -109,41 +85,27 @@
           </div>
           {% endif %}
 
-          <!-- Comments List -->
           <div class="d-flex flex-column gap-3">
             {% for c in comments %}
             <div class="p-3 bg-light rounded-4 border">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <div class="d-flex align-items-center gap-2">
-                  <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 0.75rem;">
-                    {{ c.author.username|slice:":1"|upper }}
-                  </div>
+                  <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 0.75rem;">{{ c.author.username|slice:":1"|upper }}</div>
                   <strong class="text-dark small">{{ c.author.username }}</strong>
-                  {% if c.author == blog.author %}
-                  <span class="badge bg-primary text-white rounded-pill" style="font-size: 0.65rem;">Author</span>
-                  {% endif %}
+                  {% if c.author == blog.author %}<span class="badge bg-primary text-white rounded-pill" style="font-size: 0.65rem;">Author</span>{% endif %}
                 </div>
                 <span class="text-muted" style="font-size: 0.72rem;">{{ c.created_at|timesince }} ago</span>
               </div>
-              <div class="text-secondary small ps-4" style="line-height: 1.6;">
-                {{ c.content|linebreaksbr }}
-              </div>
+              <div class="text-secondary small ps-4" style="line-height: 1.6;">{{ c.content|linebreaksbr }}</div>
             </div>
             {% empty %}
-            <div class="text-center py-4 text-muted small">
-              <i class="fas fa-comment-dots display-6 d-block mb-2 text-muted opacity-50"></i>
-              No comments yet. Be the first to share your thoughts!
-            </div>
+            <div class="text-center py-4 text-muted small"><i class="fas fa-comment-dots display-6 d-block mb-2 opacity-50"></i>No comments yet. Be the first to share your thoughts!</div>
             {% endfor %}
           </div>
-
         </div>
-
       </div>
 
-      <!-- SIDEBAR -->
       <div class="col-lg-4">
-        <!-- Blog Author Card -->
         <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
           <h6 class="fw-bold text-dark mb-3"><i class="fas fa-user-circle text-primary me-1"></i> Post Author</h6>
           <div class="d-flex align-items-center gap-3 mb-3">
@@ -152,33 +114,24 @@
             </div>
             <div>
               <strong class="text-dark d-block">{{ blog.author.first_name|default:blog.author.username }}</strong>
-              <small class="text-muted">@{{ blog.author.username|default:"admin" }} • Islington Student</small>
+              <small class="text-muted">@{{ blog.author.username|default:"admin" }} &bull; Islington Student</small>
             </div>
           </div>
           {% if blog.author %}
-          <a href="{% url 'blog' %}?author={{ blog.author.username }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">
-            View All Blogs by {{ blog.author.username }}
-          </a>
+          <a href="{% url 'blog' %}?author={{ blog.author.username }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">View All Blogs by {{ blog.author.username }}</a>
           {% endif %}
         </div>
 
-        <!-- Request Category Card -->
         <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
           <h6 class="fw-bold text-dark mb-2"><i class="fas fa-lightbulb text-warning me-1"></i> Suggest a Category</h6>
-          <p class="small text-muted mb-0" style="line-height: 1.6;">
-            Have an idea for a new blog topic or study genre? Leave a comment in any discussion post and we will add it!
-          </p>
+          <p class="small text-muted mb-0" style="line-height: 1.6;">Have an idea for a new blog topic or study genre? Leave a comment in any discussion post and we will add it!</p>
         </div>
 
-        <!-- Safety Guidelines -->
         <div class="card border-0 shadow-sm bg-white p-4 rounded-4">
           <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt text-success me-1"></i> Community Guidelines</h6>
-          <p class="small text-muted mb-0" style="line-height: 1.6;">
-            Keep discussions respectful and helpful. For textbook trades and purchases, arrange meetups inside college blocks during class hours.
-          </p>
+          <p class="small text-muted mb-0" style="line-height: 1.6;">Keep discussions respectful and helpful. For textbook trades and purchases, arrange meetups inside college blocks during class hours.</p>
         </div>
       </div>
-
     </div>
   </div>
 </section>

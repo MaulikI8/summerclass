@@ -9,47 +9,24 @@
     <div class="row justify-content-center">
       <div class="col-lg-6 col-md-8">
         <div class="card border-0 shadow-sm bg-white p-4 p-md-5 rounded-4">
-          <!-- 404 Header Icon & Code -->
           <div class="mb-4">
-            <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-3 shadow-sm" style="width: 80px; height: 80px; font-size: 2.2rem;">
-              <i class="fa fa-compass"></i>
-            </div>
+            <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-3 shadow-sm" style="width: 80px; height: 80px; font-size: 2.2rem;"><i class="fa fa-compass"></i></div>
             <h1 class="display-3 fw-bold text-primary mb-0">404</h1>
             <h3 class="fw-bold text-dark mb-2">Oops! Page Not Found</h3>
-            <p class="text-muted small mb-4">
-              The page or listing you are looking for might have been removed, had its name changed, or is temporarily unavailable.
-            </p>
+            <p class="text-muted small mb-4">The page or listing you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
           </div>
 
-          <!-- Quick Search -->
           <form action="{% url 'products' %}" method="GET" class="search mb-4">
             <div class="input-group">
-              <input
-                type="text"
-                name="q"
-                class="form-control"
-                placeholder="Search textbooks, electronics, campus gear..."
-                aria-label="Search"
-              />
-              <div class="input-group-append">
-                <button class="btn btn-primary px-4" type="submit">
-                  <i class="fa fa-search"></i>
-                </button>
-              </div>
+              <input type="text" name="q" class="form-control" placeholder="Search textbooks, electronics, campus gear..." aria-label="Search" />
+              <div class="input-group-append"><button class="btn btn-primary px-4" type="submit"><i class="fa fa-search"></i></button></div>
             </div>
           </form>
 
-          <!-- Navigation Shortcuts -->
           <div class="d-flex justify-content-center flex-wrap gap-2 pt-2">
-            <a href="{% url 'home' %}" class="btn btn-primary px-4 rounded-pill fw-semibold">
-              <i class="fa fa-home me-1"></i> Back to Homepage
-            </a>
-            <a href="{% url 'products' %}" class="btn btn-outline-primary px-4 rounded-pill fw-semibold">
-              <i class="fa fa-shopping-bag me-1"></i> Browse Store
-            </a>
-            <a href="{% url 'blog' %}" class="btn btn-light px-4 rounded-pill fw-semibold text-secondary border">
-              <i class="fa fa-newspaper me-1"></i> Student Blogs
-            </a>
+            <a href="{% url 'home' %}" class="btn btn-primary px-4 rounded-pill fw-semibold"><i class="fa fa-home me-1"></i> Back to Homepage</a>
+            <a href="{% url 'products' %}" class="btn btn-outline-primary px-4 rounded-pill fw-semibold"><i class="fa fa-shopping-bag me-1"></i> Browse Store</a>
+            <a href="{% url 'blog' %}" class="btn btn-light px-4 rounded-pill fw-semibold text-secondary border"><i class="fa fa-newspaper me-1"></i> Student Blogs</a>
           </div>
         </div>
       </div>

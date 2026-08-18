@@ -8,26 +8,19 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-lg-8">
-        
-        <!-- Header -->
         <div class="card border-0 shadow-sm bg-white p-3 p-md-4 rounded-4 mb-3">
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h4 class="fw-bold mb-1 text-dark"><i class="fas fa-pen-nib text-primary me-2"></i> Write a Blog Post</h4>
               <p class="text-muted small mb-0">Share campus guides, ask academic questions, or start a student discussion.</p>
             </div>
-            <a href="{% url 'blog' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-              <i class="fas fa-arrow-left me-1"></i> Back
-            </a>
+            <a href="{% url 'blog' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="fas fa-arrow-left me-1"></i> Back</a>
           </div>
         </div>
 
-        <!-- Blog Form -->
         <div class="card border-0 shadow-sm bg-white p-4 rounded-4">
           <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-
-            <!-- Category & Tag Selection Row -->
             <div class="row g-3 mb-3">
               <div class="col-md-6">
                 <label class="form-label fw-bold small text-dark">Category <span class="text-danger">*</span></label>
@@ -40,7 +33,6 @@
                 </select>
                 <small class="text-muted" style="font-size: 0.75rem;">Need a new category? Request it in comments!</small>
               </div>
-
               <div class="col-md-6">
                 <label class="form-label fw-bold small text-dark">Post Type / Tag</label>
                 <select name="tag" class="form-select rounded-3">
@@ -52,40 +44,32 @@
               </div>
             </div>
 
-            <!-- Title -->
             <div class="mb-3">
               <label class="form-label fw-bold small text-dark">Blog Title <span class="text-danger">*</span></label>
               <input type="text" name="title" class="form-control rounded-3" placeholder="e.g. Tips for Year 2 Computing Coursework & Module Selection" required>
             </div>
 
-            <!-- Content Body -->
             <div class="mb-3">
               <label class="form-label fw-bold small text-dark">Blog Content <span class="text-danger">*</span></label>
               <textarea name="content" rows="8" class="form-control rounded-3" placeholder="Write your article, share insights, or ask your question here..." required style="line-height: 1.6;"></textarea>
             </div>
 
-            <!-- Optional Image Upload -->
             <div class="mb-4">
               <label class="form-label fw-bold small text-dark">Featured Image / Attachment (Optional)</label>
               <input type="file" name="post_image" class="form-control rounded-3" accept="image/*">
             </div>
 
-            <!-- Author Info -->
             <div class="p-3 bg-light rounded-3 border mb-4 d-flex align-items-center gap-2 small text-muted">
               <i class="fas fa-user-circle text-primary fs-5"></i>
               <span>Publishing as <strong class="text-dark">{{ user.first_name|default:user.username }} (@{{ user.username }})</strong></span>
             </div>
 
-            <!-- Submit -->
             <div class="d-flex justify-content-end gap-2">
               <a href="{% url 'blog' %}" class="btn btn-light rounded-pill px-4 border">Cancel</a>
-              <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                <i class="fas fa-paper-plane me-1"></i> Publish Blog
-              </button>
+              <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"><i class="fas fa-paper-plane me-1"></i> Publish Blog</button>
             </div>
           </form>
         </div>
-
       </div>
     </div>
   </div>

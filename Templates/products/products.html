@@ -4,10 +4,8 @@
 {% block title %}Explore Store | Islington Marketplace{% endblock %}
 
 {% block content %}
-<!-- ========================= SECTION CONTENT ========================= -->
 <section class="section-content padding-y-sm py-4">
   <div class="container">
-    <!-- Breadcrumb & Store Filter Header -->
     <div class="card mb-4 border-0 shadow-sm bg-white p-4 rounded-3">
       <div class="row align-items-center justify-content-between g-3">
         <div class="col-lg-6">
@@ -47,60 +45,35 @@
       </div>
     </div>
 
-    <!-- Products Grid -->
     <div class="row g-4">
       {% for product in products %}
       <div class="col-lg-3 col-md-4 col-sm-6">
         <div class="card card-product-grid">
-          <!-- Image Wrap -->
           <div class="position-relative">
             <a href="{% url 'product_detail' product.id %}" class="img-wrap">
-              {% if product.product_image %}
-                <img src="{{ product.product_image.url }}" alt="{{ product.name }}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';" />
-              {% else %}
-                <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" loading="lazy" />
-              {% endif %}
-
-              <!-- Category Overlay Badge -->
-              <span class="card-category-badge">
-                {{ product.category.name }}
-              </span>
-
-              <!-- Stock Status Badge -->
+              <img src="{% if product.product_image %}{{ product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ product.name }}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';" />
+              <span class="card-category-badge">{{ product.category.name }}</span>
               {% if product.stock > 0 %}
-              <span class="card-stock-badge in-stock">
-                <i class="fa fa-check-circle"></i> In Stock ({{ product.stock }})
-              </span>
+              <span class="card-stock-badge in-stock"><i class="fa fa-check-circle"></i> In Stock ({{ product.stock }})</span>
               {% else %}
-              <span class="card-stock-badge out-of-stock">
-                <i class="fa fa-times-circle"></i> Sold Out
-              </span>
+              <span class="card-stock-badge out-of-stock"><i class="fa fa-times-circle"></i> Sold Out</span>
               {% endif %}
             </a>
 
-            <!-- Wishlist Heart Button -->
             <button type="button" class="btn-wishlist-toggle {% if product.id in wishlist_ids %}active{% endif %}" onclick="toggleWishlist('{{ product.id }}', this)" title="Save to Wishlist">
               <i class="{% if product.id in wishlist_ids %}fas fa-heart text-danger{% else %}far fa-heart text-muted{% endif %}"></i>
             </button>
           </div>
 
-          <!-- Info Wrap -->
           <figcaption class="info-wrap">
-            <a href="{% url 'product_detail' product.id %}" class="title" title="{{ product.name }}">
-              {{ product.name }}
-            </a>
-
+            <a href="{% url 'product_detail' product.id %}" class="title" title="{{ product.name }}">{{ product.name }}</a>
             <div class="d-flex justify-content-between align-items-center mb-1">
               <div class="price">Rs. {{ product.price|floatformat:2 }}</div>
               <small class="text-muted"><i class="fas fa-user-circle text-primary me-1"></i> {{ product.user.first_name|default:product.user.username|default:"Student" }}</small>
             </div>
-
             <p class="card-desc">{{ product.description|default:"Verified student listing." }}</p>
-
             <div class="card-action-bar">
-              <a href="{% url 'product_detail' product.id %}" class="btn-card-primary text-decoration-none">
-                View Item
-              </a>
+              <a href="{% url 'product_detail' product.id %}" class="btn-card-primary text-decoration-none">View Item</a>
               {% if product.stock > 0 %}
               <button type="button" class="btn-card-icon" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')" title="Add to Bag">
                 <i class="fas fa-shopping-cart text-primary"></i>
@@ -117,9 +90,7 @@
           <h4 class="fw-bold text-dark mb-1">No products found</h4>
           <p class="text-muted small mb-3">We could not find any products matching your selected criteria.</p>
           <div>
-            <a href="{% url 'products' %}" class="btn btn-primary px-4 rounded-pill">
-              View All Products
-            </a>
+            <a href="{% url 'products' %}" class="btn btn-primary px-4 rounded-pill">View All Products</a>
           </div>
         </div>
       </div>
@@ -127,5 +98,4 @@
     </div>
   </div>
 </section>
-<!-- ========================= SECTION CONTENT END// ========================= -->
 {% endblock %}

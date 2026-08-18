@@ -6,7 +6,6 @@
 {% block content %}
 <section class="section-content padding-y py-5 bg-light">
   <div class="container">
-    <!-- Breadcrumb & Header -->
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
       <div>
         <nav aria-label="breadcrumb">
@@ -38,7 +37,6 @@
 
     <div class="row g-4">
       {% if cart_items %}
-      <!-- Left: Cart Items List -->
       <div class="col-lg-8 col-md-12">
         <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
           <div class="table-responsive">
@@ -57,11 +55,7 @@
                 <tr>
                   <td>
                     <div class="d-flex align-items-center gap-3">
-                      {% if item.product.product_image %}
-                      <img src="{{ item.product.product_image.url }}" alt="{{ item.product.name }}" style="width: 64px; height: 64px; object-fit: contain; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px;" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';">
-                      {% else %}
-                      <img src="{% static 'images/default.jpg' %}" alt="{{ item.product.name }}" style="width: 64px; height: 64px; object-fit: contain; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px;">
-                      {% endif %}
+                      <img src="{% if item.product.product_image %}{{ item.product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ item.product.name }}" style="width: 64px; height: 64px; object-fit: contain; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px;" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';">
                       <div>
                         <a href="{% url 'product_detail' item.product.id %}" class="fw-bold text-dark text-decoration-none d-block title-hover">{{ item.product.name }}</a>
                         <small class="text-muted">
@@ -71,27 +65,17 @@
                       </div>
                     </div>
                   </td>
-                  <td class="text-center fw-semibold text-dark">
-                    Rs. {{ item.product.price|floatformat:2 }}
-                  </td>
+                  <td class="text-center fw-semibold text-dark">Rs. {{ item.product.price|floatformat:2 }}</td>
                   <td class="text-center">
                     <div class="d-inline-flex align-items-center border rounded-pill p-1 bg-light">
-                      <a href="{% url 'cart:remove_from_cart' item.product.id %}" class="btn btn-sm btn-link text-dark p-0 px-2 text-decoration-none">
-                        <i class="fas fa-minus small"></i>
-                      </a>
+                      <a href="{% url 'cart:remove_from_cart' item.product.id %}" class="btn btn-sm btn-link text-dark p-0 px-2 text-decoration-none"><i class="fas fa-minus small"></i></a>
                       <span class="px-2 fw-bold small text-dark">{{ item.quantity }}</span>
-                      <a href="{% url 'cart:add_to_cart' item.product.id %}" class="btn btn-sm btn-link text-dark p-0 px-2 text-decoration-none">
-                        <i class="fas fa-plus small"></i>
-                      </a>
+                      <a href="{% url 'cart:add_to_cart' item.product.id %}" class="btn btn-sm btn-link text-dark p-0 px-2 text-decoration-none"><i class="fas fa-plus small"></i></a>
                     </div>
                   </td>
-                  <td class="text-end fw-bold text-primary">
-                    Rs. {{ item.sub_total|floatformat:2 }}
-                  </td>
+                  <td class="text-end fw-bold text-primary">Rs. {{ item.sub_total|floatformat:2 }}</td>
                   <td class="text-center">
-                    <a href="{% url 'cart:delete_cart_item' item.product.id %}" class="btn btn-sm text-danger p-0 border-0 bg-transparent" title="Remove Item" onclick="return confirm('Remove {{ item.product.name }} from bag?')">
-                      <i class="fas fa-trash-alt"></i>
-                    </a>
+                    <a href="{% url 'cart:delete_cart_item' item.product.id %}" class="btn btn-sm text-danger p-0 border-0 bg-transparent" title="Remove Item" onclick="return confirm('Remove {{ item.product.name }} from bag?')"><i class="fas fa-trash-alt"></i></a>
                   </td>
                 </tr>
                 {% endfor %}
@@ -101,64 +85,33 @@
         </div>
       </div>
 
-      <!-- Right: Summary & Checkout Action -->
       <div class="col-lg-4 col-md-12">
         <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 90px;">
           <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom">Order Summary</h5>
-
           <div class="d-flex flex-column gap-3 small mb-4">
-            <div class="d-flex justify-content-between text-muted">
-              <span>Items Count:</span>
-              <strong class="text-dark">{{ item_count }} item{{ item_count|pluralize }}</strong>
-            </div>
-            <div class="d-flex justify-content-between text-muted">
-              <span>Subtotal:</span>
-              <strong class="text-dark fs-6">Rs. {{ total|floatformat:2 }}</strong>
-            </div>
-            <div class="d-flex justify-content-between text-muted">
-              <span>Campus Delivery:</span>
-              <strong class="text-success">FREE</strong>
-            </div>
-            <div class="border-top pt-3 d-flex justify-content-between fs-5 fw-bold text-dark">
-              <span>Total Payable:</span>
-              <span class="text-primary">Rs. {{ total|floatformat:2 }}</span>
-            </div>
+            <div class="d-flex justify-content-between text-muted"><span>Items Count:</span><strong class="text-dark">{{ item_count }} item{{ item_count|pluralize }}</strong></div>
+            <div class="d-flex justify-content-between text-muted"><span>Subtotal:</span><strong class="text-dark fs-6">Rs. {{ total|floatformat:2 }}</strong></div>
+            <div class="d-flex justify-content-between text-muted"><span>Campus Delivery:</span><strong class="text-success">FREE</strong></div>
+            <div class="border-top pt-3 d-flex justify-content-between fs-5 fw-bold text-dark"><span>Total Payable:</span><span class="text-primary">Rs. {{ total|floatformat:2 }}</span></div>
           </div>
-
           <a href="{% url 'checkout' %}" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm mb-3 d-flex align-items-center justify-content-center gap-2">
             <span>Proceed to Checkout</span>
             <i class="fas fa-arrow-right"></i>
           </a>
-
-          <a href="{% url 'products' %}" class="btn btn-outline-secondary w-100 py-2 rounded-pill small fw-semibold text-decoration-none">
-            <i class="fas fa-plus me-1"></i> Continue Shopping
-          </a>
-
+          <a href="{% url 'products' %}" class="btn btn-outline-secondary w-100 py-2 rounded-pill small fw-semibold text-decoration-none"><i class="fas fa-plus me-1"></i> Continue Shopping</a>
           <div class="p-3 bg-light rounded-3 mt-4 border small text-muted">
-            <div class="d-flex align-items-center gap-2 mb-1 fw-bold text-dark">
-              <i class="fas fa-shield-alt text-success"></i> Safe Student Commerce
-            </div>
+            <div class="d-flex align-items-center gap-2 mb-1 fw-bold text-dark"><i class="fas fa-shield-alt text-success"></i> Safe Student Commerce</div>
             <span>Verified trades inside Islington College campus or fast Kathmandu home delivery.</span>
           </div>
         </div>
       </div>
-
       {% else %}
-      <!-- Empty Bag State -->
       <div class="col-12">
         <div class="card border-0 shadow-sm rounded-4 p-5 bg-white text-center">
-          <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 86px; height: 86px; font-size: 2.2rem; color: #94a3b8;">
-            <i class="fas fa-shopping-bag"></i>
-          </div>
+          <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 86px; height: 86px; font-size: 2.2rem; color: #94a3b8;"><i class="fas fa-shopping-bag"></i></div>
           <h4 class="fw-bold text-dark mb-2">Your shopping bag is empty</h4>
-          <p class="text-muted small mb-4 mx-auto" style="max-width: 460px;">
-            You haven't added any student items yet. Explore textbooks, computing gear, and course materials posted by Islington students.
-          </p>
-          <div>
-            <a href="{% url 'products' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
-              <i class="fas fa-search me-1"></i> Browse Marketplace Listings
-            </a>
-          </div>
+          <p class="text-muted small mb-4 mx-auto" style="max-width: 460px;">You haven't added any student items yet. Explore textbooks, computing gear, and course materials posted by Islington students.</p>
+          <div><a href="{% url 'products' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm"><i class="fas fa-search me-1"></i> Browse Marketplace Listings</a></div>
         </div>
       </div>
       {% endif %}

@@ -6,7 +6,6 @@
 {% block content %}
 <section class="section-content padding-y-sm py-4">
   <div class="container">
-    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb small">
         <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
@@ -16,62 +15,38 @@
       </ol>
     </nav>
 
-    <!-- Product Detail Layout Card -->
     <div class="card border-0 shadow-sm bg-white rounded-4 overflow-hidden mb-5">
       <div class="row g-0">
-        <!-- Left: Image Gallery -->
         <div class="col-lg-6 border-end">
           <article class="gallery-wrap p-4 p-md-5 text-center d-flex flex-column justify-content-center">
             <div class="mainImage img-big-wrap position-relative p-3 bg-light rounded-4 d-flex align-items-center justify-content-center" style="min-height: 380px; max-height: 420px; background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);">
-              {% if product.product_image %}
-              <img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="img-fluid rounded-3" style="max-height: 360px; max-width: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';">
-              {% else %}
-              <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" class="img-fluid rounded-3" style="max-height: 360px; max-width: 100%; object-fit: contain;">
-              {% endif %}
-              <span class="badge bg-primary position-absolute top-0 start-0 m-3 rounded-pill px-3 py-2 fw-semibold">
-                {{ product.category.name }}
-              </span>
+              <img src="{% if product.product_image %}{{ product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ product.name }}" class="img-fluid rounded-3" style="max-height: 360px; max-width: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';">
+              <span class="badge bg-primary position-absolute top-0 start-0 m-3 rounded-pill px-3 py-2 fw-semibold">{{ product.category.name }}</span>
             </div>
-
             {% if product.product_image %}
             <ul class="thumb mt-3 d-flex justify-content-center list-unstyled gap-2">
-              <li>
-                <a href="{{ product.product_image.url }}">
-                  <img src="{{ product.product_image.url }}" alt="{{ product.name }} thumbnail" class="rounded-3 shadow-xs" style="width: 50px; height: 50px; object-fit: cover;" />
-                </a>
-              </li>
+              <li><a href="{{ product.product_image.url }}"><img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="rounded-3 shadow-xs" style="width: 50px; height: 50px; object-fit: cover;" /></a></li>
             </ul>
             {% endif %}
           </article>
         </div>
 
-        <!-- Right: Product Information & Action Area -->
         <main class="col-lg-6 p-4 p-lg-5 d-flex flex-column justify-content-between">
           <article class="content-body">
-            
-            <!-- Category & Stock Status -->
             <div class="d-flex align-items-center gap-2 mb-2">
-              <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold small">
-                {{ product.category.name }}
-              </span>
+              <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold small">{{ product.category.name }}</span>
               {% if product.stock > 0 %}
-              <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill small">
-                <i class="fas fa-check-circle me-1"></i> In Stock ({{ product.stock }})
-              </span>
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill small"><i class="fas fa-check-circle me-1"></i> In Stock ({{ product.stock }})</span>
               {% else %}
-              <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill small">
-                <i class="fas fa-times-circle me-1"></i> Sold Out
-              </span>
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill small"><i class="fas fa-times-circle me-1"></i> Sold Out</span>
               {% endif %}
             </div>
 
             <h2 class="title text-dark fw-bold mb-2">{{ product.name }}</h2>
-
             <div class="mb-3 d-flex align-items-center gap-3">
               <span class="price h3 text-primary fw-bold mb-0">Rs. {{ product.price|floatformat:2 }}</span>
             </div>
 
-            <!-- Student Seller Card Box -->
             <div class="p-3 bg-light rounded-4 border mb-4 d-flex align-items-center gap-3">
               <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 44px; height: 44px; flex-shrink: 0;">
                 {{ product.user.username|default:"A"|slice:":1"|upper }}
@@ -88,18 +63,13 @@
 
             <div class="mb-4">
               <h6 class="text-muted text-uppercase fw-bold small mb-2">Item Description</h6>
-              <p class="text-secondary" style="line-height: 1.7;">
-                {{ product.description|linebreaks }}
-              </p>
+              <p class="text-secondary" style="line-height: 1.7;">{{ product.description|linebreaks }}</p>
             </div>
 
-            <!-- Action Buttons Row -->
             <div class="d-flex flex-wrap gap-2 pt-2">
               {% if user.is_authenticated and product.user == user %}
               <div class="alert alert-light border rounded-4 p-3 w-100 d-flex align-items-center gap-3 mb-0">
-                <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                  <i class="fas fa-user-tag"></i>
-                </div>
+                <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fas fa-user-tag"></i></div>
                 <div>
                   <div class="fw-bold text-dark small">You are the seller of this listing</div>
                   <small class="text-muted">Self-purchasing is disabled for your own items.</small>
@@ -111,7 +81,6 @@
                 <i class="fas fa-shopping-bag me-1"></i> Add to Bag
               </button>
               
-              <!-- Trade / Make an Offer Button -->
               {% if user.is_authenticated %}
               <button type="button" class="btn btn-warning btn-lg px-4 rounded-pill fw-bold text-dark shadow-sm" data-bs-toggle="modal" data-bs-target="#tradeOfferModal">
                 <i class="fas fa-handshake me-1"></i> Send Offer / Trade
@@ -126,18 +95,14 @@
                 <i class="{% if is_wishlisted %}fas fa-heart text-danger{% else %}far fa-heart{% endif %}"></i>
               </button>
               {% else %}
-              <button type="button" class="btn btn-secondary btn-lg px-4 fw-semibold flex-grow-1 rounded-pill" disabled>
-                Sold Out
-              </button>
+              <button type="button" class="btn btn-secondary btn-lg px-4 fw-semibold flex-grow-1 rounded-pill" disabled>Sold Out</button>
               {% endif %}
             </div>
-
           </article>
         </main>
       </div>
     </div>
 
-    <!-- Related Products -->
     {% if related_products %}
     <div class="related-products-wrap mt-5">
       <h4 class="fw-bold mb-4 text-dark">Related Products in {{ product.category.name }}</h4>
@@ -146,11 +111,7 @@
         <div class="col-lg-3 col-md-4 col-sm-6">
           <div class="card card-product-grid">
             <a href="{% url 'product_detail' rel.id %}" class="img-wrap">
-              {% if rel.product_image %}
-              <img src="{{ rel.product_image.url }}" alt="{{ rel.name }}" loading="lazy">
-              {% else %}
-              <img src="{% static 'images/default.jpg' %}" alt="{{ rel.name }}" loading="lazy">
-              {% endif %}
+              <img src="{% if rel.product_image %}{{ rel.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ rel.name }}" loading="lazy">
             </a>
             <figcaption class="info-wrap">
               <a href="{% url 'product_detail' rel.id %}" class="title text-truncate">{{ rel.name }}</a>
@@ -165,11 +126,9 @@
       </div>
     </div>
     {% endif %}
-
   </div>
 </section>
 
-<!-- Trade / Price Offer Modal -->
 {% if user.is_authenticated and product.user != user %}
 <div class="modal fade" id="tradeOfferModal" tabindex="-1" aria-labelledby="tradeOfferModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -181,14 +140,9 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body pt-3">
-        <p class="text-muted small mb-3">
-          Interested in <strong>"{{ product.name }}"</strong>? Offer a lower price or suggest an item swap to the student seller.
-        </p>
-
+        <p class="text-muted small mb-3">Interested in <strong>"{{ product.name }}"</strong>? Offer a lower price or suggest an item swap to the student seller.</p>
         <form action="{% url 'send_offer' product.id %}" method="POST">
           {% csrf_token %}
-
-          <!-- Offer Type Selector -->
           <div class="mb-3">
             <label class="form-label fw-bold small text-dark">Offer Type</label>
             <div class="d-flex gap-2">
@@ -202,8 +156,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Price Offer Field -->
           <div class="mb-3" id="priceOfferField">
             <label class="form-label fw-bold small text-dark">Your Offered Price (NPR)</label>
             <div class="input-group">
@@ -212,22 +164,16 @@
             </div>
             <small class="text-muted">Listed price is Rs. {{ product.price|floatformat:2 }}</small>
           </div>
-
-          <!-- Trade / Swap Description Field -->
           <div class="mb-3" id="tradeOfferField" style="display: none;">
             <label class="form-label fw-bold small text-dark">Item Trade Details &amp; Notes</label>
             <textarea name="trade_item_desc" rows="3" class="form-control" placeholder="Describe the textbook or gadget you want to swap (e.g. 'I will trade my Python Year 2 textbook + Rs. 200 for your book')."></textarea>
           </div>
-
           <div class="p-3 bg-light rounded-3 border mb-4 small text-muted">
             <i class="fas fa-shield-alt text-success me-1"></i> The seller will receive a notification and can accept or decline your offer in their dashboard.
           </div>
-
           <div class="d-flex justify-content-end gap-2">
             <button type="button" class="btn btn-light rounded-pill px-3 border" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
-              <i class="fas fa-paper-plane me-1"></i> Submit Offer
-            </button>
+            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"><i class="fas fa-paper-plane me-1"></i> Submit Offer</button>
           </div>
         </form>
       </div>

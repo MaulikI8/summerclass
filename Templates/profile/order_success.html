@@ -10,33 +10,23 @@
       <div class="col-lg-8 col-md-10">
         <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white text-center">
           <div class="mb-4">
-            <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow" style="width: 72px; height: 72px; font-size: 2rem;">
-              <i class="fas fa-check"></i>
-            </div>
+            <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow" style="width: 72px; height: 72px; font-size: 2rem;"><i class="fas fa-check"></i></div>
             <h3 class="fw-bold text-dark mt-3 mb-1">Order Placed Successfully!</h3>
             <p class="text-muted">Order Ref: <strong class="text-primary">#{{ order.id }}</strong> • Receipt generated</p>
           </div>
 
           <div class="alert alert-success py-3 px-4 rounded-3 text-start small border-0 mb-4 d-flex align-items-center gap-3">
             <i class="fas fa-shield-alt fs-4 text-success flex-shrink-0"></i>
-            <div>
-              <strong>Order Details Confirmed:</strong> Your order has been notified to the student seller(s). Collection Spot: <strong>{{ order.meetup_location }}</strong> during <strong>{{ order.meetup_time }}</strong>.
-            </div>
+            <div><strong>Order Details Confirmed:</strong> Your order has been notified to the student seller(s). Collection Spot: <strong>{{ order.meetup_location }}</strong> during <strong>{{ order.meetup_time }}</strong>.</div>
           </div>
 
-          <!-- Receipt Details Table -->
           <div class="card border rounded-3 p-3 mb-4 text-start bg-light">
             <div class="row g-2 mb-3 pb-2 border-bottom small">
-              <div class="col-6 text-muted">Buyer Name:</div>
-              <div class="col-6 text-end fw-semibold text-dark">{{ order.buyer_name }}</div>
-              <div class="col-6 text-muted">Phone / Contact:</div>
-              <div class="col-6 text-end fw-semibold text-dark">{{ order.buyer_phone }}</div>
-              <div class="col-6 text-muted">Payment Method:</div>
-              <div class="col-6 text-end fw-bold text-success">{{ order.get_payment_method_display|default:order.payment_method }} ({{ order.payment_status }})</div>
-              <div class="col-6 text-muted">Collection Spot:</div>
-              <div class="col-6 text-end fw-semibold text-dark">{{ order.meetup_location }}</div>
-              <div class="col-6 text-muted">Scheduled Time:</div>
-              <div class="col-6 text-end fw-semibold text-dark">{{ order.meetup_time }}</div>
+              <div class="col-6 text-muted">Buyer Name:</div><div class="col-6 text-end fw-semibold text-dark">{{ order.buyer_name }}</div>
+              <div class="col-6 text-muted">Phone / Contact:</div><div class="col-6 text-end fw-semibold text-dark">{{ order.buyer_phone }}</div>
+              <div class="col-6 text-muted">Payment Method:</div><div class="col-6 text-end fw-bold text-success">{{ order.get_payment_method_display|default:order.payment_method }} ({{ order.payment_status }})</div>
+              <div class="col-6 text-muted">Collection Spot:</div><div class="col-6 text-end fw-semibold text-dark">{{ order.meetup_location }}</div>
+              <div class="col-6 text-muted">Scheduled Time:</div><div class="col-6 text-end fw-semibold text-dark">{{ order.meetup_time }}</div>
             </div>
 
             <h6 class="fw-bold text-dark mb-2 small">Itemized Breakdown:</h6>
@@ -56,22 +46,12 @@
           </div>
 
           <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="{% url 'user_profile' %}?tab=orders" class="btn btn-primary px-4 py-2 rounded-pill fw-semibold shadow-sm">
-              <i class="fas fa-receipt me-1"></i> View in My Dashboard
-            </a>
-            <a href="{% url 'products' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-semibold">
-              <i class="fas fa-shopping-bag me-1"></i> Continue Shopping
-            </a>
+            <a href="{% url 'user_profile' %}?tab=orders" class="btn btn-primary px-4 py-2 rounded-pill fw-semibold shadow-sm"><i class="fas fa-receipt me-1"></i> View in My Dashboard</a>
+            <a href="{% url 'products' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-semibold"><i class="fas fa-shopping-bag me-1"></i> Continue Shopping</a>
           </div>
         </div>
       </div>
     </div>
   </div>
 </section>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    clearAllCart();
-});
-</script>
 {% endblock %}

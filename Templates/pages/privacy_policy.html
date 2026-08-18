@@ -6,8 +6,6 @@
 {% block content %}
 <section class="section-content padding-y-sm">
   <div class="container">
-    
-    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb small">
         <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
@@ -15,127 +13,83 @@
       </ol>
     </nav>
 
-    <!-- Header Card -->
     <div class="card border-0 shadow-sm bg-white p-4 p-md-5 rounded-4 mb-4">
       <div class="d-flex align-items-center gap-3">
-        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; font-size: 1.5rem; flex-shrink: 0;">
-          <i class="fas fa-user-shield"></i>
-        </div>
+        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; font-size: 1.5rem; flex-shrink: 0;"><i class="fas fa-user-shield"></i></div>
         <div>
           <h2 class="fw-bold mb-1 text-dark">Privacy Policy</h2>
-          <p class="text-muted small mb-0">
-            Islington Student Marketplace • How we protect your data • Last updated: August 2026
-          </p>
+          <p class="text-muted small mb-0">Islington Student Marketplace &bull; How we protect your data &bull; Last updated: August 2026</p>
         </div>
       </div>
     </div>
 
-    <!-- Main Policy Content -->
     <div class="row g-4">
-      <!-- Left Column Policy -->
       <div class="col-lg-8">
         <div class="card border-0 shadow-sm bg-white p-4 p-md-5 rounded-4 text-secondary" style="font-size: 0.95rem; line-height: 1.8;">
-          
-          <!-- Introduction -->
           <div class="mb-4">
             <h5 class="fw-bold text-dark mb-3"><i class="fas fa-shield-alt text-primary me-2"></i> 1. Commitment to Student Privacy</h5>
-            <p>
-              At <strong>Islington Marketplace</strong>, your privacy and digital security are our highest priority. This Privacy Policy outlines what information we collect, how it is used to facilitate campus commerce and student blogs, and how we protect your personal records.
-            </p>
+            <p>At <strong>Islington Marketplace</strong>, your privacy and digital security are our highest priority. This Privacy Policy outlines what information we collect, how it is used to facilitate campus commerce and student blogs, and how we protect your personal records.</p>
           </div>
-
           <hr class="my-4">
-
-          <!-- Information We Collect -->
           <div class="mb-4">
             <h5 class="fw-bold text-dark mb-3"><i class="fas fa-database text-primary me-2"></i> 2. Information We Collect</h5>
             <ul class="ps-3 mb-0">
               <li><strong>Account Information:</strong> Student name, username, email address, and encrypted password credentials.</li>
               <li><strong>Verification Data:</strong> 6-digit email OTP codes used during registration and password resets.</li>
-              <li><strong>Marketplace Activities:</strong> Product listings, photos, prices, descriptions, 24h auction bids, and shopping bag orders.</li>
-              <li><strong>Campus Blog Posts &amp; Comments:</strong> Academic questions, discussion threads, and peer replies posted on the platform.</li>
+              <li><strong>Marketplace Activities:</strong> Product listings, photos, prices, descriptions, 24h auction bids, and orders.</li>
+              <li><strong>Campus Blog Posts &amp; Comments:</strong> Academic questions, discussion threads, and peer replies.</li>
             </ul>
           </div>
-
           <hr class="my-4">
-
-          <!-- How We Use Information -->
           <div class="mb-4">
             <h5 class="fw-bold text-dark mb-3"><i class="fas fa-cogs text-primary me-2"></i> 3. How We Use Your Information</h5>
-            <p>We use your information strictly for campus-related activities:</p>
             <ul class="ps-3 mb-0">
               <li>To authenticate verified Islington College students.</li>
-              <li>To connect buyers and sellers for physical handovers at designated campus blocks (e.g. Kumari Hall, Skill Block, Brit House).</li>
-              <li>To deliver automated email notifications for listing approvals, auction updates, outbid alerts, and order confirmations.</li>
+              <li>To connect buyers and sellers for handovers at designated campus blocks.</li>
+              <li>To deliver automated email notifications for listing approvals, auction updates, and order confirmations.</li>
               <li>To maintain a respectful, spam-free student discussion environment.</li>
             </ul>
           </div>
-
           <hr class="my-4">
-
-          <!-- Data Protection & Security -->
           <div class="mb-4">
             <h5 class="fw-bold text-dark mb-3"><i class="fas fa-lock text-primary me-2"></i> 4. Data Protection &amp; Security</h5>
             <ul class="ps-3 mb-0">
               <li><strong>End-to-End Encryption:</strong> All web traffic is protected with modern HTTPS/SSL 256-bit encryption.</li>
-              <li><strong>Password Hashing:</strong> Passwords are cryptographically salted and hashed using industry-standard PBKDF2 algorithms.</li>
-              <li><strong>Secure Media Storage:</strong> Item photos and blog attachments are stored on secure cloud storage with strict access controls.</li>
+              <li><strong>Password Hashing:</strong> Passwords are cryptographically salted and hashed using PBKDF2 algorithms.</li>
+              <li><strong>Secure Media Storage:</strong> Item photos and blog attachments are stored on secure cloud storage.</li>
             </ul>
           </div>
-
           <hr class="my-4">
-
-          <!-- Third-Party Sharing -->
           <div class="mb-4">
             <h5 class="fw-bold text-dark mb-3"><i class="fas fa-handshake-slash text-primary me-2"></i> 5. Zero Third-Party Advertising</h5>
-            <p>
-              <strong>We never sell, rent, or monetize your personal data.</strong> Your information is never shared with third-party commercial marketing or advertising networks. Transaction details are only visible to the respective student buyer and seller involved in a campus trade.
-            </p>
+            <p><strong>We never sell, rent, or monetize your personal data.</strong> Your information is never shared with third-party commercial marketing or advertising networks.</p>
           </div>
-
           <hr class="my-4">
-
-          <!-- Student Rights -->
           <div class="mb-0">
             <h5 class="fw-bold text-dark mb-3"><i class="fas fa-user-edit text-primary me-2"></i> 6. Your Rights &amp; Account Control</h5>
-            <p>You have full control over your data at all times:</p>
             <ul class="ps-3 mb-0">
-              <li>You can view and edit your profile details at any time in your <a href="{% url 'user_profile' %}" class="text-primary fw-semibold">Student Dashboard</a>.</li>
+              <li>You can view and edit your profile details in your <a href="{% url 'user_profile' %}" class="text-primary fw-semibold">Student Dashboard</a>.</li>
               <li>You can remove your active product listings or delete published blogs whenever you wish.</li>
               <li>To request complete account deletion, contact our student support team.</li>
             </ul>
           </div>
-
         </div>
       </div>
 
-      <!-- Right Sidebar -->
       <div class="col-lg-4">
-        <!-- Security Highlights Box -->
         <div class="card border-0 shadow-sm bg-primary text-white p-4 rounded-4 mb-4">
           <h5 class="fw-bold mb-2"><i class="fas fa-lock me-2"></i> Encrypted &amp; Protected</h5>
-          <p class="small text-white-50 mb-3" style="line-height: 1.6;">
-            Your credentials and transactions are secured with SSL encryption and Google SMTP OTP verification.
-          </p>
-          <a href="{% url 'terms_and_conditions' %}" class="btn btn-light text-primary fw-bold btn-sm w-100 rounded-pill py-2">
-            Read Terms &amp; Conditions <i class="fas fa-arrow-right ms-1"></i>
-          </a>
+          <p class="small text-white-50 mb-3" style="line-height: 1.6;">Your credentials and transactions are secured with SSL encryption and Google SMTP OTP verification.</p>
+          <a href="{% url 'terms_and_conditions' %}" class="btn btn-light text-primary fw-bold btn-sm w-100 rounded-pill py-2">Read Terms &amp; Conditions <i class="fas fa-arrow-right ms-1"></i></a>
         </div>
-
-        <!-- Privacy Contact -->
         <div class="card border-0 shadow-sm bg-white p-4 rounded-4 mb-4">
           <h6 class="fw-bold text-dark mb-3"><i class="fas fa-envelope-open-text text-primary me-2"></i> Privacy Inquiries</h6>
-          <p class="small text-muted mb-3">
-            If you have questions regarding our privacy practices or wish to manage your data, contact us:
-          </p>
           <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
             <li><i class="fas fa-envelope text-primary me-2"></i> <a href="mailto:privacy@islingtonmarket.np" class="text-decoration-none text-dark">privacy@islingtonmarket.np</a></li>
             <li><i class="fas fa-phone text-primary me-2"></i> +977-1-4412345</li>
             <li><i class="fas fa-map-marker-alt text-primary me-2"></i> Kamalpokhari, Kathmandu</li>
           </ul>
         </div>
-
-        <!-- Quick Links -->
         <div class="card border-0 shadow-sm bg-white p-4 rounded-4">
           <h6 class="fw-bold text-dark mb-3"><i class="fas fa-link text-primary me-2"></i> Quick Links</h6>
           <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
@@ -146,9 +100,7 @@
           </ul>
         </div>
       </div>
-
     </div>
-
   </div>
 </section>
 {% endblock %}

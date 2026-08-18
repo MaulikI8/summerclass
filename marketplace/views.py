@@ -126,13 +126,9 @@ def order_success(request, order_id):
     return render(request, 'profile/order_success.html', {'order': get_object_or_404(Order, id=order_id)})
 
 def api_chatbot(request):
-    """
-    Extensible Chatbot API with fast answers for basic campus queries and space for Agentic AI integration.
-    """
     msg = request.POST.get('message', '').strip() if request.method == 'POST' else request.GET.get('message', '').strip()
     if not msg:
         return JsonResponse({'reply': "Please ask a question about textbooks, auctions, campus pickup blocks, or student blogs."})
-
     q = msg.lower()
     if any(w in q for w in ['pickup', 'location', 'block', 'where']):
         reply = "<strong>Campus Pickup Blocks:</strong><br>Meet peer sellers at: Kumari Hall, Alumini Block, Skill Block, Nepal Block, Brit House, or Main/Himal Block."
@@ -145,11 +141,7 @@ def api_chatbot(request):
     elif any(w in q for w in ['blog', 'forum', 'question', 'thread']):
         reply = "<strong>Student Blogs &amp; Community:</strong><br>Visit our Blogs section to ask module questions, share notes, or post study guides with peer comments!"
     else:
-        # [EXTENSIBLE AGENTIC AI SPACE]
-        # Space reserved to call agentic AI API (e.g. Gemini, OpenAI, Claude, Groq):
-        # Example: reply = call_ai_agent(msg, user=request.user)
-        reply = f"I'm here to help with Islington Marketplace! Ask about textbooks, campus pickup blocks, 24h auctions, or blog discussions."
-
+        reply = "I'm here to help with Islington Marketplace! Ask about textbooks, campus pickup blocks, 24h auctions, or blog discussions."
     return JsonResponse({'reply': reply})
 
 def custom_404(request, exception=None): return render(request, '404.html', status=404)

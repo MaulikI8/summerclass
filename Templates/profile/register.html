@@ -10,9 +10,7 @@
       <div class="col-lg-6 col-md-8 col-sm-11">
         <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white">
           <div class="text-center mb-4">
-            <div class="brand-icon-wrap mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.3rem;">
-              <i class="fa fa-user-plus"></i>
-            </div>
+            <div class="brand-icon-wrap mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.3rem;"><i class="fa fa-user-plus"></i></div>
             <h3 class="fw-bold text-dark mb-1">Join Islington Marketplace</h3>
             <p class="text-muted small">Buy and sell textbooks, computing equipment, and dorm gear with peers.</p>
           </div>
@@ -31,16 +29,9 @@
           <form method="POST" action="{% url 'student_register' %}" id="studentRegisterForm">
             {% csrf_token %}
             <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small text-dark">First Name</label>
-                <input type="text" name="first_name" class="form-control rounded-3" placeholder="First name" value="{% if form_data.first_name %}{{ form_data.first_name }}{% endif %}" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small text-dark">Last Name</label>
-                <input type="text" name="last_name" class="form-control rounded-3" placeholder="Last name" value="{% if form_data.last_name %}{{ form_data.last_name }}{% endif %}" required>
-              </div>
+              <div class="col-md-6"><label class="form-label fw-semibold small text-dark">First Name</label><input type="text" name="first_name" class="form-control rounded-3" placeholder="First name" value="{% if form_data.first_name %}{{ form_data.first_name }}{% endif %}" required></div>
+              <div class="col-md-6"><label class="form-label fw-semibold small text-dark">Last Name</label><input type="text" name="last_name" class="form-control rounded-3" placeholder="Last name" value="{% if form_data.last_name %}{{ form_data.last_name }}{% endif %}" required></div>
             </div>
-
             <div class="mb-3">
               <label class="form-label fw-semibold small text-dark">Student Username</label>
               <div class="input-group">
@@ -48,7 +39,6 @@
                 <input type="text" name="username" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="Choose a username" value="{% if form_data.username %}{{ form_data.username }}{% endif %}" required>
               </div>
             </div>
-
             <div class="mb-3">
               <label class="form-label fw-semibold small text-dark">College / Personal Email</label>
               <div class="input-group">
@@ -56,22 +46,13 @@
                 <input type="email" name="email" class="form-control rounded-end-3 border-start-0 ps-0" placeholder="name@islington.edu.np" value="{% if form_data.email %}{{ form_data.email }}{% endif %}" required>
               </div>
             </div>
-
             <div class="row g-3 mb-4">
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small text-dark">Password</label>
-                <input type="password" name="password" class="form-control rounded-3" placeholder="Create password" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small text-dark">Confirm Password</label>
-                <input type="password" name="confirm_password" class="form-control rounded-3" placeholder="Repeat password" required>
-              </div>
+              <div class="col-md-6"><label class="form-label fw-semibold small text-dark">Password</label><input type="password" name="password" class="form-control rounded-3" placeholder="Create password" required></div>
+              <div class="col-md-6"><label class="form-label fw-semibold small text-dark">Confirm Password</label><input type="password" name="confirm_password" class="form-control rounded-3" placeholder="Repeat password" required></div>
             </div>
-
             <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold rounded-pill shadow-sm mb-3">
               <i class="fa fa-check-circle me-1"></i> Register Student Account
             </button>
-
             <div class="text-center">
               <span class="text-muted small">Already have an account?</span>
               <a href="{% url 'student_login' %}" class="fw-bold text-primary small text-decoration-none ms-1">Sign In</a>
@@ -85,7 +66,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    bindAutoDraft('studentRegisterForm', 'islington_register_draft');
+  if (typeof bindAutoDraft === 'function') bindAutoDraft('studentRegisterForm', 'islington_register_draft');
 });
 </script>
 {% endblock %}
