@@ -3,7 +3,6 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'marketplace.settings')
 
-# Automatically apply database migrations on Gunicorn boot
 try:
     import django
     django.setup()
