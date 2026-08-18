@@ -12,13 +12,20 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.8">
   <style>
     .ai-chat-widget{position:fixed;bottom:20px;right:20px;z-index:99999}
-    .ai-chat-toggle-btn{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#7c3aed);color:#fff;border:none;box-shadow:0 6px 20px rgba(37,99,235,.4);display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer}
+    .ai-chat-toggle-btn{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border:none;box-shadow:0 8px 24px rgba(37,99,235,.4);display:flex;align-items:center;justify-content:center;font-size:1.25rem;cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative}
+    .ai-chat-toggle-btn:hover{transform:scale(1.08);box-shadow:0 12px 30px rgba(124,58,237,.5)}
+    .ai-chat-toggle-btn .pulse-dot{position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid #fff}
     .notif-dropdown-panel{display:none;position:absolute;top:calc(100% + 8px);right:-10px;width:320px;max-width:92vw;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 15px 35px rgba(0,0,0,.1);z-index:99999}
     .notif-dropdown-panel.show{display:block}
     #backToTopBtn{position:fixed;bottom:20px;left:20px;width:40px;height:40px;border-radius:50%;background:#fff;color:#1e40af;border:1.5px solid #e2e8f0;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:999;opacity:0;transition:.2s}
     #backToTopBtn.visible{opacity:1}
-    .ai-chat-box{position:absolute;bottom:65px;right:0;width:340px;max-width:calc(100vw - 30px);height:460px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:.25s;box-shadow:0 15px 40px rgba(0,0,0,.15)}
-    .ai-chat-box.active{opacity:1;visibility:visible}
+    .ai-chat-box{position:absolute;bottom:65px;right:0;width:360px;max-width:calc(100vw - 30px);height:500px;background:#fff;border:1px solid #e2e8f0;border-radius:20px;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:all .25s cubic-bezier(.16,1,.3,1);transform:translateY(12px) scale(.96);box-shadow:0 20px 50px rgba(15,23,42,.2);overflow:hidden}
+    .ai-chat-box.active{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+    .ai-msg-product-card{border:1px solid #e2e8f0;border-radius:12px;background:#fff;padding:8px;display:flex;gap:10px;align-items:center;transition:box-shadow .2s;margin-top:6px}
+    .ai-msg-product-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+    .ai-msg-product-card img{width:46px;height:46px;object-fit:contain;border-radius:8px;background:#f8fafc}
+    .ai-chip-btn{font-size:0.75rem;padding:4px 10px;border-radius:99px;background:rgba(37,99,235,0.08);color:#2563eb;border:1px solid rgba(37,99,235,0.2);cursor:pointer;transition:all .15s;white-space:nowrap}
+    .ai-chip-btn:hover{background:#2563eb;color:#fff}
   </style>
 </head>
 <body class="site-body">
@@ -161,21 +168,39 @@
   </footer>
 
   <div id="aiChatWidget" class="ai-chat-widget">
-    <button type="button" id="aiChatToggleBtn" class="ai-chat-toggle-btn" onclick="toggleAi()"><i class="fas fa-comments"></i></button>
+    <button type="button" id="aiChatToggleBtn" class="ai-chat-toggle-btn" onclick="toggleAi()" title="Islington AI Shopping Assistant">
+      <i class="fas fa-sparkles"></i>
+      <span class="pulse-dot"></span>
+    </button>
     <div id="aiChatBox" class="ai-chat-box">
-      <div class="p-3 bg-primary text-white d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-2"><i class="fas fa-robot"></i><span class="fw-bold small">Islington AI Assistant</span></div>
-        <div>
-          <button class="btn btn-sm text-white p-0 me-2" onclick="document.getElementById('aiChatMessages').innerHTML='<div class=\'p-2 bg-light rounded small\'>Chat reset. Ask anything!</div>'"><i class="fas fa-rotate-right"></i></button>
+      <div class="p-3 text-white d-flex justify-content-between align-items-center" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center" style="width:32px;height:32px;"><i class="fas fa-bolt small"></i></div>
+          <div>
+            <div class="fw-bold small lh-1">Islington AI Assistant</div>
+            <small class="text-white-50" style="font-size:0.7rem;">Autonomous Commerce Agent</small>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm text-white p-0" title="Reset chat" onclick="resetAiChat()"><i class="fas fa-rotate-right small"></i></button>
           <button class="btn btn-sm text-white p-0" onclick="toggleAi()"><i class="fas fa-times"></i></button>
         </div>
       </div>
-      <div id="aiChatMessages" class="p-3 flex-grow-1 overflow-auto bg-light small">
-        <div class="p-2 bg-white rounded shadow-xs mb-2">Hello! Ask about campus pickup blocks, listings, auctions, or student blogs.</div>
+
+      <div id="aiChatMessages" class="p-3 flex-grow-1 overflow-auto bg-light small d-flex flex-column gap-2" style="font-size:0.85rem;">
+        <div class="p-2 bg-white rounded-3 shadow-xs border">
+          👋 Hi! I am your <strong>Agentic Shopping Assistant</strong>. Ask me to find gear, filter by budget, add items to cart, or check out!
+        </div>
+        <div class="d-flex flex-wrap gap-1 mt-1" id="aiDefaultChips">
+          <button type="button" class="ai-chip-btn" onclick="sendAiPrompt('Find tech gear under Rs. 1500')">Tech under Rs. 1500</button>
+          <button type="button" class="ai-chip-btn" onclick="sendAiPrompt('Show computing textbooks')">Textbooks</button>
+          <button type="button" class="ai-chip-btn" onclick="sendAiPrompt('Show my cart summary')">My Cart</button>
+        </div>
       </div>
+
       <form class="p-2 bg-white border-top d-flex gap-1" onsubmit="handleAiChat(event)">
-        <input type="text" id="aiChatInput" class="form-control form-control-sm rounded-pill" placeholder="Ask AI..."/>
-        <button type="submit" class="btn btn-primary btn-sm rounded-circle px-2"><i class="fas fa-paper-plane"></i></button>
+        <input type="text" id="aiChatInput" class="form-control form-control-sm rounded-pill px-3" placeholder="e.g. Add Arduino to cart or find tech..."/>
+        <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:34px;height:34px;"><i class="fas fa-paper-plane" style="font-size:0.75rem;"></i></button>
       </form>
     </div>
   </div>
@@ -187,8 +212,13 @@
     const csrf=()=>document.cookie.match(/csrftoken=([^;]+)/)?.[1]||'';
     const addToCart=(id,name,price)=>{
       fetch(`/cart/add/${id}/`,{headers:{'X-Requested-With':'XMLHttpRequest'}}).then(r=>r.json()).then(d=>{
-        if(d.status==='success'){document.getElementById('cartCountBadge').textContent=d.cart_count;alert(`${name} added to bag!`);}
-        else alert(d.message||'Cannot add item');
+        if(d.status==='success'){
+          const b=document.getElementById('cartCountBadge');if(b)b.textContent=d.cart_count;
+          const toast=document.createElement('div');
+          toast.className='position-fixed bottom-0 start-50 translate-middle-x mb-4 p-3 bg-dark text-white rounded-pill shadow-lg small fw-bold';
+          toast.style.zIndex='999999';toast.innerHTML=`<i class="fas fa-check-circle text-success me-1"></i> Added <strong>${name}</strong> to bag!`;
+          document.body.appendChild(toast);setTimeout(()=>toast.remove(),2400);
+        } else alert(d.message||'Cannot add item');
       }).catch(()=>location.href=`/cart/add/${id}/`);
     };
     const toggleWishlist=(id,btn)=>{
@@ -200,15 +230,76 @@
     const toggleNotif=(e)=>{e?.stopPropagation();document.getElementById('notifDropdownPanel')?.classList.toggle('show');};
     const markAllNotifRead=()=>{fetch('/api/notifications/read-all/',{method:'POST',headers:{'X-CSRFToken':csrf()}}).then(()=>document.getElementById('notifCountBadge').style.display='none');};
     const toggleAi=()=>document.getElementById('aiChatBox')?.classList.toggle('active');
+    const resetAiChat=()=>{
+      document.getElementById('aiChatMessages').innerHTML=`<div class="p-2 bg-white rounded-3 shadow-xs border">Chat reset. Ask me to find products or manage your cart!</div><div class="d-flex flex-wrap gap-1 mt-1"><button type="button" class="ai-chip-btn" onclick="sendAiPrompt('Find tech gear under Rs. 1500')">Tech under Rs. 1500</button><button type="button" class="ai-chip-btn" onclick="sendAiPrompt('Show computing textbooks')">Textbooks</button><button type="button" class="ai-chip-btn" onclick="sendAiPrompt('Show my cart summary')">My Cart</button></div>`;
+    };
+    const sendAiPrompt=(p)=>{document.getElementById('aiChatInput').value=p;handleAiChat(new Event('submit'));};
+    
     const handleAiChat=async(e)=>{
-      e.preventDefault();const inp=document.getElementById('aiChatInput'),q=inp.value.trim(),box=document.getElementById('aiChatMessages');
-      if(!q)return;box.innerHTML+=`<div class="p-2 bg-primary text-white rounded mb-2 text-end">${q}</div>`;inp.value='';
+      e?.preventDefault();
+      const inp=document.getElementById('aiChatInput'),q=inp.value.trim(),box=document.getElementById('aiChatMessages');
+      if(!q)return;
+      box.innerHTML+=`<div class="p-2 bg-primary text-white rounded-3 mb-1 text-end align-self-end" style="max-width:85%;">${q}</div>`;
+      inp.value='';
+      const typingEl=document.createElement('div');
+      typingEl.className='p-2 bg-white rounded-3 shadow-xs border text-muted align-self-start';
+      typingEl.innerHTML='<i class="fas fa-spinner fa-spin me-1"></i> Searching store & executing actions...';
+      box.appendChild(typingEl);box.scrollTop=box.scrollHeight;
+
       try{
-        const r=await fetch(`/api/chatbot/?message=${encodeURIComponent(q)}`),d=await r.json();
-        box.innerHTML+=`<div class="p-2 bg-white rounded shadow-xs mb-2">${d.reply}</div>`;
-      }catch(_){box.innerHTML+=`<div class="p-2 bg-white rounded shadow-xs mb-2">I can help with campus pickup blocks, listings, and auctions!</div>`;}
+        const r=await fetch('/api/chatbot/',{method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/json'},body:JSON.stringify({message:q})});
+        const d=await r.json();
+        typingEl.remove();
+
+        let formattedReply=d.reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br/>');
+        let cardHtml=`<div class="p-2 bg-white rounded-3 shadow-xs border align-self-start" style="max-width:92%;"><div>${formattedReply}</div>`;
+
+        if(d.products && d.products.length>0){
+          cardHtml+=`<div class="mt-2 d-flex flex-column gap-1">`;
+          d.products.forEach(p=>{
+            cardHtml+=`
+              <div class="ai-msg-product-card">
+                <img src="${p.image_url}" alt="${p.name}"/>
+                <div class="flex-grow-1 min-w-0">
+                  <div class="fw-bold text-truncate" style="font-size:0.82rem;">${p.name}</div>
+                  <div class="d-flex justify-content-between align-items-center mt-1">
+                    <span class="text-primary fw-bold" style="font-size:0.8rem;">${p.formatted_price}</span>
+                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-2 py-0" style="font-size:0.7rem;" onclick="addToCart(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.price})">
+                      <i class="fas fa-cart-plus me-1"></i> Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+          cardHtml+=`</div>`;
+        }
+
+        if(d.quick_replies && d.quick_replies.length>0){
+          cardHtml+=`<div class="d-flex flex-wrap gap-1 mt-2">`;
+          d.quick_replies.forEach(qr=>{
+            cardHtml+=`<button type="button" class="ai-chip-btn" onclick="sendAiPrompt('${qr.replace(/'/g, "\\'")}')">${qr}</button>`;
+          });
+          cardHtml+=`</div>`;
+        }
+
+        cardHtml+=`</div>`;
+        box.innerHTML+=cardHtml;
+
+        if(d.cart_data && d.cart_data.count !== undefined){
+          const b=document.getElementById('cartCountBadge');if(b)b.textContent=d.cart_data.count;
+        }
+
+        if(d.action_type === 'checkout_redirect' && d.redirect_url){
+          setTimeout(()=>{ location.href=d.redirect_url; }, 1500);
+        }
+      }catch(_){
+        typingEl.remove();
+        box.innerHTML+=`<div class="p-2 bg-white rounded-3 shadow-xs border text-danger align-self-start">Could not complete request. Try asking about electronics or textbooks!</div>`;
+      }
       box.scrollTop=box.scrollHeight;
     };
+
     window.addEventListener('scroll',()=>document.getElementById('backToTopBtn')?.classList.toggle('visible',window.scrollY>250));
     document.getElementById('globalSearchInput')?.addEventListener('input',e=>{
       const q=e.target.value.trim(),sBox=document.getElementById('searchSuggestBox');

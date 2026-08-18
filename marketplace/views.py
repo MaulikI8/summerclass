@@ -127,22 +127,24 @@ def order_success(request, order_id):
     return render(request, 'profile/order_success.html', {'order': get_object_or_404(Order, id=order_id)})
 
 def api_chatbot(request):
-    msg = request.POST.get('message', '').strip() if request.method == 'POST' else request.GET.get('message', '').strip()
-    if not msg:
-        return JsonResponse({'reply': "Please ask a question about textbooks, auctions, campus pickup blocks, or student blogs."})
-    q = msg.lower()
-    if any(w in q for w in ['pickup', 'location', 'block', 'where']):
-        reply = "<strong>Campus Pickup Blocks:</strong><br>Meet peer sellers at: Kumari Hall, Alumini Block, Skill Block, Nepal Block, Brit House, or Main/Himal Block."
-    elif any(w in q for w in ['sell', 'list', 'post', 'upload']):
-        reply = "<strong>How to Sell:</strong><br>1. Log in to your student account<br>2. Go to Profile &rarr; Post New Listing<br>3. Upload title, price, category & photo. Admin moderates and publishes it live!"
-    elif any(w in q for w in ['auction', 'bid', '24h']):
-        reply = "<strong>24-Hour Live Auctions:</strong><br>Student sellers can start 24h auctions on items. Bids are live in real-time, and the highest bidder wins when the timer expires!"
-    elif any(w in q for w in ['pay', 'esewa', 'khalti', 'cod', 'cash']):
-        reply = "<strong>Payment Options:</strong><br>• Cash on Campus Pickup (COD)<br>• eSewa &amp; Khalti Sandbox for direct home deliveries."
-    elif any(w in q for w in ['blog', 'forum', 'question', 'thread']):
-        reply = "<strong>Student Blogs &amp; Community:</strong><br>Visit our Blogs section to ask module questions, share notes, or post study guides with peer comments!"
+    from utils.agentic_bot import AgenticCommerceBot
+    import json
+    if request.method == 'POST':
+        if request.content_type == 'application/json':
+            try:
+                body = json.loads(request.body.decode('utf-8'))
+                msg = body.get('message', '').strip()
+            except Exception:
+                msg = ''
+        else:
+            msg = request.POST.get('message', '').strip()
     else:
-        reply = "I'm here to help with Islington Marketplace! Ask about textbooks, campus pickup blocks, 24h auctions, or blog discussions."
-    return JsonResponse({'reply': reply})
+        msg = request.GET.get('message', '').strip()
+
+    if not msg:
+        return JsonResponse({'reply': "Hi! I am your AI Shopping Assistant. Ask me to find products (e.g., 'Find tech under Rs. 1500'), manage your cart, or check you out!", 'products': [], 'action_type': 'general', 'cart_data': {}})
+
+    result = AgenticCommerceBot.process_query(msg, request)
+    return JsonResponse(result)
 
 def custom_404(request, exception=None): return render(request, '404.html', status=404)
