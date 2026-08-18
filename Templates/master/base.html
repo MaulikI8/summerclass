@@ -251,7 +251,11 @@
         const d=await r.json();
         typingEl.remove();
 
-        let formattedReply=d.reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br/>');
+        let formattedReply=d.reply
+          .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g,'<em>$1</em>')
+          .replace(/\[(.*?)\]\((.*?)\)/g,'<a href="$2" class="text-primary text-decoration-underline fw-semibold">$1</a>')
+          .replace(/\n/g,'<br/>');
         let cardHtml=`<div class="p-2 bg-white rounded-3 shadow-xs border align-self-start" style="max-width:92%;"><div>${formattedReply}</div>`;
 
         if(d.products && d.products.length>0){
