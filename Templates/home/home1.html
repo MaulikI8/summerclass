@@ -5,104 +5,88 @@
 
 {% block content %}
 <style>
-.hero-new{position:relative;overflow:hidden;border-radius:20px;min-height:420px;background:#080c14;}
-.hero-new .hero-bg{position:absolute;inset:0;z-index:0;}
-.hero-new .hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,#080c14 38%,transparent 75%);z-index:1;}
-.hero-new .hero-bg img{width:100%;height:100%;object-fit:cover;object-position:center;opacity:0.55;}
-.hero-new .hero-inner{position:relative;z-index:2;display:flex;align-items:center;min-height:420px;padding:3rem;}
-.hero-new .hero-text{max-width:520px;}
-.hero-new .hero-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);margin-bottom:16px;}
-.hero-new .hero-tag i{font-size:0.68rem;opacity:0.7;}
-.hero-new h1{font-family:'Outfit',sans-serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800;color:#fff;line-height:1.12;letter-spacing:-0.03em;margin:0 0 14px;}
-.hero-new .hero-desc{font-size:0.95rem;line-height:1.7;color:rgba(255,255,255,0.45);margin-bottom:28px;max-width:440px;}
-.hero-new .hero-cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
-.hero-new .btn-hero{padding:12px 28px;border-radius:99px;font-weight:700;font-size:0.9rem;border:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s ease;}
-.hero-new .btn-hero-fill{background:#fff;color:#0f172a;}
-.hero-new .btn-hero-fill:hover{background:#e2e8f0;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.2);}
-.hero-new .btn-hero-ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.18);}
-.hero-new .btn-hero-ghost:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.35);transform:translateY(-2px);}
-.hero-new .hero-price{display:inline-flex;align-items:center;gap:6px;margin-top:20px;padding:6px 16px;border-radius:99px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.65);font-size:0.8rem;font-weight:600;}
-.hero-new .hero-price .amt{color:#fff;font-weight:800;font-size:0.95rem;}
-.hero-new .hero-nav{position:absolute;bottom:20px;right:24px;z-index:10;display:flex;gap:8px;}
-.hero-new .hero-nav button{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center;font-size:0.8rem;cursor:pointer;transition:all .2s ease;backdrop-filter:blur(8px);}
-.hero-new .hero-nav button:hover{background:rgba(255,255,255,0.2);color:#fff;}
-.hero-new .hero-dots{position:absolute;bottom:24px;left:3rem;z-index:10;display:flex;gap:6px;}
-.hero-new .hero-dots span{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all .3s;}
-.hero-new .hero-dots span.active{width:24px;border-radius:99px;background:#fff;}
-@media(max-width:767px){
-  .hero-new{min-height:340px;border-radius:14px;}
-  .hero-new .hero-inner{min-height:340px;padding:2rem 1.5rem;}
-  .hero-new .hero-bg::after{background:linear-gradient(180deg,rgba(8,12,20,0.85) 40%,rgba(8,12,20,0.6) 100%);}
-  .hero-new h1{font-size:1.6rem;}
-  .hero-new .hero-desc{font-size:0.85rem;}
-}
+.hero-wrap{border-radius:20px;overflow:hidden;position:relative;background:#080c14;min-height:400px;}
+.hero-slide{display:none;position:relative;min-height:400px;}
+.hero-slide.active{display:flex;align-items:center;}
+.hero-slide .slide-bg{position:absolute;inset:0;z-index:0;overflow:hidden;}
+.hero-slide .slide-bg::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.04) 1px,transparent 1px);background-size:24px 24px;z-index:1;}
+.hero-slide[data-theme="blue"] .slide-bg{background:radial-gradient(ellipse 80% 70% at 90% 15%,rgba(37,99,235,0.3) 0%,transparent 60%),linear-gradient(160deg,#020617 0%,#0f172a 40%,#111827 100%);}
+.hero-slide[data-theme="green"] .slide-bg{background:radial-gradient(ellipse 80% 70% at 90% 15%,rgba(16,185,129,0.25) 0%,transparent 60%),linear-gradient(160deg,#020617 0%,#0f172a 40%,#111827 100%);}
+.hero-slide[data-theme="purple"] .slide-bg{background:radial-gradient(ellipse 80% 70% at 90% 15%,rgba(124,58,237,0.3) 0%,transparent 60%),linear-gradient(160deg,#020617 0%,#0f172a 40%,#111827 100%);}
+.hero-slide .slide-inner{position:relative;z-index:2;display:flex;align-items:center;width:100%;padding:3rem;gap:2rem;}
+.hero-slide .slide-text{flex:1;min-width:0;}
+.hero-slide .slide-visual{flex:0 0 340px;display:flex;justify-content:center;align-items:center;}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);margin-bottom:18px;}
+.hero-tag i{font-size:0.65rem;opacity:0.6;}
+.hero-wrap h1{font-family:'Outfit',sans-serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;color:#fff;line-height:1.12;letter-spacing:-0.03em;margin:0 0 14px;}
+.hero-wrap .hero-sub{font-size:0.92rem;line-height:1.7;color:rgba(255,255,255,0.4);margin-bottom:24px;max-width:460px;}
+.hero-cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.hero-cta .btn-fill{padding:11px 26px;border-radius:99px;font-weight:700;font-size:0.88rem;border:none;background:#fff;color:#0f172a;display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+.hero-cta .btn-fill:hover{background:#e2e8f0;transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.2);}
+.hero-cta .btn-ghost{padding:11px 26px;border-radius:99px;font-weight:600;font-size:0.88rem;background:rgba(255,255,255,0.07);color:#fff;border:1px solid rgba(255,255,255,0.15);display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+.hero-cta .btn-ghost:hover{background:rgba(255,255,255,0.13);border-color:rgba(255,255,255,0.3);transform:translateY(-2px);}
+.hero-slide .slide-visual img{max-height:280px;max-width:100%;object-fit:contain;filter:drop-shadow(0 20px 50px rgba(0,0,0,0.5));animation:heroFloat 4s ease-in-out infinite;}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.hero-nav{position:absolute;bottom:20px;right:24px;z-index:10;display:flex;gap:8px;}
+.hero-nav button{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.65);display:flex;align-items:center;justify-content:center;font-size:0.8rem;cursor:pointer;transition:all .2s;backdrop-filter:blur(8px);}
+.hero-nav button:hover{background:rgba(255,255,255,0.18);color:#fff;}
+.hero-dots{position:absolute;bottom:26px;left:3rem;z-index:10;display:flex;gap:6px;}
+.hero-dots span{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.18);transition:all .3s;}
+.hero-dots span.active{width:24px;border-radius:99px;background:rgba(255,255,255,0.85);}
+@media(max-width:991px){.hero-slide .slide-visual{display:none;}.hero-slide .slide-inner{padding:2.5rem;}}
+@media(max-width:767px){.hero-wrap{min-height:320px;border-radius:14px;}.hero-slide{min-height:320px;}.hero-slide .slide-inner{padding:2rem 1.5rem;}.hero-wrap h1{font-size:1.5rem;}.hero-wrap .hero-sub{font-size:0.82rem;}}
 </style>
 
 <section class="padding-y-sm">
   <div class="container">
-    <div id="heroCarousel" class="hero-new">
+    <div class="hero-wrap" id="heroCarousel">
       {% for banner in banners %}
-      <div class="hero-slide{% if forloop.first %} active{% endif %}" {% if not forloop.first %}style="display:none;"{% endif %}>
-        <div class="hero-bg">
-          {% if banner.banner_image or banner.featured_product.product_image %}
-          <img src="{% if banner.banner_image %}{{ banner.banner_image.url }}{% else %}{{ banner.featured_product.product_image.url }}{% endif %}" alt="{{ banner.title }}"/>
-          {% endif %}
-        </div>
-        <div class="hero-inner">
-          <div class="hero-text">
-            {% if banner.badge_text %}
-            <div class="hero-tag"><i class="fa {{ banner.badge_icon|default:'fa-star' }}"></i> {{ banner.badge_text }}</div>
-            {% endif %}
+      <div class="hero-slide{% if forloop.first %} active{% endif %}" data-theme="{{ banner.theme_color|default:'slide-blue'|cut:'slide-' }}">
+        <div class="slide-bg"></div>
+        <div class="slide-inner">
+          <div class="slide-text">
+            {% if banner.badge_text %}<div class="hero-tag"><i class="fa {{ banner.badge_icon|default:'fa-star' }}"></i> {{ banner.badge_text }}</div>{% endif %}
             <h1>{{ banner.title }}</h1>
-            <p class="hero-desc">{{ banner.subtitle }}</p>
+            <p class="hero-sub">{{ banner.subtitle }}</p>
             <div class="hero-cta">
-              {% if banner.primary_btn_text %}
-              <a href="{{ banner.primary_btn_url|default:'/products/' }}" class="btn-hero btn-hero-fill">{{ banner.primary_btn_text }} <i class="fa fa-arrow-right" style="font-size:0.75rem;"></i></a>
-              {% endif %}
-              {% if banner.secondary_btn_text %}
-              <a href="{{ banner.secondary_btn_url|default:'/products/' }}" class="btn-hero btn-hero-ghost">{{ banner.secondary_btn_text }}</a>
-              {% endif %}
+              {% if banner.primary_btn_text %}<a href="{{ banner.primary_btn_url|default:'/products/' }}" class="btn-fill">{{ banner.primary_btn_text }} <i class="fa fa-arrow-right" style="font-size:0.7rem;"></i></a>{% endif %}
+              {% if banner.secondary_btn_text %}<a href="{{ banner.secondary_btn_url|default:'/products/' }}" class="btn-ghost">{{ banner.secondary_btn_text }}</a>{% endif %}
             </div>
-            {% if banner.featured_product %}
-            <div class="hero-price"><i class="fa fa-tag" style="font-size:0.7rem;"></i> <span class="amt">Rs. {{ banner.featured_product.price|floatformat:0 }}</span> &middot; {{ banner.featured_product.user.username }}</div>
-            {% endif %}
           </div>
+          {% if banner.banner_image or banner.featured_product.product_image %}
+          <div class="slide-visual">
+            <img src="{% if banner.banner_image %}{{ banner.banner_image.url }}{% else %}{{ banner.featured_product.product_image.url }}{% endif %}" alt="{{ banner.title }}"/>
+          </div>
+          {% endif %}
         </div>
       </div>
       {% empty %}
-      <div class="hero-slide active">
-        <div class="hero-bg"></div>
-        <div class="hero-inner">
-          <div class="hero-text">
+      <div class="hero-slide active" data-theme="blue">
+        <div class="slide-bg"></div>
+        <div class="slide-inner">
+          <div class="slide-text">
             <div class="hero-tag"><i class="fa fa-graduation-cap"></i> ISLINGTON COLLEGE</div>
             <h1>Buy & Sell on Campus</h1>
-            <p class="hero-desc">Verified textbooks, computing gear, electronics, and study essentials — all from fellow students.</p>
-            <div class="hero-cta">
-              <a href="{% url 'products' %}" class="btn-hero btn-hero-fill">Browse Listings <i class="fa fa-arrow-right" style="font-size:0.75rem;"></i></a>
-            </div>
+            <p class="hero-sub">Verified textbooks, computing gear, electronics, and study essentials — all from fellow students.</p>
+            <div class="hero-cta"><a href="{% url 'products' %}" class="btn-fill">Browse Listings <i class="fa fa-arrow-right" style="font-size:0.7rem;"></i></a></div>
           </div>
         </div>
       </div>
       {% endfor %}
-
-      <div class="hero-dots" id="heroDots">
-        {% for banner in banners %}<span class="{% if forloop.first %}active{% endif %}"></span>{% endfor %}
-      </div>
+      <div class="hero-dots" id="heroDots">{% for banner in banners %}<span class="{% if forloop.first %}active{% endif %}"></span>{% endfor %}</div>
       <div class="hero-nav">
-        <button onclick="heroSlide(-1)" aria-label="Previous"><i class="fa fa-chevron-left"></i></button>
-        <button onclick="heroSlide(1)" aria-label="Next"><i class="fa fa-chevron-right"></i></button>
+        <button onclick="heroNav(-1)" aria-label="Previous"><i class="fa fa-chevron-left"></i></button>
+        <button onclick="heroNav(1)" aria-label="Next"><i class="fa fa-chevron-right"></i></button>
       </div>
     </div>
   </div>
 </section>
 <script>
-(function(){
-  const slides=document.querySelectorAll('.hero-slide'),dots=document.querySelectorAll('#heroDots span');
-  let cur=0,timer;
-  function go(i){slides[cur].style.display='none';slides[cur].classList.remove('active');dots[cur]&&dots[cur].classList.remove('active');cur=(i+slides.length)%slides.length;slides[cur].style.display='';slides[cur].classList.add('active');dots[cur]&&dots[cur].classList.add('active');}
-  window.heroSlide=function(d){go(cur+d);clearInterval(timer);timer=setInterval(()=>go(cur+1),6000);};
-  if(slides.length>1)timer=setInterval(()=>go(cur+1),6000);
-})();
+!function(){var s=document.querySelectorAll('.hero-slide'),d=document.querySelectorAll('#heroDots span'),c=0,t;
+function g(i){s[c].classList.remove('active');s[c].style.display='none';d[c]&&d[c].classList.remove('active');c=(i+s.length)%s.length;s[c].style.display='';s[c].classList.add('active');d[c]&&d[c].classList.add('active');}
+window.heroNav=function(n){g(c+n);clearInterval(t);t=setInterval(function(){g(c+1)},6000);};
+if(s.length>1)t=setInterval(function(){g(c+1)},6000);
+}();
 </script>
 
 <section class="section-name py-4" id="popularProductsSection">
