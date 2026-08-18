@@ -2,7 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-from .models import Category, Product, TradeOffer
+from django.http import JsonResponse
+from .models import Category, Product, TradeOffer, Wishlist
 from sitesetting.models import Notification
 
 def products(request):
@@ -10,15 +11,50 @@ def products(request):
     qs = Product.objects.select_related('category', 'user').filter(status=True, is_approved=True).order_by('-created_at')
     if q: qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(category__name__icontains=q) | Q(user__username__icontains=q))
     if cat and cat != 'All Categories': qs = qs.filter(category__name__icontains=cat)
-    return render(request, 'products/products.html', {'products': qs, 'categories': Category.objects.all(), 'query': q, 'selected_category': cat, 'total_count': qs.count()})
+    wish_ids = set(Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)) if request.user.is_authenticated else set()
+    return render(request, 'products/products.html', {
+        'products': qs, 'categories': Category.objects.all(), 'query': q, 'selected_category': cat, 'total_count': qs.count(), 'wishlist_ids': wish_ids
+    })
 
 def product_detail(request, id):
     p = get_object_or_404(Product.objects.select_related('category', 'user'), pk=id)
     if not p.is_approved and not (request.user.is_authenticated and (request.user == p.user or request.user.is_staff or request.user.is_superuser)):
         p = get_object_or_404(Product, pk=id, is_approved=True, status=True)
+    is_wishlisted = Wishlist.objects.filter(user=request.user, product=p).exists() if request.user.is_authenticated else False
     return render(request, 'products/product_detail.html', {
-        'product': p, 'related_products': Product.objects.select_related('user').filter(category=p.category, is_approved=True, status=True).exclude(pk=id)[:4]
+        'product': p,
+        'related_products': Product.objects.select_related('user').filter(category=p.category, is_approved=True, status=True).exclude(pk=id)[:4],
+        'is_wishlisted': is_wishlisted
     })
+
+def search_suggest(request):
+    q = request.GET.get('q', '').strip()
+    if len(q) < 2: return JsonResponse({'results': []})
+    qs = Product.objects.select_related('category').filter(
+        Q(name__icontains=q) | Q(category__name__icontains=q) | Q(description__icontains=q),
+        status=True, is_approved=True
+    )[:6]
+    results = [{
+        'id': p.id,
+        'name': p.name,
+        'price': f"{p.price:.2f}",
+        'category': p.category.name,
+        'image': p.product_image.url if p.product_image else '/static/images/default.jpg',
+        'url': f"/products/{p.id}/"
+    } for p in qs]
+    return JsonResponse({'results': results})
+
+@login_required
+def toggle_wishlist(request, id):
+    p = get_object_or_404(Product, pk=id, status=True, is_approved=True)
+    item, created = Wishlist.objects.get_or_create(user=request.user, product=p)
+    if not created:
+        item.delete()
+        action = 'removed'
+    else:
+        action = 'added'
+    count = Wishlist.objects.filter(user=request.user).count()
+    return JsonResponse({'status': 'ok', 'action': action, 'count': count, 'product_id': p.id})
 
 @login_required
 def send_offer(request, id):

@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from products.models import Product, Category, Order, OrderItem, TradeOffer
+from products.models import Product, Category, Order, OrderItem, TradeOffer, Wishlist
 from blog.models import Post as BlogPost
 from sitesetting.models import Notification, EmailOTP
 from utils.email_microservice import EmailMicroservice
@@ -126,5 +126,6 @@ def user_profile(request):
         'user_blogs': BlogPost.objects.filter(author=u).select_related('category').order_by('-created_at') if u.is_authenticated else [],
         'user_recv_offers': TradeOffer.objects.filter(receiver=u).select_related('product', 'sender').order_by('-created_at') if u.is_authenticated else [],
         'user_sent_offers': TradeOffer.objects.filter(sender=u).select_related('product', 'receiver').order_by('-created_at') if u.is_authenticated else [],
+        'user_wishlist': Wishlist.objects.filter(user=u).select_related('product', 'product__category').order_by('-created_at') if u.is_authenticated else [],
         'categories': Category.objects.all()
     })

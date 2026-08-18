@@ -171,29 +171,36 @@
            data-instock="{% if product.stock > 0 %}true{% else %}false{% endif %}">
         <div class="card card-product-grid shadow-sm">
           <!-- Image Wrap -->
-          <a href="{% url 'product_detail' product.id %}" class="img-wrap">
-            {% if product.product_image %}
-              <img src="{{ product.product_image.url }}" alt="{{ product.name }}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';" />
-            {% else %}
-              <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" loading="lazy" />
-            {% endif %}
+          <div class="position-relative">
+            <a href="{% url 'product_detail' product.id %}" class="img-wrap">
+              {% if product.product_image %}
+                <img src="{{ product.product_image.url }}" alt="{{ product.name }}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';" />
+              {% else %}
+                <img src="{% static 'images/default.jpg' %}" alt="{{ product.name }}" loading="lazy" />
+              {% endif %}
 
-            <!-- Category Overlay Badge -->
-            <span class="card-category-badge">
-              {{ product.category.name }}
-            </span>
+              <!-- Category Overlay Badge -->
+              <span class="card-category-badge">
+                {{ product.category.name }}
+              </span>
 
-            <!-- Stock Status Badge -->
-            {% if product.stock > 0 %}
-            <span class="card-stock-badge in-stock">
-              <i class="fa fa-check-circle"></i> In Stock ({{ product.stock }})
-            </span>
-            {% else %}
-            <span class="card-stock-badge out-of-stock">
-              <i class="fa fa-times-circle"></i> Sold Out
-            </span>
-            {% endif %}
-          </a>
+              <!-- Stock Status Badge -->
+              {% if product.stock > 0 %}
+              <span class="card-stock-badge in-stock">
+                <i class="fa fa-check-circle"></i> In Stock ({{ product.stock }})
+              </span>
+              {% else %}
+              <span class="card-stock-badge out-of-stock">
+                <i class="fa fa-times-circle"></i> Sold Out
+              </span>
+              {% endif %}
+            </a>
+
+            <!-- Wishlist Heart Button -->
+            <button type="button" class="btn-wishlist-toggle" onclick="toggleWishlist('{{ product.id }}', this)" title="Save to Wishlist">
+              <i class="far fa-heart text-muted"></i>
+            </button>
+          </div>
 
           <!-- Info Body -->
           <figcaption class="info-wrap">

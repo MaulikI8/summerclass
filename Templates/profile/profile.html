@@ -201,6 +201,9 @@
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarRecvReq" onclick="switchDashboardTab('recvreq', this)">
             <i class="fas fa-inbox"></i> My Received Requests
           </a>
+          <a href="javascript:void(0)" class="sidebar-item" id="sidebarWishlist" onclick="switchDashboardTab('wishlist', this)">
+            <i class="fas fa-heart text-danger"></i> Saved Wishlist ({{ user_wishlist|length }})
+          </a>
           <div class="sidebar-divider"></div>
           <a href="javascript:void(0)" class="sidebar-item" id="sidebarMessages" onclick="switchDashboardTab('messages', this)">
             <i class="fas fa-envelope"></i> Messages
@@ -737,6 +740,72 @@
           </div>
         </div>
 
+        <!-- TAB: Wishlist / Saved Items -->
+        <div class="dashboard-tab-pane" id="tabWishlist">
+          <div class="dashboard-panel">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+              <div>
+                <h5>My Saved Wishlist</h5>
+                <p class="text-muted small mb-0">Items you've bookmarked to buy or trade later.</p>
+              </div>
+              <span class="badge bg-danger rounded-pill px-3 py-2">
+                <i class="fas fa-heart me-1"></i> {{ user_wishlist|length }} Item{{ user_wishlist|length|pluralize }}
+              </span>
+            </div>
+            <div class="panel-body">
+              {% if user_wishlist %}
+              <div class="row g-3">
+                {% for w in user_wishlist %}
+                <div class="col-md-6 col-lg-4" id="wishlistRow{{ w.product.id }}">
+                  <div class="card card-product-grid shadow-sm h-100 position-relative">
+                    <a href="{% url 'product_detail' w.product.id %}" class="img-wrap">
+                      {% if w.product.product_image %}
+                      <img src="{{ w.product.product_image.url }}" alt="{{ w.product.name }}" loading="lazy" onerror="this.src='/static/images/default.jpg';" />
+                      {% else %}
+                      <img src="{% static 'images/default.jpg' %}" alt="{{ w.product.name }}" loading="lazy" />
+                      {% endif %}
+                      <span class="card-category-badge">{{ w.product.category.name }}</span>
+                    </a>
+                    <figcaption class="info-wrap">
+                      <a href="{% url 'product_detail' w.product.id %}" class="title" title="{{ w.product.name }}">
+                        {{ w.product.name }}
+                      </a>
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="price">Rs. {{ w.product.price|floatformat:2 }}</span>
+                        <small class="text-muted"><i class="fas fa-user-circle text-primary me-1"></i> {{ w.product.user.first_name|default:w.product.user.username }}</small>
+                      </div>
+                      <div class="card-action-bar">
+                        <a href="{% url 'product_detail' w.product.id %}" class="btn-card-primary text-decoration-none">
+                          View
+                        </a>
+                        {% if w.product.stock > 0 and w.product.user != user %}
+                        <button type="button" class="btn-card-icon" onclick="addToCart('{{ w.product.id }}', '{{ w.product.name|escapejs }}', '{{ w.product.price }}', '{% if w.product.product_image %}{{ w.product.product_image.url }}{% endif %}')" title="Add to Bag">
+                          <i class="fas fa-shopping-cart text-primary"></i>
+                        </button>
+                        {% endif %}
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;" onclick="toggleWishlist('{{ w.product.id }}'); document.getElementById('wishlistRow{{ w.product.id }}').remove();" title="Remove from Wishlist">
+                          <i class="fas fa-trash-alt"></i>
+                        </button>
+                      </div>
+                    </figcaption>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <div class="text-center py-5 text-muted">
+                <i class="fa fa-heart-broken" style="font-size: 2.5rem; display: block; margin-bottom: 12px; color: #cbd5e1;"></i>
+                <h6 class="fw-bold text-dark">Your wishlist is empty</h6>
+                <p class="small mb-3">Click the heart icon on any textbook, gadget, or student listing to save it here.</p>
+                <a href="{% url 'products' %}" class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                  <i class="fas fa-shopping-bag me-1"></i> Browse Products
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
         <!-- TAB: Messages -->
         <div class="dashboard-tab-pane" id="tabMessages">
           <div class="dashboard-panel">
@@ -947,6 +1016,7 @@
     'sales':      'tabSales',
     'sentreq':    'tabSentreq',
     'recvreq':    'tabRecvreq',
+    'wishlist':   'tabWishlist',
     'messages':   'tabMessages',
     'sent':       'tabSent',
     'edit':       'tabEdit',
@@ -1013,6 +1083,8 @@
       switchDashboardTab('orders', document.getElementById('sidebarOrders'));
     } else if (tab === 'sales') {
       switchDashboardTab('sales', document.getElementById('sidebarSales'));
+    } else if (tab === 'wishlist') {
+      switchDashboardTab('wishlist', document.getElementById('sidebarWishlist'));
     }
   });
 </script>

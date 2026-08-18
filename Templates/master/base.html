@@ -535,6 +535,13 @@
                 </div>
                 {% endif %}
 
+                <!-- Wishlist Link -->
+                <a href="{% url 'user_profile' %}?tab=wishlist" class="widget-header position-relative text-decoration-none" title="Saved Wishlist">
+                  <div class="widget-icon-btn">
+                    <i class="fas fa-heart text-danger"></i>
+                  </div>
+                </a>
+
                 <!-- Shopping Bag Link -->
                 <a href="{% url 'cart:cart_detail' %}" class="widget-header position-relative text-decoration-none" title="My Shopping Bag">
                   <div class="widget-icon-btn">
@@ -580,20 +587,24 @@
               </a>
             </div>
 
-            <!-- Modern Search Bar -->
-            <div class="col col-md col-lg order-2 order-lg-2">
-              <form action="{% url 'products' %}" method="GET" class="search-wrapper">
+            <!-- Modern Search Bar with Live Instant Auto-Suggest -->
+            <div class="col col-md col-lg order-2 order-lg-2 position-relative">
+              <form action="{% url 'products' %}" method="GET" class="search-wrapper" id="globalSearchForm" autocomplete="off">
                 <input
                   type="text"
                   name="q"
+                  id="globalSearchInput"
                   class="form-control"
-                  placeholder="Search textbooks, gadgets..."
+                  placeholder="Search textbooks, gadgets, modules..."
                   aria-label="Search"
+                  value="{{ query|default:'' }}"
                 />
                 <button class="search-btn" type="submit" title="Search">
                   <i class="fas fa-search"></i>
                 </button>
               </form>
+              <!-- Live Auto-Suggest Dropdown Panel -->
+              <div id="searchSuggestBox" class="search-suggest-dropdown"></div>
             </div>
           </div>
         </div>
@@ -1286,9 +1297,128 @@
         });
       }
 
+      // ==========================================
+      // Live Instant Search Auto-Suggest
+      // ==========================================
+      function initLiveSearch() {
+        const searchInput = document.getElementById('globalSearchInput');
+        const suggestBox = document.getElementById('searchSuggestBox');
+        if (!searchInput || !suggestBox) return;
+
+        let debounceTimer = null;
+
+        searchInput.addEventListener('input', (e) => {
+          const query = e.target.value.trim();
+          clearTimeout(debounceTimer);
+
+          if (query.length < 2) {
+            suggestBox.innerHTML = '';
+            suggestBox.classList.remove('show');
+            return;
+          }
+
+          debounceTimer = setTimeout(() => {
+            fetch(`/products/suggest/?q=${encodeURIComponent(query)}`)
+              .then(res => res.json())
+              .then(data => {
+                if (data.results && data.results.length > 0) {
+                  let html = '';
+                  data.results.forEach(item => {
+                    html += `
+                      <a href="${item.url}" class="suggest-item">
+                        <img src="${item.image}" alt="${escapeHtml(item.name)}" class="suggest-item-img" onerror="this.src='/static/images/default.jpg';" />
+                        <div class="flex-grow-1 overflow-hidden">
+                          <div class="suggest-item-name">${escapeHtml(item.name)}</div>
+                          <div class="suggest-item-meta">
+                            <span class="badge bg-light text-secondary border px-2 py-0">${escapeHtml(item.category)}</span>
+                            <span class="suggest-item-price">Rs. ${item.price}</span>
+                          </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted small ms-2"></i>
+                      </a>
+                    `;
+                  });
+                  html += `
+                    <a href="/products/?q=${encodeURIComponent(query)}" class="suggest-view-all">
+                      <i class="fas fa-search me-1"></i> View all results for "${escapeHtml(query)}"
+                    </a>
+                  `;
+                  suggestBox.innerHTML = html;
+                  suggestBox.classList.add('show');
+                } else {
+                  suggestBox.innerHTML = `
+                    <div class="p-3 text-center text-muted small">
+                      <i class="fas fa-search me-1"></i> No matching products found.
+                    </div>
+                  `;
+                  suggestBox.classList.add('show');
+                }
+              })
+              .catch(() => {
+                suggestBox.classList.remove('show');
+              });
+          }, 180);
+        });
+
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+          if (!searchInput.contains(e.target) && !suggestBox.contains(e.target)) {
+            suggestBox.classList.remove('show');
+          }
+        });
+
+        // Close on Escape key
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            suggestBox.classList.remove('show');
+          }
+        });
+      }
+
+      // ==========================================
+      // Wishlist Toggle Function
+      // ==========================================
+      function toggleWishlist(productId, btnElement) {
+        {% if not user.is_authenticated %}
+        showToast('Please sign in to save items to your wishlist.', 'warning');
+        setTimeout(() => window.location.href = "{% url 'student_login' %}", 1200);
+        return;
+        {% endif %}
+
+        fetch(`/products/${productId}/wishlist/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'ok') {
+            const icon = btnElement ? btnElement.querySelector('i') : null;
+            if (data.action === 'added') {
+              if (btnElement) btnElement.classList.add('active');
+              if (icon) icon.className = 'fas fa-heart text-danger';
+              showToast('Added to your Wishlist!', 'success');
+              if (typeof anime !== 'undefined' && btnElement) {
+                anime({ targets: btnElement, scale: [1, 1.35, 1], duration: 400, easing: 'easeOutElastic(1, .5)' });
+              }
+            } else {
+              if (btnElement) btnElement.classList.remove('active');
+              if (icon) icon.className = 'far fa-heart text-muted';
+              showToast('Removed from Wishlist.', 'info');
+            }
+          }
+        })
+        .catch(() => {
+          showToast('Unable to update wishlist. Please try again.', 'error');
+        });
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         initScrollAnimations();
         setupBackToTop();
+        initLiveSearch();
       });
     </script>
 

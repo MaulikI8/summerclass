@@ -122,9 +122,9 @@
               </a>
               {% endif %}
 
-              <a href="{% url 'checkout' %}" class="btn btn-outline-primary btn-lg px-4 rounded-pill fw-semibold" onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{% if product.product_image %}{{ product.product_image.url }}{% endif %}')">
-                Buy Now
-              </a>
+              <button type="button" class="btn btn-outline-danger btn-lg px-3 rounded-pill fw-semibold {% if is_wishlisted %}active{% endif %}" onclick="toggleWishlist('{{ product.id }}', this)" title="Save to Wishlist">
+                <i class="{% if is_wishlisted %}fas fa-heart text-danger{% else %}far fa-heart{% endif %}"></i>
+              </button>
               {% else %}
               <button type="button" class="btn btn-secondary btn-lg px-4 fw-semibold flex-grow-1 rounded-pill" disabled>
                 Sold Out
