@@ -35,6 +35,7 @@ urlpatterns = [
     path('privacy/', page_views.privacy_policy),
     path('404/', views.custom_404, name='preview_404'),
     path('blogs/', include('blog.urls')),
+    path('blog/', include('blog.urls')),
     path('products/', include('products.urls')),
     path('page/<slug:slug>/', page_views.page_detail, name='page_detail'),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),

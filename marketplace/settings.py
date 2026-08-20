@@ -19,11 +19,21 @@ if '*' not in ALLOWED_HOSTS: ALLOWED_HOSTS.extend(['.onrender.com', 'localhost',
 CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com', 'https://maulikjoshi.com.np', 'https://*.maulikjoshi.com.np', 'http://127.0.0.1', 'http://localhost']
 if os.environ.get('RENDER_EXTERNAL_URL'): CSRF_TRUSTED_ORIGINS.append(os.environ.get('RENDER_EXTERNAL_URL'))
 
+try:
+    import cloudinary_storage
+    HAS_CLOUDINARY = True
+except ImportError:
+    HAS_CLOUDINARY = False
+
 INSTALLED_APPS = [
     'jazzmin', 'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions', 'django.contrib.messages',
-    'whitenoise.runserver_nostatic', 'django.contrib.staticfiles', 'cloudinary_storage', 'cloudinary',
-    'account.apps.AccountConfig', 'cart.apps.CartConfig', 'products.apps.ProductsConfig', 'blog.apps.BlogConfig', 'pages.apps.PagesConfig', 'sitesetting.apps.SitesettingConfig',
+    'whitenoise.runserver_nostatic', 'django.contrib.staticfiles',
 ]
+if HAS_CLOUDINARY:
+    INSTALLED_APPS.extend(['cloudinary_storage', 'cloudinary'])
+INSTALLED_APPS.extend([
+    'account.apps.AccountConfig', 'cart.apps.CartConfig', 'products.apps.ProductsConfig', 'blog.apps.BlogConfig', 'pages.apps.PagesConfig', 'sitesetting.apps.SitesettingConfig',
+])
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware', 'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -53,6 +63,7 @@ except ImportError:
 
 AUTH_PASSWORD_VALIDATORS = [{'NAME': f'django.contrib.auth.password_validation.{v}'} for v in ['UserAttributeSimilarityValidator', 'MinimumLengthValidator', 'CommonPasswordValidator', 'NumericPasswordValidator']]
 LANGUAGE_CODE, TIME_ZONE, USE_I18N, USE_TZ = 'en-us', 'UTC', True, True
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_URL, STATICFILES_DIRS, STATIC_ROOT = '/static/', [BASE_DIR / "marketplace" / "static"], BASE_DIR / 'staticfiles'
 
@@ -61,11 +72,16 @@ CLOUDINARY_STORAGE = {
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '297815742518524'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'vNS2RE1uaxLIwl36s-SeRBpx1ng'),
 }
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-STORAGES = {
-    "default": {"BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
-}
+if HAS_CLOUDINARY:
+    STORAGES = {
+        "default": {"BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+    }
+else:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+    }
 WHITENOISE_USE_FINDERS, WHITENOISE_AUTOREFRESH = True, True
 
 MEDIA_URL = '/media/'

@@ -99,12 +99,15 @@ def checkout(request):
     if request.method == 'POST':
         p = request.POST
         loc = f"Home (Kathmandu): {p.get('home_address', '')}" if p.get('delivery_type') == 'home_delivery' else f"Campus: {p.get('campus_block', 'Kumari Hall')}"
+        pm = p.get('payment_method', 'esewa_sandbox')
+        if pm not in ['esewa_sandbox', 'khalti_sandbox']:
+            pm = 'esewa_sandbox'
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
             buyer_name=p.get('buyer_name', '').strip(), buyer_phone=p.get('buyer_phone', '').strip(),
             buyer_email=p.get('buyer_email', '').strip(), meetup_location=loc,
             meetup_time=p.get('meetup_time', 'Morning'), notes=p.get('notes', ''),
-            payment_method=p.get('payment_method', 'esewa_sandbox'), payment_status='Paid (Online Sandbox)', order_status='confirmed'
+            payment_method=pm, payment_status='Paid (Online Sandbox)', order_status='confirmed'
         )
         total = 0.0
         site_url = request.build_absolute_uri('/')[:-1]

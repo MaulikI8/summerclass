@@ -4,70 +4,259 @@
 
 {% block content %}
 <div class="container py-4">
-  <nav class="small mb-3"><a href="{% url 'home' %}" class="text-muted text-decoration-none">Home</a> / <a href="{% url 'products' %}" class="text-muted text-decoration-none">Store</a> / <span class="text-primary">{{ product.name }}</span></nav>
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" class="small mb-4">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-muted text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'products' %}" class="text-muted text-decoration-none">Store</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'products' %}?category={{ product.category.name }}" class="text-muted text-decoration-none">{{ product.category.name }}</a></li>
+      <li class="breadcrumb-item active text-primary fw-semibold" aria-current="page">{{ product.name }}</li>
+    </ol>
+  </nav>
 
-  <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-5">
     <div class="row g-0">
-      <div class="col-lg-6 p-4 text-center bg-light d-flex align-items-center justify-content-center" style="min-height:300px;">
-        <img src="{% if product.product_image %}{{ product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ product.name }}" class="img-fluid rounded-3" style="max-height:280px;object-fit:contain;"/>
+      <!-- Product Gallery Column -->
+      <div class="col-lg-6 p-4 bg-light bg-opacity-50 d-flex flex-column align-items-center justify-content-center position-relative border-end border-light">
+        <div class="position-relative w-100 text-center py-3" style="min-height:340px; display:flex; align-items:center; justify-content:center;">
+          <img id="mainProductImg" src="{% if product.product_image %}{{ product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ product.name }}" class="img-fluid rounded-4 shadow-sm" style="max-height:320px; object-fit:contain; transition: transform 0.3s ease;" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';"/>
+        </div>
+        <div class="d-flex gap-2 mt-3 justify-content-center">
+          <div class="border border-2 border-primary rounded-3 p-1 bg-white" style="width:60px; height:60px; cursor:pointer;">
+            <img src="{% if product.product_image %}{{ product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" class="w-100 h-100 object-fit-contain rounded" alt="Thumbnail"/>
+          </div>
+        </div>
       </div>
-      <div class="col-lg-6 p-4 d-flex flex-column justify-content-between">
+
+      <!-- Product Info Column -->
+      <div class="col-lg-6 p-4 p-md-5 d-flex flex-column justify-content-between">
         <div>
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="badge bg-primary-subtle text-primary rounded-pill">{{ product.category.name }}</span>
-            <span class="badge {% if product.stock > 0 %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %} rounded-pill">{% if product.stock > 0 %}In Stock ({{ product.stock }}){% else %}Sold Out{% endif %}</span>
+          <!-- Title & Wishlist Header -->
+          <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+            <div>
+              <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold small mb-2 d-inline-block">{{ product.category.name }}</span>
+              <h1 class="h3 fw-bold text-dark mb-1 lh-sm">{{ product.name }}</h1>
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="text-amber-400 small" style="color: #f59e0b;">
+                  <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                </div>
+                <span class="small text-muted fw-semibold">4.8 (12 reviews)</span>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline-danger rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width:42px;height:42px;" onclick="toggleWishlist('{{ product.id }}', this)" aria-label="Add {{ product.name }} to wishlist">
+              <i class="{% if is_wishlisted %}fas fa-heart text-danger{% else %}far fa-heart{% endif %}" style="font-size:1.1rem;"></i>
+            </button>
           </div>
-          <h3 class="fw-bold text-dark mb-1">{{ product.name }}</h3>
-          <h4 class="fw-bold text-primary mb-3">Rs. {{ product.price|floatformat:2 }}</h4>
-          <div class="p-2 bg-light rounded-3 border d-flex align-items-center gap-2 mb-3">
-            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small" style="width:32px;height:32px;">{{ product.user.username|slice:":1"|upper }}</div>
-            <div class="small"><strong class="d-block">{{ product.user.first_name|default:product.user.username }}</strong><span class="text-muted">Verified Student Seller</span></div>
+
+          <!-- Price & Stock -->
+          <div class="d-flex align-items-baseline gap-3 mb-4">
+            <span class="fs-3 fw-bold text-primary">Rs. {{ product.price|floatformat:2 }}</span>
+            {% if product.stock > 0 %}
+            <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1 fw-bold small"><i class="fas fa-check-circle me-1"></i> In Stock ({{ product.stock }})</span>
+            {% else %}
+            <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-1 fw-bold small"><i class="fas fa-times-circle me-1"></i> Sold Out</span>
+            {% endif %}
           </div>
-          <p class="text-secondary small mb-3">{{ product.description|linebreaksbr }}</p>
+
+          <!-- Verified Student Seller Card -->
+          <div class="p-3 bg-light rounded-4 border mb-4 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-5" style="width:44px;height:44px;box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);">
+                {{ product.user.username|slice:":1"|upper }}
+              </div>
+              <div>
+                <strong class="d-block text-dark lh-1 mb-1">{{ product.user.first_name|default:product.user.username }}</strong>
+                <span class="small text-muted"><i class="fas fa-shield-alt text-success me-1"></i> Verified Islington Student Seller</span>
+              </div>
+            </div>
+            <span class="badge bg-white text-secondary border rounded-pill px-3 py-1 small fw-semibold">Islington Peer</span>
+          </div>
+
+          <!-- Interactive Tabs Navigation -->
+          <div class="mb-4">
+            <ul class="nav nav-tabs border-bottom mb-3" id="productTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold small px-3 text-dark border-0 border-bottom border-2 border-primary" id="tab-desc" onclick="switchProductTab('desc', this)" type="button">Description</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold small px-3 text-muted border-0" id="tab-details" onclick="switchProductTab('details', this)" type="button">Specifications</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold small px-3 text-muted border-0" id="tab-pickup" onclick="switchProductTab('pickup', this)" type="button">Campus Pickup</button>
+              </li>
+            </ul>
+
+            <!-- Tab Contents -->
+            <div id="tabContentDesc" class="product-tab-pane">
+              <p class="text-secondary small mb-3" style="line-height: 1.6;">{{ product.description|linebreaksbr }}</p>
+              <h6 class="fw-bold text-dark small mb-2">Item Highlights</h6>
+              <ul class="list-unstyled small text-secondary d-flex flex-column gap-1 mb-0">
+                <li><i class="fas fa-check-circle text-success me-2"></i> Verified student item from Islington campus</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i> Clean condition, inspect before paying</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i> Direct peer-to-peer student trade</li>
+              </ul>
+            </div>
+
+            <div id="tabContentDetails" class="product-tab-pane d-none">
+              <div class="table-responsive">
+                <table class="table table-sm table-borderless small text-secondary mb-0">
+                  <tbody>
+                    <tr><td class="fw-bold text-dark px-0" style="width:120px;">Category:</td><td>{{ product.category.name }}</td></tr>
+                    <tr><td class="fw-bold text-dark px-0">Stock Available:</td><td>{{ product.stock }} units</td></tr>
+                    <tr><td class="fw-bold text-dark px-0">Seller Username:</td><td>@{{ product.user.username }}</td></tr>
+                    <tr><td class="fw-bold text-dark px-0">Listing Status:</td><td>Approved & Live</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="tabContentPickup" class="product-tab-pane d-none">
+              <div class="d-flex flex-column gap-2 small text-secondary">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="fas fa-map-marker-alt text-primary fs-5"></i>
+                  <div><strong class="d-block text-dark">Kumari Hall & Skill Block Pickups</strong><span>Handshake verify with QR scanner at campus blocks (Kumari Hall, Skill Block, Nepal Block, Alumini Block, Brit House, Himal Block, Main Block)</span></div>
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-1">
+                  <i class="fas fa-hand-holding-usd text-success fs-5"></i>
+                  <div><strong class="d-block text-dark">Flexible Payment</strong><span>Pay with eSewa, Khalti or Cash on Meetup</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="d-flex gap-2">
+        <!-- Quantity & Action Buttons -->
+        <div class="pt-3 border-top mt-auto">
           {% if user.is_authenticated and product.user == user %}
-          <div class="alert alert-light border rounded-pill py-2 px-3 small w-100 mb-0">Your listing &bull; <a href="{% url 'user_profile' %}?tab=products">Manage in Dashboard</a></div>
+          <div class="alert alert-light border rounded-4 py-2 px-3 small w-100 mb-0 d-flex align-items-center justify-content-between">
+            <span><i class="fas fa-info-circle text-primary me-1"></i> Your listing</span>
+            <a href="{% url 'user_profile' %}?tab=products" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">Manage in Dashboard</a>
+          </div>
           {% elif product.stock > 0 %}
-          <button class="btn btn-primary rounded-pill px-4 flex-grow-1 fw-bold" onclick="addToCart('{{ product.id }}','{{ product.name|escapejs }}','{{ product.price }}')"><i class="fas fa-shopping-bag me-1"></i> Add to Bag</button>
-          {% if user.is_authenticated %}<button class="btn btn-warning rounded-pill px-3 fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#tradeModal"><i class="fas fa-handshake me-1"></i> Make Offer</button>
-          {% else %}<a href="{% url 'student_login' %}" class="btn btn-outline-warning rounded-pill px-3 fw-bold text-dark">Sign In to Offer</a>{% endif %}
-          <button class="btn btn-outline-danger rounded-circle p-2" onclick="toggleWishlist('{{ product.id }}', this)"><i class="{% if is_wishlisted %}fas fa-heart text-danger{% else %}far fa-heart{% endif %}"></i></button>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="d-flex align-items-center border rounded-pill p-1 bg-light">
+              <button type="button" class="btn btn-sm btn-link text-dark text-decoration-none px-2 py-0 fw-bold" onclick="adjustProductQty(-1)">-</button>
+              <input type="text" id="productQtyInput" value="1" readonly class="form-control form-control-sm border-0 text-center bg-transparent fw-bold p-0" style="width:36px; font-size:0.9rem;"/>
+              <button type="button" class="btn btn-sm btn-link text-dark text-decoration-none px-2 py-0 fw-bold" onclick="adjustProductQty(1)">+</button>
+            </div>
+            <button type="button" class="btn btn-primary rounded-pill px-4 flex-grow-1 py-2 fw-bold shadow-sm" onclick="addToCartWithQty('{{ product.id }}','{{ product.name|escapejs }}','{{ product.price }}')" aria-label="Add {{ product.name }} to shopping bag">
+              <i class="fas fa-shopping-bag me-2"></i> Add to Bag
+            </button>
+          </div>
+          
+          <div class="d-flex gap-2">
+            {% if user.is_authenticated %}
+            <button type="button" class="btn btn-outline-primary rounded-pill w-100 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#tradeModal" aria-label="Make an offer on {{ product.name }}">
+              <i class="fas fa-handshake me-1"></i> Make Offer / Swap Trade
+            </button>
+            {% else %}
+            <a href="{% url 'student_login' %}" class="btn btn-outline-primary rounded-pill w-100 py-2 fw-bold">
+              Sign In to Offer Trade
+            </a>
+            {% endif %}
+          </div>
           {% else %}
-          <button class="btn btn-secondary rounded-pill w-100" disabled>Sold Out</button>
+          <button class="btn btn-secondary rounded-pill w-100 py-2 fw-bold" disabled>Sold Out</button>
           {% endif %}
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Related Products Section -->
   {% if related_products %}
-  <h6 class="fw-bold mb-3">Related Items</h6>
-  <div class="row g-2">
-    {% for r in related_products %}
-    <div class="col-md-3 col-6">
-      <div class="card p-2 border-0 shadow-sm rounded-3 bg-white text-center">
-        <a href="{% url 'product_detail' r.id %}"><img src="{% if r.product_image %}{{ r.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" class="img-fluid rounded mb-1" style="height:90px;object-fit:contain;"/></a>
-        <strong class="small text-truncate d-block">{{ r.name }}</strong>
-        <span class="text-primary small fw-bold">Rs. {{ r.price }}</span>
-      </div>
+  <div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-dark mb-0">Related Items in {{ product.category.name }}</h5>
+      <a href="{% url 'products' %}?category={{ product.category.name }}" class="text-primary text-decoration-none small fw-semibold">View All <i class="fas fa-arrow-right ms-1"></i></a>
     </div>
-    {% endfor %}
+    <div class="row g-3">
+      {% for r in related_products %}
+      <div class="col-lg-3 col-md-4 col-6">
+        <div class="card card-product-grid shadow-sm h-100">
+          <a href="{% url 'product_detail' r.id %}" class="img-wrap">
+            <img src="{% if r.product_image %}{{ r.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" class="img-fluid" alt="{{ r.name }}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/default.jpg' %}';"/>
+            <span class="card-category-badge">{{ r.category.name }}</span>
+          </a>
+          <figcaption class="info-wrap p-3">
+            <a href="{% url 'product_detail' r.id %}" class="title fw-bold text-dark text-decoration-none text-truncate d-block mb-1">{{ r.name }}</a>
+            <div class="d-flex align-items-center justify-content-between mt-auto">
+              <span class="price fw-bold text-primary">Rs. {{ r.price|floatformat:2 }}</span>
+              <a href="{% url 'product_detail' r.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0 small">View</a>
+            </div>
+          </figcaption>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
   {% endif %}
 </div>
 
+<!-- Trade Offer Modal -->
 {% if user.is_authenticated and product.user != user %}
-<div class="modal fade" id="tradeModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content rounded-4 border-0 shadow-lg p-3">
-  <h6 class="fw-bold mb-2">Send Offer for {{ product.name }}</h6>
-  <form action="{% url 'send_offer' product.id %}" method="POST">
-    {% csrf_token %}
-    <div class="mb-2"><label class="small fw-bold">Offer Type</label><select name="offer_type" class="form-select form-select-sm rounded-3" onchange="document.getElementById('offPriceWrap').style.display=this.value==='price'?'block':'none';document.getElementById('offTradeWrap').style.display=this.value==='trade'?'block':'none';"><option value="price">Price Negotiation</option><option value="trade">Item Swap / Trade</option></select></div>
-    <div class="mb-2" id="offPriceWrap"><label class="small fw-bold">Your Price (Rs.)</label><input type="number" step="0.01" name="offered_price" class="form-control form-control-sm rounded-3" placeholder="e.g. 500"/></div>
-    <div class="mb-2" id="offTradeWrap" style="display:none;"><label class="small fw-bold">Item Description to Swap</label><textarea name="trade_item_desc" rows="2" class="form-control form-control-sm rounded-3" placeholder="Item you want to trade"></textarea></div>
-    <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-sm btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button><button class="btn btn-sm btn-primary rounded-pill px-4 fw-bold">Send Offer</button></div>
-  </form>
-</div></div></div>
+<div class="modal fade" id="tradeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow-lg p-3">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="fw-bold mb-0 text-dark">Send Offer for {{ product.name }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="{% url 'send_offer' product.id %}" method="POST" class="modal-body">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="small fw-bold mb-1">Offer Type</label>
+          <select name="offer_type" class="form-select form-select-sm rounded-3" onchange="document.getElementById('offPriceWrap').style.display=this.value==='price'?'block':'none';document.getElementById('offTradeWrap').style.display=this.value==='trade'?'block':'none';">
+            <option value="price">Price Negotiation</option>
+            <option value="trade">Item Swap / Peer Trade</option>
+          </select>
+        </div>
+        <div class="mb-3" id="offPriceWrap">
+          <label class="small fw-bold mb-1">Your Proposed Price (Rs.)</label>
+          <input type="number" step="0.01" name="offered_price" class="form-control form-control-sm rounded-3" placeholder="e.g. {{ product.price|floatformat:0 }}"/>
+        </div>
+        <div class="mb-3" id="offTradeWrap" style="display:none;">
+          <label class="small fw-bold mb-1">Item Description to Swap</label>
+          <textarea name="trade_item_desc" rows="2" class="form-control form-control-sm rounded-3" placeholder="Describe the item you want to swap"></textarea>
+        </div>
+        <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+          <button type="button" class="btn btn-sm btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold">Send Offer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endif %}
+
+<script>
+  function switchProductTab(tabId, btn) {
+    document.querySelectorAll('.product-tab-pane').forEach(p => p.classList.add('d-none'));
+    document.querySelectorAll('#productTabs .nav-link').forEach(b => {
+      b.classList.remove('active', 'text-dark', 'border-bottom', 'border-2', 'border-primary');
+      b.classList.add('text-muted');
+    });
+    btn.classList.add('active', 'text-dark', 'border-bottom', 'border-2', 'border-primary');
+    btn.classList.remove('text-muted');
+
+    if (tabId === 'desc') document.getElementById('tabContentDesc').classList.remove('d-none');
+    if (tabId === 'details') document.getElementById('tabContentDetails').classList.remove('d-none');
+    if (tabId === 'pickup') document.getElementById('tabContentPickup').classList.remove('d-none');
+  }
+
+  function adjustProductQty(delta) {
+    const inp = document.getElementById('productQtyInput');
+    if (!inp) return;
+    let val = parseInt(inp.value) || 1;
+    val = Math.max(1, Math.min({{ product.stock|default:1 }}, val + delta));
+    inp.value = val;
+  }
+
+  function addToCartWithQty(id, name, price) {
+    const qty = parseInt(document.getElementById('productQtyInput')?.value) || 1;
+    for (let i = 0; i < qty; i++) {
+      addToCart(id, name, price);
+    }
+  }
+</script>
 {% endblock %}

@@ -24,7 +24,7 @@
           </div>
 
           <div id="blkWrap" class="row g-2 mb-3">
-            <div class="col-6"><label class="small fw-bold">Islington Block</label><select name="campus_block" class="form-select form-select-sm rounded-3"><option value="Kumari Hall">Kumari Hall</option><option value="Skill Block">Skill Block</option><option value="Alumni Block">Alumni Block</option><option value="Nepal Block">Nepal Block</option><option value="Brit House">Brit House</option><option value="Main/Himal Block">Main / Himal Block</option></select></div>
+            <div class="col-6"><label class="small fw-bold">Islington Block</label><select name="campus_block" class="form-select form-select-sm rounded-3"><option value="Kumari Hall">Kumari Hall</option><option value="Skill Block">Skill Block</option><option value="Alumni Block">Alumni Block</option><option value="Nepal Block">Nepal Block</option><option value="Brit House">Brit House</option><option value="Himal Block">Himal Block</option><option value="Main Block">Main Block</option></select></div>
             <div class="col-6"><label class="small fw-bold">Meetup Time</label><select name="meetup_time" class="form-select form-select-sm rounded-3"><option value="Morning">Morning (10 AM - 12 PM)</option><option value="Afternoon">Afternoon (1 PM - 3 PM)</option><option value="Evening">Evening (4 PM - 6 PM)</option></select></div>
           </div>
 
@@ -37,7 +37,6 @@
           <div class="d-flex flex-column gap-2 mb-3">
             <label class="p-2 border rounded-3 d-flex align-items-center gap-2 small"><input type="radio" name="payment_method" value="esewa_sandbox" checked/> <span class="badge bg-success">eSewa</span> eSewa Online Payment</label>
             <label class="p-2 border rounded-3 d-flex align-items-center gap-2 small"><input type="radio" name="payment_method" value="khalti_sandbox"/> <span class="badge bg-primary">Khalti</span> Khalti Wallet Payment</label>
-            <label class="p-2 border rounded-3 d-flex align-items-center gap-2 small"><input type="radio" name="payment_method" value="cod"/> <span class="badge bg-secondary">COD</span> Cash on Campus Collection</label>
           </div>
 
           <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">Place Order &bull; Rs. {{ total|floatformat:2 }}</button>

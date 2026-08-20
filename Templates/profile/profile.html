@@ -5,8 +5,8 @@
 {% block content %}
 <style>
   .dash-side a{display:block;padding:9px 15px;color:#444;text-decoration:none;font-size:.86rem;font-weight:500;border-radius:8px;margin-bottom:2px}
-  .dash-side a:hover{background:#eff6ff;color:#2563eb}
-  .dash-side a.active{background:#2563eb;color:#fff;font-weight:600}
+  .dash-side a:hover{background:#EEF2FF;color:#4F46E5}
+  .dash-side a.active{background:#4F46E5;color:#fff;font-weight:600}
   .dash-pane{display:none}.dash-pane.active{display:block}
 </style>
 
@@ -43,10 +43,35 @@
         </div>
         <div class="card p-4 rounded-4 border-0 shadow-sm bg-white text-center">
           <h5 class="fw-bold">Welcome, {{ profile_user.first_name|default:profile_user.username }}!</h5>
-          <p class="text-muted small">Manage your college listings, respond to peer trades, and track your campus orders.</p>
-          <div class="d-flex justify-content-center gap-2">
-            <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="switchTab('add',document.getElementById('sidebarAdd'))">+ Post Item</button>
-            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="switchTab('products',document.getElementById('sidebarProducts'))">Manage Listings</button>
+          <p class="text-muted small mb-2">Manage your college listings, respond to peer trades, and track your campus orders.</p>
+          
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-2">
+            <!-- Animated Staggered Dropdown -->
+            <div class="staggered-dropdown-wrap" id="profilePostActionsDropdown">
+              <button type="button" class="staggered-dropdown-btn" onclick="toggleStaggeredDropdown(this)">
+                <span>Post actions</span>
+                <span class="chevron-icon"><i class="fas fa-chevron-down"></i></span>
+              </button>
+              <ul class="staggered-dropdown-menu">
+                <li class="staggered-dropdown-item" onclick="switchTab('add',document.getElementById('sidebarAdd')); closeStaggeredDropdown();">
+                  <span class="item-icon"><i class="fas fa-edit"></i></span>
+                  <span>Post Item</span>
+                </li>
+                <li class="staggered-dropdown-item" onclick="switchTab('products',document.getElementById('sidebarProducts')); closeStaggeredDropdown();">
+                  <span class="item-icon"><i class="fas fa-plus-square"></i></span>
+                  <span>My Listings</span>
+                </li>
+                <li class="staggered-dropdown-item" onclick="switchTab('orders',document.getElementById('sidebarOrders')); closeStaggeredDropdown();">
+                  <span class="item-icon"><i class="fas fa-receipt"></i></span>
+                  <span>View Orders</span>
+                </li>
+                <li class="staggered-dropdown-item" onclick="switchTab('edit',document.getElementById('sidebarEdit')); closeStaggeredDropdown();">
+                  <span class="item-icon"><i class="fas fa-user-edit"></i></span>
+                  <span>Edit Profile</span>
+                </li>
+              </ul>
+            </div>
+            <button class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 fw-semibold" onclick="switchTab('products',document.getElementById('sidebarProducts'))">Manage Listings</button>
           </div>
         </div>
       </div>
@@ -163,5 +188,17 @@
   const switchTab=(n,b)=>{document.querySelectorAll('.dash-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.dash-side a').forEach(a=>a.classList.remove('active'));document.getElementById(tabMap[n]||'paneDashboard')?.classList.add('active');if(b)b.classList.add('active');};
   const openEdit=(id,n,c,p,s,d)=>{editId.value=id;editName.value=n;editPrice.value=p;editStock.value=s;editDesc.value=d;new bootstrap.Modal(editModal).show();};
   const t=new URLSearchParams(location.search).get('tab');if(t&&tabMap[t])switchTab(t,document.getElementById('sidebar'+t.charAt(0).toUpperCase()+t.slice(1)));
+
+  function toggleStaggeredDropdown(btn){
+    const wrap=btn.closest('.staggered-dropdown-wrap');
+    if(wrap.classList.contains('open')) wrap.classList.remove('open');
+    else wrap.classList.add('open');
+  }
+  function closeStaggeredDropdown(){
+    document.querySelectorAll('.staggered-dropdown-wrap').forEach(w=>w.classList.remove('open'));
+  }
+  document.addEventListener('click',(e)=>{
+    if(!e.target.closest('.staggered-dropdown-wrap')) closeStaggeredDropdown();
+  });
 </script>
 {% endblock %}

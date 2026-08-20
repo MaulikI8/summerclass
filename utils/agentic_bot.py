@@ -115,8 +115,8 @@ class AgenticCommerceBot:
             return res
 
         # 9. Campus Logistics & Pickup FAQ
-        if any(w in low for w in ['pickup', 'location', 'where', 'block', 'kumari hall', 'skill block', 'nepal block', 'timing', 'hours', 'contact']):
-            res.update({'reply': "📍 **Islington Pickup Spots:** Kumari Hall, Skill Block, Nepal Block, Alumini Block, Brit House & Himal Block.\n\n⏰ **Hours:** 10:00 AM – 4:00 PM (Mon–Fri)\n💳 **Payment:** Cash on Campus (COD) or eSewa Sandbox.\n📧 **Help:** info@islingtonmarket.np | +977-1-4412345"})
+        if any(w in low for w in ['pickup', 'location', 'where', 'block', 'kumari hall', 'skill block', 'nepal block', 'himal block', 'main block', 'timing', 'hours', 'contact']):
+            res.update({'reply': "📍 **Islington Pickup Spots:** Kumari Hall, Skill Block, Nepal Block, Alumini Block, Brit House, Himal Block & Main Block.\n\n⏰ **Hours:** 10:00 AM – 4:00 PM (Mon–Fri)\n💳 **Payment:** eSewa & Khalti Online Digital Payments.\n📧 **Help:** info@islingtonmarket.np | +977-1-4412345"})
             return res
 
         # 10. Product Search & Budget Recommendation (Default)
