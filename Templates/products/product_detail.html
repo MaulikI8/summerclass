@@ -149,6 +149,10 @@
               <button type="button" class="btn btn-sm btn-link text-dark text-decoration-none px-2 py-0 fw-bold" onclick="adjustProductQty(1)">+</button>
             </div>
             
+            {% if in_cart %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-bold small"><i class="fas fa-check-circle me-1"></i> In Cart</span>
+            {% endif %}
+            
             <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-bold" onclick="addToCartWithQty('{{ product.id }}','{{ product.name|escapejs }}','{{ product.price }}')" aria-label="Add {{ product.name }} to shopping bag">
               <i class="fas fa-shopping-bag me-1"></i> Add to Bag
             </button>

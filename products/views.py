@@ -32,10 +32,22 @@ def product_detail(request, id):
     if not p.is_approved and not (request.user.is_authenticated and (request.user == p.user or request.user.is_staff or request.user.is_superuser)):
         p = get_object_or_404(Product, pk=id, is_approved=True, status=True)
     is_wishlisted = Wishlist.objects.filter(user=request.user, product=p).exists() if request.user.is_authenticated else False
+    
+    in_cart = False
+    try:
+        from cart.models import CartItem
+        if request.user.is_authenticated:
+            in_cart = CartItem.objects.filter(cart__user=request.user, product=p, is_active=True).exists()
+        elif request.session.session_key:
+            in_cart = CartItem.objects.filter(cart__cart_id=request.session.session_key, product=p, is_active=True).exists()
+    except Exception:
+        pass
+
     return render(request, 'products/product_detail.html', {
         'product': p,
         'related_products': Product.objects.select_related('user').filter(category=p.category, is_approved=True, status=True).exclude(pk=id)[:4],
-        'is_wishlisted': is_wishlisted
+        'is_wishlisted': is_wishlisted,
+        'in_cart': in_cart
     })
 
 def search_suggest(request):
