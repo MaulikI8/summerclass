@@ -8,6 +8,8 @@ class Category(models.Model):
     name = models.CharField(max_length=225)
     category_image = models.ImageField(upload_to='categories/', blank=True, null=True)
     class Meta: verbose_name_plural = 'Categories'
+    def get_url(self):
+        return f"/products/?category={self.name}"
     def __str__(self): return self.name
 
 class Product(models.Model):
@@ -23,6 +25,10 @@ class Product(models.Model):
     product_image = models.ImageField(upload_to='products/', blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_url(self):
+        from django.urls import reverse
+        return reverse('product_detail', args=[self.id])
 
     def save(self, *args, **kwargs):
         if not self.slug: self.slug = f"{slugify(self.name)}-{int(time.time())}"
