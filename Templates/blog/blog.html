@@ -37,7 +37,15 @@
               <p class="text-muted small mb-2">{{ b.content|truncatewords:24 }}</p>
               <div class="d-flex justify-content-between align-items-center pt-2 border-top small">
                 <span class="text-muted"><i class="fas fa-comment me-1 text-primary"></i>{{ b.comment_count }} comments</span>
-                <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Read &rarr;</a>
+                <div class="d-flex gap-2 align-items-center">
+                  {% if user.is_authenticated and b.author == user or user.is_staff %}
+                  <form action="{% url 'blog_delete' b.id %}" method="POST" class="d-inline" onsubmit="return confirm('Delete this blog post?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-0 d-inline-flex align-items-center justify-content-center" style="width:30px;height:30px;" title="Delete post"><i class="fas fa-trash small"></i></button>
+                  </form>
+                  {% endif %}
+                  <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Read &rarr;</a>
+                </div>
               </div>
             </div>
           </div>

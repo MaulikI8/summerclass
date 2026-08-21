@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.db.models import Count
@@ -56,3 +57,14 @@ def toggle_upvote(request, id):
 
 def user_blogs(request, username):
     return redirect(f'/blogs/?author={username}')
+
+@login_required
+def blog_delete(request, id):
+    p = get_object_or_404(Post, pk=id)
+    if p.author == request.user or request.user.is_staff or request.user.is_superuser:
+        title = p.title
+        p.delete()
+        messages.success(request, f'Blog post "{title[:30]}" deleted successfully.')
+        return redirect('blog')
+    messages.error(request, "You do not have permission to delete this post.")
+    return redirect('blog_detail', id=id)

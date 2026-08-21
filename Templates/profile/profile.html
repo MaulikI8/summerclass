@@ -28,6 +28,7 @@
         <a href="javascript:void(0)" id="sidebarRecvReq" onclick="switchTab('recvreq',this)"><i class="fas fa-inbox me-2"></i> Received Offers</a>
         <a href="javascript:void(0)" id="sidebarSentReq" onclick="switchTab('sentreq',this)"><i class="fas fa-paper-plane me-2"></i> Sent Offers</a>
         <a href="javascript:void(0)" id="sidebarWishlist" onclick="switchTab('wishlist',this)"><i class="fas fa-heart text-danger me-2"></i> Wishlist ({{ user_wishlist|length }})</a>
+        <a href="javascript:void(0)" id="sidebarBlogs" onclick="switchTab('blogs',this)"><i class="fas fa-blog text-primary me-2"></i> My Blogs ({{ user_blogs|length }})</a>
         <a href="javascript:void(0)" onclick="switchTab('edit',this)"><i class="fas fa-user-edit me-2"></i> Edit Profile</a>
         <hr class="my-2"/>
         <a href="{% url 'student_logout' %}" class="text-danger"><i class="fas fa-sign-out-alt me-2"></i> Log Out</a>
@@ -157,6 +158,45 @@
         </div>
       </div>
 
+      <div class="dash-pane" id="paneBlogs">
+        <div class="card rounded-4 border-0 shadow-sm p-3 bg-white">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0">My Published Blogs</h6>
+            <a href="{% url 'blog_create' %}" class="btn btn-primary btn-sm rounded-pill px-3">+ Write Blog</a>
+          </div>
+          {% if user_blogs %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle small mb-0">
+              <thead class="table-light">
+                <tr><th>Title</th><th>Category</th><th>Upvotes</th><th>Posted</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                {% for b in user_blogs %}
+                <tr>
+                  <td><strong class="d-block text-truncate" style="max-width:220px;">{{ b.title }}</strong></td>
+                  <td><span class="badge bg-primary-subtle text-primary rounded-pill">{{ b.category.name }}</span></td>
+                  <td>{{ b.upvote_count }}</td>
+                  <td>{{ b.created_at|date:"M d, Y" }}</td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <a href="{% url 'blog_detail' b.id %}" class="btn btn-sm btn-light border" title="View"><i class="fa fa-eye"></i></a>
+                      <form action="{% url 'blog_delete' b.id %}" method="POST" class="d-inline" onsubmit="return confirm('Delete this blog post?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa fa-trash"></i></button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-4 mb-0">You haven't written any blogs yet. <a href="{% url 'blog_create' %}" class="fw-bold text-primary">Write one now &rarr;</a></p>
+          {% endif %}
+        </div>
+      </div>
+
       <div class="dash-pane" id="paneEdit">
         <div class="card rounded-4 border-0 shadow-sm p-4 bg-white">
           <h6 class="fw-bold mb-3">Edit Profile</h6>
@@ -184,7 +224,7 @@
 </div></div></div>
 
 <script>
-  const tabMap={dashboard:'paneDashboard',products:'paneProducts',add:'paneAdd',orders:'paneOrders',sales:'paneSales',recvreq:'paneRecvreq',sentreq:'paneSentreq',wishlist:'paneWishlist',edit:'paneEdit'};
+  const tabMap={dashboard:'paneDashboard',products:'paneProducts',add:'paneAdd',orders:'paneOrders',sales:'paneSales',recvreq:'paneRecvreq',sentreq:'paneSentreq',wishlist:'paneWishlist',blogs:'paneBlogs',edit:'paneEdit'};
   const switchTab=(n,b)=>{document.querySelectorAll('.dash-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.dash-side a').forEach(a=>a.classList.remove('active'));document.getElementById(tabMap[n]||'paneDashboard')?.classList.add('active');if(b)b.classList.add('active');};
   const openEdit=(id,n,c,p,s,d)=>{editId.value=id;editName.value=n;editPrice.value=p;editStock.value=s;editDesc.value=d;new bootstrap.Modal(editModal).show();};
   const t=new URLSearchParams(location.search).get('tab');if(t&&tabMap[t])switchTab(t,document.getElementById('sidebar'+t.charAt(0).toUpperCase()+t.slice(1)));

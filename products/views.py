@@ -118,3 +118,14 @@ def delete_item_request(request, request_id):
     req.delete()
     messages.success(request, "Item request removed.")
     return redirect('/#wantedBoardSection')
+
+@login_required
+def delete_product_view(request, id):
+    p = get_object_or_404(Product, id=id)
+    if p.user == request.user or request.user.is_staff or request.user.is_superuser:
+        p_name = p.name
+        p.delete()
+        messages.success(request, f'Listing "{p_name}" removed successfully.')
+        return redirect('user_profile')
+    messages.error(request, "You do not have permission to delete this listing.")
+    return redirect('product_detail', id=id)

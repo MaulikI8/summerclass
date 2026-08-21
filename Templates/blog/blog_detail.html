@@ -9,13 +9,21 @@
   <div class="row g-3">
     <div class="col-lg-8">
       <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
           <div class="d-flex gap-2 align-items-center small">
             <span class="badge bg-primary-subtle text-primary rounded-pill">{{ blog.category.name }}</span>
             <span class="badge bg-secondary-subtle text-secondary rounded-pill">{{ blog.tag }}</span>
             <small class="text-muted">&bull; {{ blog.author.username|default:"Admin" }} &bull; {{ blog.created_at|date:"M d, Y" }}</small>
           </div>
-          <form action="{% url 'toggle_upvote' blog.id %}" method="POST" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold"><i class="fas fa-arrow-up me-1"></i>{{ blog.upvote_count }}</button></form>
+          <div class="d-flex gap-2 align-items-center">
+            {% if user.is_authenticated and blog.author == user or user.is_staff %}
+            <form action="{% url 'blog_delete' blog.id %}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this blog post?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold"><i class="fas fa-trash me-1"></i> Delete Post</button>
+            </form>
+            {% endif %}
+            <form action="{% url 'toggle_upvote' blog.id %}" method="POST" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold"><i class="fas fa-arrow-up me-1"></i>{{ blog.upvote_count }}</button></form>
+          </div>
         </div>
 
         <h3 class="fw-bold text-dark mb-3">{{ blog.title }}</h3>

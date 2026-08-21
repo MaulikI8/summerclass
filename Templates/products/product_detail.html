@@ -128,9 +128,18 @@
         <!-- Quantity & Action Buttons -->
         <div class="pt-3 border-top mt-auto">
           {% if user.is_authenticated and product.user == user %}
-          <div class="alert alert-light border rounded-4 py-2 px-3 small w-100 mb-0 d-flex align-items-center justify-content-between">
-            <span><i class="fas fa-info-circle text-primary me-1"></i> Your listing</span>
-            <a href="{% url 'user_profile' %}?tab=products" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">Manage in Dashboard</a>
+          <div class="alert alert-light border rounded-4 p-3 w-100 mb-0">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+              <span class="small fw-bold text-dark"><i class="fas fa-info-circle text-primary me-1"></i> Your Listing</span>
+              <div class="d-flex gap-2">
+                <a href="{% url 'user_profile' %}?tab=products" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">Dashboard</a>
+                <form action="{% url 'delete_product' product.id %}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this listing permanently?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold"><i class="fas fa-trash me-1"></i> Delete Listing</button>
+                </form>
+              </div>
+            </div>
+            <small class="text-muted d-block">You can edit stock, update details or remove this listing permanently.</small>
           </div>
           {% elif product.stock > 0 %}
           <div class="d-flex align-items-center gap-3 mb-3">
