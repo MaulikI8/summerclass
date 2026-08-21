@@ -121,3 +121,18 @@ class ItemRequest(models.Model):
     class Meta: ordering = ['-created_at']
     def __str__(self): return f"Wanted: {self.title} by {self.user.username}"
 
+class SearchHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='search_histories')
+    session_key = models.CharField(max_length=100, null=True, blank=True)
+    query = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = 'Search History'
+
+    def __str__(self):
+        user_display = self.user.username if self.user else (self.session_key or 'Anonymous')
+        return f"'{self.query}' by {user_display}"
+
+

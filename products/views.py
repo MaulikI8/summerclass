@@ -3,13 +3,24 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse
-from .models import Category, Product, TradeOffer, Wishlist, ItemRequest
+from .models import Category, Product, TradeOffer, Wishlist, ItemRequest, SearchHistory
 from sitesetting.models import Notification
 
 def products(request):
     q, cat = request.GET.get('q', '').strip(), request.GET.get('category', '').strip()
     qs = Product.objects.select_related('category', 'user').filter(status=True, is_approved=True).order_by('-created_at')
-    if q: qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(category__name__icontains=q) | Q(user__username__icontains=q))
+    if q:
+        qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(category__name__icontains=q) | Q(user__username__icontains=q))
+        try:
+            if not request.session.session_key:
+                request.session.create()
+            SearchHistory.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                session_key=request.session.session_key,
+                query=q
+            )
+        except Exception:
+            pass
     if cat and cat != 'All Categories': qs = qs.filter(category__name__icontains=cat)
     wish_ids = set(Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)) if request.user.is_authenticated else set()
     return render(request, 'products/products.html', {

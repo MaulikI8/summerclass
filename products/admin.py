@@ -3,8 +3,15 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.urls import path
 from django.shortcuts import redirect, get_object_or_404
-from .models import Category, Product, PendingProductReview, Order, OrderItem, Auction, Bid, ItemRequest
+from .models import Category, Product, PendingProductReview, Order, OrderItem, Auction, Bid, ItemRequest, SearchHistory
 from sitesetting.models import Notification
+
+@admin.register(SearchHistory)
+class SearchHistoryAdmin(admin.ModelAdmin):
+    list_display = ('query', 'user', 'session_key', 'created_at')
+    search_fields = ('query', 'user__username', 'session_key')
+    list_filter = ('created_at',)
+
 from utils.email_microservice import EmailMicroservice
 
 @admin.register(ItemRequest)
