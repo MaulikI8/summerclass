@@ -115,7 +115,16 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
       <button type="button" class="filter-chip" data-cat="instock" onclick="filterByCat('instock', this)"><i class="fa fa-check-circle text-success"></i> In Stock Only</button>
     </div>
 
-    <div class="row g-4" id="productGridContainer">
+    <!-- Skeleton Shimmer Loading Placeholders -->
+    <div class="row g-4 skeleton-grid" id="skeletonProductGrid">
+      <div class="col-lg-3 col-md-4 col-sm-6"><div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-badge"></div><div class="skeleton-line h-lg w-70"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-90 h-sm"></div><div class="skeleton-action-bar"><div class="skeleton-btn"></div><div class="skeleton-btn" style="flex:0 0 42px;border-radius:10px;"></div></div></div></div></div>
+      <div class="col-lg-3 col-md-4 col-sm-6"><div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-badge"></div><div class="skeleton-line h-lg w-70"></div><div class="skeleton-line w-40"></div><div class="skeleton-line w-90 h-sm"></div><div class="skeleton-action-bar"><div class="skeleton-btn"></div><div class="skeleton-btn" style="flex:0 0 42px;border-radius:10px;"></div></div></div></div></div>
+      <div class="col-lg-3 col-md-4 col-sm-6 d-none d-md-block"><div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-badge"></div><div class="skeleton-line h-lg w-50"></div><div class="skeleton-line w-30"></div><div class="skeleton-line w-70 h-sm"></div><div class="skeleton-action-bar"><div class="skeleton-btn"></div><div class="skeleton-btn" style="flex:0 0 42px;border-radius:10px;"></div></div></div></div></div>
+      <div class="col-lg-3 col-md-4 col-sm-6 d-none d-lg-block"><div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-badge"></div><div class="skeleton-line h-lg w-70"></div><div class="skeleton-line w-50"></div><div class="skeleton-line w-90 h-sm"></div><div class="skeleton-action-bar"><div class="skeleton-btn"></div><div class="skeleton-btn" style="flex:0 0 42px;border-radius:10px;"></div></div></div></div></div>
+    </div>
+
+    <!-- Real Product Grid (hidden initially, fades in) -->
+    <div class="row g-4 real-content-grid" id="productGridContainer">
       {% for product in products %}
       <div class="col-lg-3 col-md-4 col-sm-6 product-card-col" data-id="{{ product.id }}" data-title="{{ product.name|lower }}" data-category="{{ product.category.name|lower }}" data-price="{{ product.price }}" data-instock="{% if product.stock > 0 %}true{% else %}false{% endif %}">
         <div class="card card-product-grid shadow-sm">
@@ -558,6 +567,21 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
     });
   }
 
-  document.addEventListener('DOMContentLoaded', initAuctionTimers);
+  document.addEventListener('DOMContentLoaded', function() {
+    initAuctionTimers();
+
+    /* --- Skeleton → Real Content Reveal --- */
+    const skeletonGrid = document.getElementById('skeletonProductGrid');
+    const realGrid = document.getElementById('productGridContainer');
+    if (skeletonGrid && realGrid) {
+      setTimeout(function() {
+        skeletonGrid.classList.add('fade-out');
+        setTimeout(function() {
+          skeletonGrid.style.display = 'none';
+          realGrid.classList.add('content-visible');
+        }, 400);
+      }, 600);
+    }
+  });
 </script>
 {% endblock %}
