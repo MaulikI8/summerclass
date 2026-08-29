@@ -114,11 +114,21 @@ def ai_product_finder(request):
 
 
 def product_detail(request, id):
-    p = get_object_or_404(Product.objects.select_related('category', 'user'), pk=id)
+    try:
+        p = Product.objects.select_related('category', 'user').get(pk=id)
+    except Exception:
+        return render(request, '404.html', status=404)
+
     if not p.is_approved and not (request.user.is_authenticated and (request.user == p.user or request.user.is_staff or request.user.is_superuser)):
-        p = get_object_or_404(Product, pk=id, is_approved=True, status=True)
-    is_wishlisted = Wishlist.objects.filter(user=request.user, product=p).exists() if request.user.is_authenticated else False
-    
+        return render(request, '404.html', status=404)
+
+    is_wishlisted = False
+    if request.user.is_authenticated:
+        try:
+            is_wishlisted = Wishlist.objects.filter(user=request.user, product=p).exists()
+        except Exception:
+            pass
+
     in_cart = False
     try:
         from cart.models import CartItem
@@ -130,6 +140,7 @@ def product_detail(request, id):
         pass
 
     # Track view with 30-min deduplication
+    ai_recommendations = []
     try:
         from .recommendations import HybridRecommender
         HybridRecommender.track_view(request, p)
@@ -138,12 +149,25 @@ def product_detail(request, id):
     except Exception:
         ai_recommendations = []
 
-    reviews = Review.objects.filter(product=p, status=True).select_related('user').order_by('-created_at')
-    user_review = reviews.filter(user=request.user).first() if request.user.is_authenticated else None
+    reviews = []
+    user_review = None
+    try:
+        reviews = list(Review.objects.filter(product=p, status=True).select_related('user').order_by('-created_at'))
+        if request.user.is_authenticated:
+            user_review = next((r for r in reviews if r.user_id == request.user.id), None)
+    except Exception:
+        pass
+
+    related_products = []
+    try:
+        if p.category:
+            related_products = list(Product.objects.select_related('user').filter(category=p.category, is_approved=True, status=True).exclude(pk=id)[:4])
+    except Exception:
+        pass
 
     return render(request, 'products/product_detail.html', {
         'product': p,
-        'related_products': Product.objects.select_related('user').filter(category=p.category, is_approved=True, status=True).exclude(pk=id)[:4],
+        'related_products': related_products,
         'ai_recommendations': ai_recommendations,
         'is_wishlisted': is_wishlisted,
         'in_cart': in_cart,
