@@ -142,3 +142,36 @@ class SearchHistory(models.Model):
         return f"'{self.query}' by {user_display}"
 
 
+class ProductView(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='product_views')
+    session_key = models.CharField(max_length=100, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='views')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Product View'
+        verbose_name_plural = 'Product Views'
+
+    def __str__(self):
+        user_disp = self.user.username if self.user else (self.session_key or 'Anonymous')
+        return f"Viewed {self.product.name} by {user_disp}"
+
+
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.PositiveSmallIntegerField(default=5)
+    comment = models.TextField(blank=True)
+    status = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Review ({self.rating}★) by {self.user.username} on {self.product.name}"
+
+
+

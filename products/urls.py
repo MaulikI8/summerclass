@@ -5,6 +5,7 @@ urlpatterns = [
     path('', views.products, name='products'),
     path('suggest/', views.search_suggest, name='search_suggest'),
     path('<int:id>/', views.product_detail, name='product_detail'),
+    path('<int:id>/review/', views.submit_review, name='submit_review'),
     path('<int:id>/delete/', views.delete_product_view, name='delete_product'),
     path('<int:id>/wishlist/', views.toggle_wishlist, name='toggle_wishlist'),
     path('<int:id>/offer/', views.send_offer, name='send_offer'),

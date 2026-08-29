@@ -169,12 +169,60 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
       {% endfor %}
     </div>
 
-    <div id="filterEmptyMessage" class="text-center py-5 d-none bg-white rounded-3 border mt-4 shadow-sm">
+    <div id="filterEmptyMessage" class="text-center py-5 d-none bg-surface rounded-3 border mt-4 shadow-sm">
       <i class="fa fa-search text-muted display-4 d-block mb-3"></i>
-      <h5 class="fw-bold text-dark">No products found</h5>
+      <h5 class="fw-bold">No products found</h5>
       <p class="text-muted small">No items match your selected filter criteria.</p>
       <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-2 px-4" onclick="filterByCat('all', document.querySelector('#categoryFilterBar button'))">Show All Products</button>
     </div>
+
+    {% if recommendations %}
+    <div class="mt-5 pt-4 border-top" id="aiRecommendationsHomeSection">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge rounded-pill px-3 py-1 fw-bold text-white" style="font-size:0.75rem;background:#4F46E5;"><i class="fas fa-sparkles me-1"></i> AI PERSONALIZED</span>
+          </div>
+          <h4 class="section-title mb-0" style="font-size:1.35rem;">Recommended For You</h4>
+        </div>
+        <small class="text-muted"><i class="fas fa-robot text-primary me-1"></i> Based on your searches, views &amp; preferences</small>
+      </div>
+
+      <div class="row g-4">
+        {% for rec in recommendations %}
+        <div class="col-lg-3 col-md-4 col-sm-6">
+          <div class="card card-product-grid shadow-sm">
+            <div class="position-relative">
+              <a href="{% url 'product_detail' rec.product.id %}" class="img-wrap">
+                <img src="{% if rec.product.product_image %}{{ rec.product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ rec.product.name }}" loading="lazy" />
+                <span class="card-category-badge">{{ rec.product.category.name }}</span>
+                <span class="badge text-white rounded-pill position-absolute bottom-0 start-0 m-2 px-2 py-1 small fw-normal" style="font-size:0.68rem;backdrop-filter:blur(6px);background:rgba(15,23,42,0.82)!important;z-index:3;">
+                  <i class="fas fa-lightbulb text-warning me-1"></i> {{ rec.reason }}
+                </span>
+              </a>
+              <button type="button" class="btn-wishlist-toggle" onclick="toggleWishlist('{{ rec.product.id }}', this)"><i class="far fa-heart text-muted"></i></button>
+            </div>
+            <figcaption class="info-wrap">
+              <a href="{% url 'product_detail' rec.product.id %}" class="title" title="{{ rec.product.name }}">{{ rec.product.name }}</a>
+              <div class="d-flex align-items-center justify-content-between mt-1">
+                <span class="price">Rs. {{ rec.product.price|floatformat:2 }}</span>
+                <small class="text-muted"><i class="fas fa-user-circle me-1 text-primary"></i> {{ rec.product.user.first_name|default:rec.product.user.username|default:"Student" }}</small>
+              </div>
+              <div class="card-action-bar mt-2">
+                <a href="{% url 'product_detail' rec.product.id %}" class="btn-card-primary text-decoration-none">View Item</a>
+                {% if rec.product.stock > 0 and rec.product.user != user %}
+                <button type="button" class="btn-card-icon" onclick="addToCart('{{ rec.product.id }}', '{{ rec.product.name|escapejs }}', '{{ rec.product.price }}')" title="Add to Bag">
+                  <i class="fas fa-shopping-cart text-primary"></i>
+                </button>
+                {% endif %}
+              </div>
+            </figcaption>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
   </div>
 </section>
 
@@ -362,16 +410,12 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
   </div>
 </section>
 
-<section class="section-name py-5" id="wantedBoardSection" style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
+<section class="wanted-board-section py-5" id="wantedBoardSection">
   <div class="container">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
       <div>
-        <div class="d-flex align-items-center gap-2 mb-1">
-          <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;"><i class="fas fa-bullhorn me-1"></i> REVERSE MARKETPLACE</span>
-          <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 fw-bold" style="font-size:0.72rem;">URGENT CAMPUS NEEDS</span>
-        </div>
-        <h3 class="section-title mb-1">Campus Wanted Board</h3>
-        <p class="section-subtitle mb-0 text-muted">Looking for a textbook, lab component, or study material? Post a request or help out a peer student!</p>
+        <h3 class="section-title mb-1"><i class="fas fa-bullhorn text-primary me-2"></i>Campus Wanted Board</h3>
+        <p class="section-subtitle mb-0">Looking for a textbook, lab kit, or notes? Post a request or help out a classmate.</p>
       </div>
       <div>
         {% if user.is_authenticated %}
@@ -389,33 +433,34 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
     <div class="row g-3">
       {% for item in wanted_items %}
       <div class="col-lg-3 col-md-6 col-sm-12">
-        <div class="card border-0 rounded-4 shadow-sm bg-white h-100 p-3 d-flex flex-column justify-content-between position-relative overflow-hidden" style="border:1px solid #e2e8f0!important;">
+        <div class="wanted-card">
           <div>
             <div class="d-flex justify-content-between align-items-center mb-2">
               {% if item.urgency == 'today' %}
-              <span class="badge bg-danger text-white rounded-pill px-2 py-1" style="font-size:0.68rem;font-weight:700;"><i class="fas fa-bolt me-1"></i> Needed Today</span>
+              <span class="wanted-urgency urgency-today"><i class="fas fa-bolt"></i> Needed Today</span>
               {% elif item.urgency == 'week' %}
-              <span class="badge bg-warning text-dark rounded-pill px-2 py-1" style="font-size:0.68rem;font-weight:700;"><i class="fas fa-clock me-1"></i> Needed This Week</span>
+              <span class="wanted-urgency urgency-week"><i class="fas fa-clock"></i> Needed This Week</span>
               {% else %}
-              <span class="badge bg-light text-secondary border rounded-pill px-2 py-1" style="font-size:0.68rem;font-weight:700;">Flexible</span>
+              <span class="wanted-urgency urgency-flexible">Flexible</span>
               {% endif %}
-              <span class="text-muted" style="font-size:0.7rem;"><i class="far fa-clock me-1"></i>{{ item.created_at|timesince }} ago</span>
+              <span class="text-muted small" style="font-size:0.72rem;">{{ item.created_at|timesince }} ago</span>
             </div>
 
-            <h6 class="fw-bold text-dark mb-1" style="font-size:0.95rem;line-height:1.35;">{{ item.title }}</h6>
+            <h6 class="wanted-title">{{ item.title }}</h6>
             {% if item.description %}
-            <p class="text-muted small mb-2 text-truncate" style="font-size:0.8rem;">{{ item.description }}</p>
+            <p class="wanted-desc">{{ item.description }}</p>
             {% endif %}
 
-            <div class="d-flex align-items-center gap-2 mb-3">
-              <span class="badge bg-primary text-white fw-bold px-2 py-1 rounded" style="font-size:0.75rem;">Budget: Rs. {{ item.budget|floatformat:2 }}</span>
-              <span class="badge bg-light text-muted border px-2 py-1 rounded" style="font-size:0.72rem;"><i class="fas fa-map-marker-alt text-danger me-1"></i>{{ item.preferred_location }}</span>
+            <div class="wanted-meta-row">
+              <span class="wanted-budget-badge">Rs. {{ item.budget|floatformat:2 }}</span>
+              <span class="wanted-location-badge"><i class="fas fa-map-marker-alt text-danger me-1"></i>{{ item.preferred_location }}</span>
             </div>
           </div>
 
-          <div class="pt-2 border-top d-flex align-items-center justify-content-between mt-auto">
-            <div class="small text-muted d-flex align-items-center gap-1" style="font-size:0.75rem;">
-              <i class="fas fa-user-circle text-primary"></i> {{ item.user.first_name|default:item.user.username }}
+          <div class="wanted-author-bar">
+            <div class="wanted-author-info">
+              <div class="wanted-author-avatar">{{ item.user.first_name|default:item.user.username|slice:":1"|upper }}</div>
+              <span>{{ item.user.first_name|default:item.user.username }}</span>
             </div>
             {% if user.is_authenticated and item.user == user %}
             <form action="{% url 'delete_item_request' item.id %}" method="POST" class="d-inline">
@@ -425,8 +470,8 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
             {% else %}
             <form action="{% url 'fulfill_item_request' item.id %}" method="POST" class="d-inline">
               {% csrf_token %}
-              <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;" onclick="return confirm('Offer {{ item.title }} to {{ item.user.username }}? We will notify them right now.');">
-                <i class="fas fa-handshake me-1"></i> I Have This!
+              <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;" onclick="return confirm('Offer {{ item.title|escapejs }} to {{ item.user.username|escapejs }}? We will notify them right now.');">
+                <i class="fas fa-handshake me-1"></i> I Have This
               </button>
             </form>
             {% endif %}
@@ -434,12 +479,12 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
         </div>
       </div>
       {% empty %}
-      <div class="col-12 text-center py-4 bg-white rounded-4 border">
+      <div class="col-12 text-center py-5 bg-surface rounded-4 border">
         <i class="fas fa-bullhorn text-muted display-6 mb-2 d-block"></i>
-        <h6 class="fw-bold text-dark mb-1">No active wanted requests</h6>
-        <p class="text-muted small mb-2">Need a specific book, calculator, or lab tool? Post the first request!</p>
+        <h6 class="fw-bold mb-1">No active wanted requests</h6>
+        <p class="text-muted small mb-3">Need a specific book, calculator, or lab tool? Be the first to post a request!</p>
         {% if user.is_authenticated %}
-        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#postWantedModal">Post a Request</button>
+        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#postWantedModal">Post Request</button>
         {% endif %}
       </div>
       {% endfor %}

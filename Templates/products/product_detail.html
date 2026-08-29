@@ -197,7 +197,7 @@
             <span class="card-category-badge">{{ r.category.name }}</span>
           </a>
           <figcaption class="info-wrap p-3">
-            <a href="{% url 'product_detail' r.id %}" class="title fw-bold text-dark text-decoration-none text-truncate d-block mb-1">{{ r.name }}</a>
+            <a href="{% url 'product_detail' r.id %}" class="title fw-bold text-decoration-none text-truncate d-block mb-1">{{ r.name }}</a>
             <div class="d-flex align-items-center justify-content-between mt-auto">
               <span class="price fw-bold text-primary">Rs. {{ r.price|floatformat:2 }}</span>
               <a href="{% url 'product_detail' r.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0 small">View</a>
@@ -209,6 +209,96 @@
     </div>
   </div>
   {% endif %}
+
+  <!-- AI Personalised Recommendations Section -->
+  {% if ai_recommendations %}
+  <div class="mb-5 pt-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge rounded-pill px-3 py-1 fw-bold text-white" style="font-size:0.75rem;background:#4F46E5;"><i class="fas fa-sparkles me-1"></i> AI PERSONALIZED</span>
+        </div>
+        <h5 class="fw-bold mb-0" style="font-size:1.25rem;">Recommended For You</h5>
+      </div>
+      <small class="text-muted"><i class="fas fa-robot text-primary me-1"></i> Based on your recent searches &amp; views</small>
+    </div>
+    <div class="row g-3">
+      {% for rec in ai_recommendations %}
+      <div class="col-lg-3 col-md-4 col-6">
+        <div class="card card-product-grid shadow-sm h-100">
+          <a href="{% url 'product_detail' rec.product.id %}" class="img-wrap">
+            <img src="{% if rec.product.product_image %}{{ rec.product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" class="img-fluid" alt="{{ rec.product.name }}" loading="lazy" />
+            <span class="card-category-badge">{{ rec.product.category.name }}</span>
+            <span class="badge text-white rounded-pill position-absolute bottom-0 start-0 m-2 px-2 py-1 small fw-normal" style="font-size:0.65rem;backdrop-filter:blur(6px);background:rgba(15,23,42,0.82)!important;z-index:3;">
+              <i class="fas fa-lightbulb text-warning me-1"></i> {{ rec.reason }}
+            </span>
+          </a>
+          <figcaption class="info-wrap p-3">
+            <a href="{% url 'product_detail' rec.product.id %}" class="title fw-bold text-decoration-none text-truncate d-block mb-1">{{ rec.product.name }}</a>
+            <div class="d-flex align-items-center justify-content-between mt-auto">
+              <span class="price fw-bold text-primary">Rs. {{ rec.product.price|floatformat:2 }}</span>
+              <a href="{% url 'product_detail' rec.product.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0 small">View</a>
+            </div>
+          </figcaption>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Student Reviews & Ratings Section -->
+  <div class="mb-5 pt-3 border-top" id="reviewsSection">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0"><i class="fas fa-star text-warning me-2"></i>Student Ratings &amp; Reviews ({{ reviews|length }})</h5>
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="card border rounded-4 p-3 mb-4 bg-surface shadow-xs">
+      <h6 class="fw-bold mb-2">{% if user_review %}Update Your Rating{% else %}Write a Review{% endif %}</h6>
+      <form action="{% url 'submit_review' product.id %}" method="POST">
+        {% csrf_token %}
+        <div class="mb-2 d-flex align-items-center gap-3">
+          <label class="small fw-bold mb-0">Rating:</label>
+          <div class="d-flex gap-2">
+            {% for i in "12345" %}
+            <label class="cursor-pointer">
+              <input type="radio" name="rating" value="{{ i }}" {% if user_review and user_review.rating|add:0 == i|add:0 or not user_review and i == "5" %}checked{% endif %} class="d-none peer"/>
+              <i class="fas fa-star text-warning me-1" style="font-size:1.2rem;cursor:pointer;"></i>{{ i }}★
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="mb-2">
+          <textarea name="comment" rows="2" class="form-control form-control-sm rounded-3" placeholder="Share your feedback about this item or seller...">{% if user_review %}{{ user_review.comment }}{% endif %}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">Submit Review</button>
+      </form>
+    </div>
+    {% endif %}
+
+    <div class="d-flex flex-column gap-3">
+      {% for rev in reviews %}
+      <div class="card border rounded-3 p-3 bg-surface">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold" style="width:28px;height:28px;font-size:0.75rem;">
+              {{ rev.user.first_name|default:rev.user.username|slice:":1"|upper }}
+            </div>
+            <strong class="small">{{ rev.user.first_name|default:rev.user.username }}</strong>
+          </div>
+          <div class="text-warning small fw-bold">
+            <i class="fas fa-star me-1"></i>{{ rev.rating }}.0 / 5.0
+          </div>
+        </div>
+        {% if rev.comment %}<p class="small text-muted mb-0 mt-1">{{ rev.comment }}</p>{% endif %}
+        <small class="text-muted" style="font-size:0.7rem;">{{ rev.created_at|timesince }} ago</small>
+      </div>
+      {% empty %}
+      <p class="text-muted small mb-0">No student reviews yet. Be the first to leave a rating!</p>
+      {% endfor %}
+    </div>
+  </div>
 </div>
 
 <!-- Trade Offer Modal -->

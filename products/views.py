@@ -43,12 +43,42 @@ def product_detail(request, id):
     except Exception:
         pass
 
+    # Track view with 30-min deduplication
+    try:
+        from .recommendations import HybridRecommender
+        HybridRecommender.track_view(request, p)
+        recommender = HybridRecommender(request)
+        ai_recommendations = recommender.recommend(current_product=p, limit=4)
+    except Exception:
+        ai_recommendations = []
+
+    reviews = Review.objects.filter(product=p, status=True).select_related('user').order_by('-created_at')
+    user_review = reviews.filter(user=request.user).first() if request.user.is_authenticated else None
+
     return render(request, 'products/product_detail.html', {
         'product': p,
         'related_products': Product.objects.select_related('user').filter(category=p.category, is_approved=True, status=True).exclude(pk=id)[:4],
+        'ai_recommendations': ai_recommendations,
         'is_wishlisted': is_wishlisted,
-        'in_cart': in_cart
+        'in_cart': in_cart,
+        'reviews': reviews,
+        'user_review': user_review
     })
+
+@login_required
+def submit_review(request, id):
+    p = get_object_or_404(Product, pk=id, status=True, is_approved=True)
+    if request.method == 'POST':
+        rating = int(request.POST.get('rating', 5))
+        rating = max(1, min(5, rating))
+        comment = request.POST.get('comment', '').strip()
+        Review.objects.update_or_create(
+            user=request.user, product=p,
+            defaults={'rating': rating, 'comment': comment, 'status': True}
+        )
+        messages.success(request, "Thank you for your rating & review!")
+    return redirect('product_detail', id=id)
+
 
 def search_suggest(request):
     q = request.GET.get('q', '').strip()

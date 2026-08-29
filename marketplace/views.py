@@ -32,10 +32,27 @@ def home(request):
     auctions = list(Auction.objects.filter(is_active=True, end_time__gt=timezone.now(), product__is_approved=True).select_related('product', 'highest_bidder', 'product__user').order_by('end_time'))
     wanted = list(ItemRequest.objects.filter(is_fulfilled=False).select_related('user', 'category').order_by('-created_at')[:8])
     
+    recommendations = []
+    try:
+        from products.recommendations import HybridRecommender
+        from products.models import SearchHistory, ProductView
+        session_key = request.session.session_key
+        has_activity = False
+        if request.user.is_authenticated:
+            has_activity = SearchHistory.objects.filter(user=request.user).exists() or ProductView.objects.filter(user=request.user).exists()
+        elif session_key:
+            has_activity = SearchHistory.objects.filter(user__isnull=True, session_key=session_key).exists() or ProductView.objects.filter(user__isnull=True, session_key=session_key).exists()
+
+        if has_activity:
+            recommender = HybridRecommender(request)
+            recommendations = recommender.recommend(limit=4)
+    except Exception:
+        recommendations = []
+
     return render(request, 'home/home1.html', {
         'banners': Banner.objects.filter(is_active=True), 'products': p, 'featured_products': p[:8],
         'categories': ProductCategory.objects.all(), 'blogs': b, 'latest_blogs': b, 'auctions': auctions,
-        'wanted_items': wanted, 'total_products': len(p), 'total_categories': ProductCategory.objects.count(), 'total_blogs': len(b)
+        'wanted_items': wanted, 'recommendations': recommendations, 'total_products': len(p), 'total_categories': ProductCategory.objects.count(), 'total_blogs': len(b)
     })
 
 def start_auction(request, product_id):

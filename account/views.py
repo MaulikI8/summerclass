@@ -15,7 +15,15 @@ def student_login(request):
         username, pwd = request.POST.get('username', '').strip(), request.POST.get('password', '')
         user = authenticate(request, username=username, password=pwd)
         if user:
+            old_session_key = request.session.session_key
             login(request, user)
+            try:
+                from products.models import SearchHistory, ProductView
+                if old_session_key:
+                    SearchHistory.objects.filter(session_key=old_session_key, user__isnull=True).update(user=user)
+                    ProductView.objects.filter(session_key=old_session_key, user__isnull=True).update(user=user)
+            except Exception:
+                pass
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")
             return redirect('user_profile')
         inactive = User.objects.filter(username=username).first()
