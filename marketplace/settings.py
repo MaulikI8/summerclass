@@ -94,3 +94,9 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'maulikj663@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'lwdtdidnicnudkxr')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', f"Islington Marketplace <{EMAIL_HOST_USER}>")
 EMAIL_SENDER_NAME = os.environ.get('EMAIL_SENDER_NAME', 'Islington Marketplace')
+
+# --- Khalti Payment Gateway Settings ---
+# Get your Secret Key from https://test-admin.khalti.com (Sandbox) or https://admin.khalti.com (Production)
+KHALTI_SECRET_KEY = os.environ.get('KHALTI_SECRET_KEY', '8008e715f98b4e2993d54a52017037db')
+KHALTI_INITIATE_URL = os.environ.get('KHALTI_INITIATE_URL', 'https://dev.khalti.com/api/v2/epayment/initiate/')
+KHALTI_LOOKUP_URL = os.environ.get('KHALTI_LOOKUP_URL', 'https://dev.khalti.com/api/v2/epayment/lookup/')
