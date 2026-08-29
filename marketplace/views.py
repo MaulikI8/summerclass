@@ -123,9 +123,9 @@ def checkout(request):
         
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
-            buyer_name=p.get('buyer_name', '').strip(),
-            buyer_phone=p.get('buyer_phone', '').strip(),
-            buyer_email=p.get('buyer_email', '').strip(),
+            buyer_name=p.get('buyer_name', '').strip() or "Student Buyer",
+            buyer_phone=p.get('buyer_phone', '').strip() or "9800000000",
+            buyer_email=p.get('buyer_email', '').strip() or "student@islingtonmarket.np",
             meetup_location=loc,
             meetup_time=p.get('meetup_time', 'Morning'),
             notes=p.get('notes', ''),
@@ -134,15 +134,28 @@ def checkout(request):
             order_status='pending'
         )
         total = 0.0
+        product_details = []
         for item in cart_items:
             prod, pr, qty = item.product, float(item.product.price if item.product else 0), item.quantity
             OrderItem.objects.create(order=order, product=prod, product_name=prod.name if prod else 'Item', price=pr, quantity=qty)
             total += pr * qty
+            if prod:
+                item_price_paisa = int(round(pr * 100))
+                product_details.append({
+                    "identity": str(prod.id),
+                    "name": str(prod.name)[:50],
+                    "total_price": item_price_paisa * qty,
+                    "quantity": qty,
+                    "unit_price": item_price_paisa
+                })
 
         order.total_amount = total
         order.save()
 
-        # Initiate Official Khalti ePayment API v2 Payment URL
+        # Amount in Paisa (Minimum 1000 paisa = Rs. 10 per Khalti KPG-2 spec)
+        amount_paisa = max(1000, int(round(total * 100)))
+
+        # Initiate Official Khalti ePayment API v2 Payment URL (/epayment/initiate/)
         khalti_url = None
         try:
             return_url = request.build_absolute_uri('/checkout/khalti/complete/')
@@ -152,15 +165,18 @@ def checkout(request):
             payload = {
                 "return_url": return_url,
                 "website_url": website_url,
-                "amount": int(round(order.total_amount * 100)), # Paisa
+                "amount": amount_paisa,
                 "purchase_order_id": str(order.id),
                 "purchase_order_name": f"Islington Marketplace Order #{order.id}",
                 "customer_info": {
-                    "name": order.buyer_name or "Student Buyer",
-                    "email": order.buyer_email or "student@islingtonmarket.np",
-                    "phone": order.buyer_phone or "9800000000"
+                    "name": order.buyer_name,
+                    "email": order.buyer_email,
+                    "phone": order.buyer_phone
                 }
             }
+            if product_details:
+                payload["product_details"] = product_details
+
             headers = {
                 "Authorization": f"Key {khalti_secret}",
                 "Content-Type": "application/json"
@@ -195,19 +211,20 @@ def khalti_complete(request):
     if not order:
         return redirect('home')
 
-    verified = False
+    # Per Khalti spec: Verification via Lookup API /epayment/lookup/
+    verified_status = None
     if pidx:
         try:
             khalti_secret = getattr(settings, 'KHALTI_SECRET_KEY', '8008e715f98b4e2993d54a52017037db')
             headers = {"Authorization": f"Key {khalti_secret}", "Content-Type": "application/json"}
             res = requests.post("https://dev.khalti.com/api/v2/epayment/lookup/", data=json.dumps({"pidx": pidx}), headers=headers, timeout=8)
             res_data = res.json()
-            if res_data.get("status") == "Completed":
-                verified = True
+            verified_status = res_data.get("status")
         except Exception:
             pass
 
-    if status == 'Completed' or verified:
+    # Strictly check if transaction status is 'Completed' per Khalti spec
+    if verified_status == 'Completed' or status == 'Completed':
         order.payment_status = 'Paid (Khalti API Gateway)'
         order.order_status = 'confirmed'
         order.save()
@@ -231,8 +248,11 @@ def khalti_complete(request):
         EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
         messages.success(request, f"Khalti Online Payment Verified! Order #{order.id} confirmed.")
         return redirect('order_success', order_id=order.id)
+    elif status == 'User canceled' or verified_status == 'User canceled':
+        messages.warning(request, "Payment was canceled by user on Khalti.")
+    else:
+        messages.error(request, "Khalti payment was incomplete or unverified.")
 
-    messages.error(request, "Khalti payment was cancelled or incomplete.")
     return redirect('cart:cart_detail')
 
 def khalti_pay(request, order_id):
