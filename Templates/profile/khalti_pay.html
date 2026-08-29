@@ -1,0 +1,123 @@
+{% extends 'master/base.html' %}
+{% load static %}
+{% block title %}Khalti Payment Simulator | Islington Marketplace{% endblock %}
+
+{% block content %}
+<style>
+  .khalti-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 15px 35px rgba(92, 45, 145, 0.12);
+    overflow: hidden;
+  }
+  .khalti-header {
+    background: linear-gradient(135deg, #5C2D91 0%, #4a2177 100%);
+    color: #ffffff;
+    padding: 1.75rem 2rem;
+  }
+  .khalti-logo-badge {
+    background: #ffffff;
+    color: #5C2D91;
+    font-weight: 800;
+    font-size: 1.1rem;
+    padding: 6px 16px;
+    border-radius: 99px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  [data-theme="dark"] .khalti-card,
+  [data-bs-theme="dark"] .khalti-card {
+    background: #131827;
+    border-color: #1e293b;
+  }
+</style>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <div class="khalti-card">
+        <div class="khalti-header text-center">
+          <div class="mb-2">
+            <span class="khalti-logo-badge"><i class="fas fa-wallet"></i> khalti</span>
+          </div>
+          <span class="badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold small text-uppercase mb-2">Sandbox Test Gateway</span>
+          <h4 class="fw-bold mb-1">Complete Online Payment</h4>
+          <p class="mb-0 text-white-50 small">Order #{{ order.id }} &bull; {{ order.buyer_name }}</p>
+        </div>
+
+        <div class="p-4">
+          <!-- Order Summary Box -->
+          <div class="p-3 bg-light rounded-3 border mb-4 d-flex justify-content-between align-items-center">
+            <div>
+              <small class="text-muted d-block">Total Payable Amount</small>
+              <strong class="fs-4 text-primary">Rs. {{ order.total_amount|floatformat:2 }}</strong>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 small fw-bold">
+                <i class="fas fa-shield-alt me-1"></i> SSL Secured
+              </span>
+            </div>
+          </div>
+
+          <form id="khaltiPayForm" method="POST" action="{% url 'khalti_pay' order.id %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Khalti Registered ID / Mobile *</label>
+              <input type="text" name="khalti_mobile" class="form-control rounded-3" value="{{ order.buyer_phone|default:'9800000000' }}" placeholder="98XXXXXXXX" required />
+              <small class="text-muted" style="font-size:0.75rem;">Use any 10-digit mobile number for testing.</small>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small fw-bold">Khalti Test MPIN / PIN *</label>
+              <input type="password" name="khalti_pin" class="form-control rounded-3" value="1111" maxlength="4" placeholder="4-digit PIN (default: 1111)" required />
+              <small class="text-muted" style="font-size:0.75rem;">Test PIN: <code>1111</code></small>
+            </div>
+
+            <div id="khaltiStatusAlert" class="alert alert-info d-none small mb-3">
+              <i class="fas fa-spinner fa-spin me-2"></i> <span id="khaltiStatusText">Connecting to Khalti Sandbox...</span>
+            </div>
+
+            <button type="submit" id="btnSubmitKhalti" class="btn btn-lg w-100 rounded-pill text-white fw-bold shadow-sm" style="background:#5C2D91;">
+              <i class="fas fa-lock me-2"></i> Pay Rs. {{ order.total_amount|floatformat:2 }} with Khalti
+            </button>
+          </form>
+
+          <div class="text-center mt-3">
+            <a href="{% url 'cart:cart_detail' %}" class="small text-muted text-decoration-none" onclick="return confirm('Cancel this payment and return to bag?');">
+              <i class="fas fa-times me-1"></i> Cancel &amp; Return to Cart
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('khaltiPayForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const alertBox = document.getElementById('khaltiStatusAlert');
+    const statusText = document.getElementById('khaltiStatusText');
+    const btn = document.getElementById('btnSubmitKhalti');
+    
+    alertBox.classList.remove('d-none');
+    btn.disabled = true;
+    
+    setTimeout(() => {
+      statusText.textContent = "Verifying Khalti Test Credentials...";
+    }, 700);
+
+    setTimeout(() => {
+      statusText.textContent = "Payment Authorized! Decrementing Stock & Confirming Order...";
+      alertBox.className = "alert alert-success small mb-3";
+    }, 1500);
+
+    setTimeout(() => {
+      e.target.submit();
+    }, 2200);
+  });
+</script>
+{% endblock %}

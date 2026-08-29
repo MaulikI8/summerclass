@@ -33,13 +33,24 @@
             <input type="text" name="home_address" class="form-control form-control-sm rounded-3" placeholder="e.g. House 12, Kamalpokhari"/>
           </div>
 
-          <h6 class="fw-bold small text-muted text-uppercase mb-2">3. Payment Option</h6>
-          <div class="d-flex flex-column gap-2 mb-3">
-            <label class="p-2 border rounded-3 d-flex align-items-center gap-2 small"><input type="radio" name="payment_method" value="esewa_sandbox" checked/> <span class="badge bg-success">eSewa</span> eSewa Online Payment</label>
-            <label class="p-2 border rounded-3 d-flex align-items-center gap-2 small"><input type="radio" name="payment_method" value="khalti_sandbox"/> <span class="badge bg-primary">Khalti</span> Khalti Wallet Payment</label>
+          <h6 class="fw-bold small text-muted text-uppercase mb-2">3. Payment Method</h6>
+          <div class="p-3 border rounded-3 bg-surface mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="d-flex align-items-center gap-2">
+                <input type="radio" name="payment_method" value="khalti_sandbox" checked class="form-check-input" />
+                <span class="badge rounded-pill text-white fw-bold px-3 py-1" style="background:#5C2D91;font-size:0.8rem;"><i class="fas fa-wallet me-1"></i> Khalti Gateway</span>
+                <strong class="small">Khalti Online Digital Wallet</strong>
+              </div>
+              <span class="badge bg-warning text-dark rounded-pill px-2 py-0.5 small fw-bold">Test Sandbox Mode</span>
+            </div>
+            <p class="text-muted small mb-0 ms-4" style="font-size:0.8rem;">
+              Proceeding will launch the Khalti Payment Simulator where you can authorize the payment using test credentials.
+            </p>
           </div>
 
-          <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">Place Order &bull; Rs. {{ total|floatformat:2 }}</button>
+          <button type="submit" class="btn rounded-pill w-100 py-2.5 fw-bold text-white shadow-sm" style="background:#5C2D91;">
+            <i class="fas fa-arrow-right me-1"></i> Proceed to Khalti Test Payment &bull; Rs. {{ total|floatformat:2 }}
+          </button>
         </form>
       </div>
     </div>

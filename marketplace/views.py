@@ -111,37 +111,71 @@ def checkout(request):
     from cart.views import _get_or_create_cart
     cart = _get_or_create_cart(request)
     cart_items = cart.items.filter(is_active=True).select_related('product', 'product__user')
-    if not cart_items.exists(): return redirect('products')
+    if not cart_items.exists():
+        return redirect('products')
 
     if request.method == 'POST':
         p = request.POST
         loc = f"Home (Kathmandu): {p.get('home_address', '')}" if p.get('delivery_type') == 'home_delivery' else f"Campus: {p.get('campus_block', 'Kumari Hall')}"
-        pm = p.get('payment_method', 'esewa_sandbox')
-        if pm not in ['esewa_sandbox', 'khalti_sandbox']:
-            pm = 'esewa_sandbox'
+        
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
-            buyer_name=p.get('buyer_name', '').strip(), buyer_phone=p.get('buyer_phone', '').strip(),
-            buyer_email=p.get('buyer_email', '').strip(), meetup_location=loc,
-            meetup_time=p.get('meetup_time', 'Morning'), notes=p.get('notes', ''),
-            payment_method=pm, payment_status='Paid (Online Sandbox)', order_status='confirmed'
+            buyer_name=p.get('buyer_name', '').strip(),
+            buyer_phone=p.get('buyer_phone', '').strip(),
+            buyer_email=p.get('buyer_email', '').strip(),
+            meetup_location=loc,
+            meetup_time=p.get('meetup_time', 'Morning'),
+            notes=p.get('notes', ''),
+            payment_method='khalti_sandbox',
+            payment_status='Pending (Khalti Gateway)',
+            order_status='pending'
         )
         total = 0.0
-        site_url = request.build_absolute_uri('/')[:-1]
         for item in cart_items:
             prod, pr, qty = item.product, float(item.product.price if item.product else 0), item.quantity
             OrderItem.objects.create(order=order, product=prod, product_name=prod.name if prod else 'Item', price=pr, quantity=qty)
             total += pr * qty
-            if prod and prod.user and prod.user != request.user:
-                Notification.notify(prod.user, f'New Order #{order.id} for {prod.name}!', f'{order.buyer_name} ordered {qty}x.', 'order_placed', 'fa-receipt', '/profile/?tab=orders')
-                EmailMicroservice.send_seller_new_order_email(prod.user, prod, order, qty, site_url=site_url)
+
         order.total_amount = total
         order.save()
-        cart_items.delete()
-        EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
-        return redirect('order_success', order_id=order.id)
+
+        # Redirect to Khalti Sandbox Payment Gateway Simulation
+        return redirect('khalti_pay', order_id=order.id)
 
     return render(request, 'profile/checkout.html', {'cart': cart, 'cart_items': cart_items, 'total': cart.total_price, 'item_count': cart.total_items_count})
+
+def khalti_pay(request, order_id):
+    from cart.views import _get_or_create_cart
+    order = get_object_or_404(Order, id=order_id)
+
+    if request.method == 'POST':
+        order.payment_status = 'Paid (Khalti Test Gateway)'
+        order.order_status = 'confirmed'
+        order.save()
+
+        # Decrement stock for ordered items
+        site_url = request.build_absolute_uri('/')[:-1]
+        for item in order.items.all():
+            if item.product:
+                item.product.stock = max(0, item.product.stock - item.quantity)
+                if item.product.stock == 0:
+                    item.product.status = False
+                item.product.save()
+                if item.product.user and item.product.user != request.user:
+                    Notification.notify(item.product.user, f'New Order #{order.id} for {item.product.name}!', f'{order.buyer_name} ordered {item.quantity}x.', 'order_placed', 'fa-receipt', '/profile/?tab=orders')
+                    EmailMicroservice.send_seller_new_order_email(item.product.user, item.product, order, item.quantity, site_url=site_url)
+
+        # Clear cart
+        cart = _get_or_create_cart(request)
+        cart.items.all().delete()
+
+        # Send buyer email confirmation
+        EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
+        messages.success(request, f"Khalti Payment Authorized! Order #{order.id} confirmed.")
+        return redirect('order_success', order_id=order.id)
+
+    return render(request, 'profile/khalti_pay.html', {'order': order})
+
 
 def order_success(request, order_id):
     return render(request, 'profile/order_success.html', {'order': get_object_or_404(Order, id=order_id)})
