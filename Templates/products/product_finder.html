@@ -1,0 +1,95 @@
+{% extends 'master/base.html' %}
+{% load static %}
+{% block title %}AI Product Finder | Islington Marketplace{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Header Banner -->
+  <div class="card border-0 rounded-4 p-4 mb-4 text-white shadow-sm" style="background: linear-gradient(135deg, #4F46E5 0%, #7c3aed 100%);">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <span class="badge bg-white text-primary rounded-pill px-3 py-1 fw-bold small text-uppercase mb-2">Smart Requirement Matcher</span>
+        <h2 class="fw-bold mb-2"><i class="fas fa-sparkles me-2"></i>AI Product Finder</h2>
+        <p class="mb-0 text-white-50">State your exact requirement and budget. Our TF-IDF vector matcher ranks eligible items by relevance score.</p>
+      </div>
+      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <a href="{% url 'products' %}" class="btn btn-light rounded-pill px-4 fw-semibold text-primary">
+          <i class="fas fa-store me-1"></i> Full Catalog
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finder Input Form -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-surface">
+    <form method="GET" action="{% url 'ai_product_finder' %}" class="row g-3 align-items-end">
+      <div class="col-lg-7 col-md-6">
+        <label class="form-label small fw-bold"><i class="fas fa-comment-alt text-primary me-1"></i> Your Requirement / Desired Features *</label>
+        <input type="text" name="requirement" class="form-control rounded-3" value="{{ requirement }}" placeholder="e.g. Wireless headphones for gym with long battery life or Python textbook" required />
+      </div>
+      <div class="col-lg-3 col-md-4">
+        <label class="form-label small fw-bold"><i class="fas fa-wallet text-success me-1"></i> Max Budget (Rs.)</label>
+        <input type="number" step="50" name="max_budget" class="form-control rounded-3" value="{% if max_budget %}{{ max_budget|floatformat:0 }}{% endif %}" placeholder="e.g. 5000" />
+      </div>
+      <div class="col-lg-2 col-md-2">
+        <button type="submit" class="btn btn-primary w-100 rounded-3 py-2 fw-bold shadow-xs">
+          <i class="fas fa-search me-1"></i> Find Items
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results Section -->
+  {% if requirement or max_budget %}
+  <div class="mb-3 d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold mb-0">
+      Matched Recommendations ({{ total_count }})
+      {% if requirement %}<small class="text-muted fw-normal ms-2">for "{{ requirement }}"</small>{% endif %}
+      {% if max_budget %}<small class="text-muted fw-normal ms-1">(Max Rs. {{ max_budget|floatformat:0 }})</small>{% endif %}
+    </h5>
+    <small class="text-muted"><i class="fas fa-robot text-primary me-1"></i> TF-IDF Cosine Similarity Ranking</small>
+  </div>
+
+  <div class="row g-4">
+    {% for product in results %}
+    <div class="col-lg-3 col-md-4 col-sm-6">
+      <div class="card card-product-grid shadow-sm h-100 position-relative">
+        {% if product.match_percentage %}
+        <span class="badge bg-success text-white rounded-pill position-absolute top-0 end-0 m-2 px-2 py-1 small fw-bold" style="z-index:4;box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+          <i class="fas fa-bullseye me-1"></i> {{ product.match_percentage }}
+        </span>
+        {% endif %}
+        <div class="position-relative">
+          <a href="{% url 'product_detail' product.id %}" class="img-wrap">
+            <img src="{% if product.product_image %}{{ product.product_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" alt="{{ product.name }}" loading="lazy" />
+            <span class="card-category-badge">{{ product.category.name }}</span>
+          </a>
+        </div>
+        <figcaption class="info-wrap p-3">
+          <a href="{% url 'product_detail' product.id %}" class="title fw-bold text-decoration-none text-truncate d-block mb-1">{{ product.name }}</a>
+          <div class="d-flex align-items-center justify-content-between mt-auto">
+            <span class="price fw-bold text-primary">Rs. {{ product.price|floatformat:2 }}</span>
+            <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1">View Details</a>
+          </div>
+        </figcaption>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 bg-surface rounded-4 border">
+      <i class="fas fa-search-minus text-muted display-5 mb-3 d-block"></i>
+      <h5 class="fw-bold mb-1">No matching items within budget</h5>
+      <p class="text-muted small mb-3">Try increasing your budget or using broader keywords.</p>
+      <a href="{% url 'ai_product_finder' %}" class="btn btn-outline-primary btn-sm rounded-pill px-4">Reset Finder</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <!-- Empty State Helper -->
+  <div class="text-center py-5 bg-surface rounded-4 border">
+    <i class="fas fa-sparkles text-primary display-4 mb-3 d-block"></i>
+    <h5 class="fw-bold">Ready to find your campus gear?</h5>
+    <p class="text-muted small">Enter what you need above (e.g. "Calculus book", "Arduino kit", "Logitech mouse") to see smart ranked matches.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
