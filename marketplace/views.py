@@ -160,7 +160,7 @@ def checkout(request):
         try:
             return_url = request.build_absolute_uri('/checkout/khalti/complete/')
             website_url = request.build_absolute_uri('/')
-            khalti_secret = getattr(settings, 'KHALTI_SECRET_KEY', '8008e715f98b4e2993d54a52017037db')
+            khalti_secret = getattr(settings, 'KHALTI_SECRET_KEY', '') or os.environ.get('KHALTI_SECRET_KEY', '')
             
             payload = {
                 "return_url": return_url,
@@ -215,7 +215,7 @@ def khalti_complete(request):
     verified_status = None
     if pidx:
         try:
-            khalti_secret = getattr(settings, 'KHALTI_SECRET_KEY', '8008e715f98b4e2993d54a52017037db')
+            khalti_secret = getattr(settings, 'KHALTI_SECRET_KEY', '') or os.environ.get('KHALTI_SECRET_KEY', '')
             headers = {"Authorization": f"Key {khalti_secret}", "Content-Type": "application/json"}
             res = requests.post("https://dev.khalti.com/api/v2/epayment/lookup/", data=json.dumps({"pidx": pidx}), headers=headers, timeout=8)
             res_data = res.json()
