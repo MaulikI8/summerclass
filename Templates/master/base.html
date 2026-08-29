@@ -95,10 +95,14 @@
             <a href="{% url 'student_register' %}" class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold d-none d-sm-inline">Register</a>
             {% endif %}
 
-            <button type="button" class="theme-toggle-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode" title="Toggle dark mode">
-              <i class="fas fa-sun icon-sun"></i>
-              <i class="fas fa-moon icon-moon"></i>
-            </button>
+            <label class="theme-switch" title="Toggle Dark / Light Mode" aria-label="Toggle Dark / Light Mode">
+              <input type="checkbox" id="themeToggleCheckbox" onchange="toggleDarkMode()" />
+              <span class="theme-slider">
+                <i class="fas fa-sun icon-sun"></i>
+                <i class="fas fa-moon icon-moon"></i>
+                <span class="theme-thumb"></span>
+              </span>
+            </label>
             <a href="{% url 'user_profile' %}?tab=wishlist" class="widget-header text-decoration-none" aria-label="Saved items and wishlist"><div class="widget-icon-btn"><i class="fas fa-heart text-danger"></i></div></a>
             <a href="{% url 'cart:cart_detail' %}" class="widget-header position-relative text-decoration-none" aria-label="Shopping bag">
               <div class="widget-icon-btn"><i class="fas fa-shopping-bag text-primary"></i></div>
@@ -310,15 +314,23 @@
       box.scrollTop=box.scrollHeight;
     };
 
-    /* --- Dark Mode Toggle --- */
+    /* --- Dark Mode Toggle Switch --- */
     function toggleDarkMode(){
       const html=document.documentElement;
-      const current=html.getAttribute('data-theme')||html.getAttribute('data-bs-theme')||'light';
-      const next=current==='dark'?'light':'dark';
+      const cb=document.getElementById('themeToggleCheckbox');
+      const next=cb ? (cb.checked ? 'dark' : 'light') : (html.getAttribute('data-theme')==='dark'?'light':'dark');
       html.setAttribute('data-theme',next);
       html.setAttribute('data-bs-theme',next);
       localStorage.setItem('im-theme',next);
     }
+
+    document.addEventListener('DOMContentLoaded', function(){
+      var t = localStorage.getItem('im-theme') || 'light';
+      var cb = document.getElementById('themeToggleCheckbox');
+      if (cb) {
+        cb.checked = (t === 'dark');
+      }
+    });
 
     window.addEventListener('scroll',()=>document.getElementById('backToTopBtn')?.classList.toggle('visible',window.scrollY>250));
     document.getElementById('globalSearchInput')?.addEventListener('input',e=>{

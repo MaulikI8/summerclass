@@ -4396,3 +4396,210 @@ body.site-body {
     font-weight: 700;
 }
 
+/* ==========================================================================
+   SMOOTH ANIMATED THEME TOGGLE SWITCH
+   ========================================================================== */
+.theme-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 58px;
+    height: 30px;
+    margin: 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #cbd5e1;
+    border: 1.5px solid #94a3b8;
+    border-radius: 30px;
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 7px;
+    overflow: hidden;
+}
+
+.theme-slider .icon-sun {
+    font-size: 13px;
+    color: #d97706;
+    z-index: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.theme-slider .icon-moon {
+    font-size: 12px;
+    color: #818cf8;
+    z-index: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.theme-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 23px;
+    height: 23px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.4s ease;
+    z-index: 2;
+}
+
+/* Checked State (Dark Mode) */
+.theme-switch input:checked + .theme-slider {
+    background: #1e1b4b;
+    border-color: #312e81;
+}
+
+.theme-switch input:checked + .theme-slider .theme-thumb {
+    transform: translateX(28px);
+    background: #4f46e5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(129, 140, 248, 0.6);
+}
+
+.theme-switch input:checked + .theme-slider .icon-sun {
+    opacity: 0.35;
+}
+
+.theme-switch input:not(:checked) + .theme-slider .icon-moon {
+    opacity: 0.35;
+}
+
+.theme-switch:hover .theme-thumb {
+    transform: scale(1.08);
+}
+.theme-switch input:checked:hover + .theme-slider .theme-thumb {
+    transform: translateX(28px) scale(1.08);
+}
+
+
+/* ==========================================================================
+   MASTER DARK MODE OVERRIDES (Guaranteed Contrast & Full Page Theme Swap)
+   ========================================================================== */
+[data-theme="dark"],
+[data-bs-theme="dark"],
+html[data-theme="dark"],
+html[data-bs-theme="dark"] {
+    --bg-body: #0b0f1a !important;
+    --bg-surface: #131827 !important;
+    --bg-surface-elevated: #1a2035 !important;
+    --bg-soft: #0f172a !important;
+    --text-main: #f8fafc !important;
+    --text-muted: #94a3b8 !important;
+    --border-color: #1e293b !important;
+    --border-light: #1e293b !important;
+    --card-bg: #131827 !important;
+    color-scheme: dark !important;
+}
+
+/* 1. Body Background & Radial Mesh in Dark Mode */
+[data-theme="dark"] body,
+[data-theme="dark"] body.site-body,
+[data-bs-theme="dark"] body,
+[data-bs-theme="dark"] body.site-body,
+html[data-theme="dark"] body,
+html[data-bs-theme="dark"] body {
+    background-color: #0b0f1a !important;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%) !important;
+    color: #f8fafc !important;
+}
+
+/* 2. Full Page Cards & Containers in Dark Mode */
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-light,
+[data-theme="dark"] .bg-surface,
+[data-theme="dark"] .card,
+[data-theme="dark"] .section-name,
+[data-theme="dark"] .section-flow-wrap,
+[data-theme="dark"] .filter-chip,
+[data-theme="dark"] .category-showcase-card,
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .dropdown-menu,
+[data-bs-theme="dark"] .bg-white,
+[data-bs-theme="dark"] .bg-light,
+[data-bs-theme="dark"] .bg-surface,
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .section-name,
+[data-bs-theme="dark"] .section-flow-wrap,
+[data-bs-theme="dark"] .filter-chip,
+[data-bs-theme="dark"] .category-showcase-card,
+[data-bs-theme="dark"] .modal-content,
+[data-bs-theme="dark"] .dropdown-menu {
+    background-color: #131827 !important;
+    color: #f8fafc !important;
+    border-color: #1e293b !important;
+}
+
+/* 3. Text Contrast Overrides in Dark Mode */
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, 
+[data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6,
+[data-theme="dark"] .section-title, [data-theme="dark"] .text-dark,
+[data-theme="dark"] .fw-bold, [data-theme="dark"] .title,
+[data-bs-theme="dark"] h1, [data-bs-theme="dark"] h2, [data-bs-theme="dark"] h3, 
+[data-bs-theme="dark"] h4, [data-bs-theme="dark"] h5, [data-bs-theme="dark"] h6,
+[data-bs-theme="dark"] .section-title, [data-bs-theme="dark"] .text-dark,
+[data-bs-theme="dark"] .fw-bold, [data-bs-theme="dark"] .title {
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] .section-subtitle,
+[data-theme="dark"] p.text-muted,
+[data-bs-theme="dark"] .text-muted,
+[data-bs-theme="dark"] .section-subtitle,
+[data-bs-theme="dark"] p.text-muted {
+    color: #94a3b8 !important;
+}
+
+/* 4. Form Controls & Inputs in Dark Mode */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select,
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: #1a2035 !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+
+[data-theme="dark"] .form-control::placeholder,
+[data-bs-theme="dark"] .form-control::placeholder {
+    color: #64748b !important;
+}
+
+/* 5. Header & Footer in Dark Mode */
+[data-theme="dark"] .section-header,
+[data-bs-theme="dark"] .section-header {
+    background-color: rgba(11, 15, 26, 0.95) !important;
+    border-bottom-color: #1e293b !important;
+}
+
+[data-theme="dark"] .top-bar-nav,
+[data-bs-theme="dark"] .top-bar-nav {
+    background-color: #080c14 !important;
+    border-bottom-color: #1e293b !important;
+}
+
+[data-theme="dark"] .section-footer,
+[data-bs-theme="dark"] .section-footer {
+    background-color: #080c14 !important;
+    border-top-color: #1e293b !important;
+}
+
+
