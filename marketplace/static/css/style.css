@@ -2660,22 +2660,6 @@ ul.thumb li img:hover {
     box-shadow: 0 6px 14px rgba(79, 70, 229, 0.4);
 }
 
-/* ==========================================================================
-   HANDCRAFTED ORGANIC MICRO-ANIMATIONS (Non-AI Template Look)
-   ========================================================================== */
-
-/* Ambient Floating Background Mesh */
-body.site-body {
-    background-color: #F8FAFC;
-    background-image: 
-        radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.04) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
-    background-attachment: fixed;
-}
-
-/* Smooth organic card hover */
-.card-product-grid {
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, border-color 0.35s ease !important;
 }
 
 .card-product-grid:hover {
