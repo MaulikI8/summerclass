@@ -3,8 +3,15 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.urls import path
 from django.shortcuts import redirect, get_object_or_404
-from .models import Category, Product, PendingProductReview, Order, OrderItem, Auction, Bid, ItemRequest, SearchHistory
+from .models import Category, Product, PendingProductReview, Order, OrderItem, Auction, Bid, ItemRequest, SearchHistory, Variation
 from sitesetting.models import Notification
+
+@admin.register(Variation)
+class VariationAdmin(admin.ModelAdmin):
+    list_display = ('product', 'variation_category', 'variation_value', 'is_active', 'created_at')
+    list_editable = ('is_active',)
+    list_filter = ('variation_category', 'is_active', 'product')
+    search_fields = ('product__name', 'variation_value')
 
 @admin.register(SearchHistory)
 class SearchHistoryAdmin(admin.ModelAdmin):

@@ -19,7 +19,17 @@
             <tbody>
               {% for i in cart_items %}
               <tr>
-                <td><strong>{{ i.product.name }}</strong><small class="text-muted d-block">{{ i.product.category.name }}</small></td>
+                <td>
+                  <strong>{{ i.product.name }}</strong>
+                  <small class="text-muted d-block">{{ i.product.category.name }}</small>
+                  {% if i.variations.all %}
+                  <div class="mt-1">
+                    {% for v in i.variations.all %}
+                    <span class="badge bg-light text-dark border me-1" style="font-size:0.7rem;">{{ v.get_variation_category_display }}: {{ v.variation_value }}</span>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </td>
                 <td>Rs. {{ i.product.price|floatformat:2 }}</td>
                 <td>
                   <div class="d-inline-flex align-items-center border rounded-pill px-2 py-1 bg-light">

@@ -32,15 +32,44 @@ def cart_detail(request):
         'total': cart.total_price, 'item_count': cart.total_items_count
     })
 
+from products.models import Product, Variation
+
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     if request.user.is_authenticated and product.user == request.user:
         return JsonResponse({'status': 'error', 'message': 'Cannot buy your own listing.'}, status=400) if request.headers.get('x-requested-with') == 'XMLHttpRequest' else redirect('cart:cart_detail')
+    
     cart = _get_or_create_cart(request)
-    item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-    if not created:
-        item.quantity = min(item.quantity + 1, product.stock or 1)
-        item.save()
+    product_variations = []
+
+    if request.method == 'POST':
+        for key in request.POST:
+            value = request.POST.get(key)
+            try:
+                var = Variation.objects.filter(product=product, variation_category__iexact=key, variation_value__iexact=value, is_active=True).first()
+                if var:
+                    product_variations.append(var)
+            except Exception:
+                pass
+
+    existing_items = CartItem.objects.filter(cart=cart, product=product, is_active=True)
+    item = None
+
+    if product_variations and existing_items.exists():
+        for ex_item in existing_items:
+            existing_vars = list(ex_item.variations.all())
+            if set(existing_vars) == set(product_variations):
+                item = ex_item
+                item.quantity = min(item.quantity + 1, product.stock or 1)
+                item.save()
+                break
+
+    if item is None:
+        item = CartItem.objects.create(cart=cart, product=product, quantity=1)
+        if product_variations:
+            item.variations.set(product_variations)
+            item.save()
+
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'status': 'success', 'cart_count': cart.total_items_count, 'cart_total': cart.total_price})
     return redirect(request.META.get('HTTP_REFERER', 'cart:cart_detail'))

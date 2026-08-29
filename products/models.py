@@ -174,4 +174,39 @@ class Review(models.Model):
         return f"Review ({self.rating}★) by {self.user.username} on {self.product.name}"
 
 
+class VariationManager(models.Manager):
+    def colors(self):
+        return super().filter(variation_category='color', is_active=True)
+
+    def sizes(self):
+        return super().filter(variation_category='size', is_active=True)
+
+    def conditions(self):
+        return super().filter(variation_category='condition', is_active=True)
+
+
+VARIATION_CATEGORY_CHOICES = (
+    ('size', 'Size'),
+    ('color', 'Color'),
+    ('condition', 'Condition'),
+    ('edition', 'Edition / Version'),
+)
+
+class Variation(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variations')
+    variation_category = models.CharField(max_length=100, choices=VARIATION_CATEGORY_CHOICES)
+    variation_value = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = VariationManager()
+
+    class Meta:
+        ordering = ['variation_category', 'variation_value']
+
+    def __str__(self):
+        return f"{self.product.name} - {self.get_variation_category_display()}: {self.variation_value}"
+
+
+
 
