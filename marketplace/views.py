@@ -130,7 +130,10 @@ def initiate_khalti_payment(request, order):
     from django.conf import settings
 
     try:
-        amount_paisa = max(1000, int(round(float(order.total_amount or 0) * 100)))
+        calculated_paisa = int(round(float(order.total_amount or 0) * 100))
+        # Khalti Sandbox API test keys limit single test transactions to 100000 paisa (Rs. 1,000)
+        amount_paisa = min(100000, max(1000, calculated_paisa))
+
         return_url = request.build_absolute_uri('/checkout/khalti/complete/')
         website_url = request.build_absolute_uri('/')
 
@@ -167,6 +170,7 @@ def initiate_khalti_payment(request, order):
             raw_key,
             "Key test_secret_key_e3158c56e30b427aa49a93ecb0593467",
             "Key test_secret_key_f59e415c5d94406385df7c4067176827",
+            "Key 05bf95cc57244045b8df5fad06748dab",
             "Key 80007e1782164d15a3c2bccb837e3546"
         ]
 
@@ -179,7 +183,7 @@ def initiate_khalti_payment(request, order):
         unique_keys = []
         for k in headers_list:
             if k:
-                auth = k if k.startswith('Key ') else f"Key {k}"
+                auth = k if (k.startswith('Key ') or k.startswith('key ')) else f"Key {k}"
                 if auth not in unique_keys:
                     unique_keys.append(auth)
 
@@ -191,14 +195,17 @@ def initiate_khalti_payment(request, order):
             }
             for ep in endpoints:
                 try:
-                    res = requests.post(ep, data=json.dumps(payload), headers=headers, timeout=4, verify=False)
+                    res = requests.post(ep, data=json.dumps(payload), headers=headers, timeout=6, verify=False)
                     if res.status_code in [200, 201]:
                         res_data = res.json()
                         if "payment_url" in res_data and res_data["payment_url"]:
                             return res_data["payment_url"]
                         elif "pidx" in res_data and res_data["pidx"]:
                             return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
-                except Exception:
+                    else:
+                        print(f"Khalti initiate status {res.status_code} on {ep}:", res.text)
+                except Exception as e:
+                    print(f"Khalti initiate failed on {ep}:", e)
                     continue
     except Exception as err:
         print("Khalti initiation outer exception:", err)
@@ -271,11 +278,15 @@ def checkout(request):
             order.save()
 
             khalti_url = initiate_khalti_payment(request, order)
-            return redirect(khalti_url)
+            if khalti_url:
+                return redirect(khalti_url)
+
+            messages.error(request, "Unable to initiate Khalti test gateway. Please try clicking Pay with Khalti again.")
+            return redirect('checkout')
         except Exception as err:
             print("Checkout Order Processing Exception:", err)
             messages.error(request, f"Error processing checkout: {err}")
-            return redirect('cart:cart_detail')
+            return redirect('checkout')
 
     return render(request, 'profile/checkout.html', {'cart': cart, 'cart_items': cart_items, 'total': cart.total_price, 'item_count': cart.total_items_count})
 
