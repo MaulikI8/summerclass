@@ -4,10 +4,149 @@
 
 {% block content %}
 <style>
-  .dash-side a{display:block;padding:9px 15px;color:#444;text-decoration:none;font-size:.86rem;font-weight:500;border-radius:8px;margin-bottom:2px}
-  .dash-side a:hover{background:#EEF2FF;color:#4F46E5}
-  .dash-side a.active{background:#4F46E5;color:#fff;font-weight:600}
-  .dash-pane{display:none}.dash-pane.active{display:block}
+  /* Sidebar Links - Light & Dark Mode high contrast */
+  .dash-side {
+    background: #ffffff;
+    border-radius: 16px;
+  }
+  .dash-side a {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    border-radius: 10px;
+    margin-bottom: 3px;
+    transition: all 0.2s ease;
+  }
+  .dash-side a:hover {
+    background: #eef2ff;
+    color: #4f46e5;
+  }
+  .dash-side a.active {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  }
+
+  .dash-pane { display: none; }
+  .dash-pane.active { display: block; }
+
+  /* Dark Mode Overrides for Profile Page */
+  html[data-theme="dark"] .dash-side,
+  html[data-bs-theme="dark"] .dash-side,
+  html[data-theme="dark"] .dash-pane .card,
+  html[data-bs-theme="dark"] .dash-pane .card {
+    background-color: #131827 !important;
+    border: 1px solid #1e293b !important;
+    color: #f8fafc !important;
+  }
+  html[data-theme="dark"] .dash-side a,
+  html[data-bs-theme="dark"] .dash-side a {
+    color: #cbd5e1 !important;
+  }
+  html[data-theme="dark"] .dash-side a:hover,
+  html[data-bs-theme="dark"] .dash-side a:hover {
+    background: rgba(79, 70, 229, 0.18) !important;
+    color: #818cf8 !important;
+  }
+  html[data-theme="dark"] .dash-side a.active,
+  html[data-bs-theme="dark"] .dash-side a.active {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+  }
+  html[data-theme="dark"] .table,
+  html[data-bs-theme="dark"] .table {
+    color: #e2e8f0 !important;
+  }
+  html[data-theme="dark"] .table-light,
+  html[data-bs-theme="dark"] .table-light {
+    background-color: #1a2035 !important;
+    color: #94a3b8 !important;
+  }
+
+  /* Staggered Dropdown Styling */
+  .staggered-dropdown-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .staggered-dropdown-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: 30px;
+    background: #4f46e5;
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    transition: all 0.2s ease;
+  }
+  .staggered-dropdown-btn:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+  }
+  .staggered-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scaleY(0);
+    transform-origin: top center;
+    min-width: 180px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 6px;
+    margin: 0;
+    list-style: none !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  html[data-theme="dark"] .staggered-dropdown-menu,
+  html[data-bs-theme="dark"] .staggered-dropdown-menu {
+    background: #1a2035 !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+  }
+  .staggered-dropdown-wrap.open .staggered-dropdown-menu {
+    transform: translateX(-50%) scaleY(1);
+    opacity: 1;
+    visibility: visible;
+  }
+  .staggered-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: #334155;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  html[data-theme="dark"] .staggered-dropdown-item,
+  html[data-bs-theme="dark"] .staggered-dropdown-item {
+    color: #cbd5e1 !important;
+  }
+  .staggered-dropdown-item:hover {
+    background: #eef2ff;
+    color: #4f46e5;
+  }
+  html[data-theme="dark"] .staggered-dropdown-item:hover,
+  html[data-bs-theme="dark"] .staggered-dropdown-item:hover {
+    background: rgba(79, 70, 229, 0.2) !important;
+    color: #818cf8 !important;
+  }
 </style>
 
 <div class="container py-4">
