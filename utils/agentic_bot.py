@@ -188,32 +188,36 @@ CAMPUS LOGISTICS & ESSENTIALS:
                 ItemRequest.objects.create(user=user, title=t_clean.title(), budget=b_amt, urgency='today', preferred_location='Kumari Hall', description='Posted via AI Assistant')
                 Notification.notify_all(f"📢 Wanted: {t_clean[:25]}", f"{user.username} needs this! Rs. {b_amt:.2f}", 'item_wanted', 'fa-bullhorn', '/#wantedBoardSection', exclude_user=user)
                 res.update({'reply': f"Posted request for **{t_clean.title()}** with budget **Rs. {b_amt:.2f}** to the Campus Wanted Board! Peers have been notified."})
-                return res
 
-        # 6. Database Product Lookup for Card Attachments
-        qs = Product.objects.filter(status=True, is_approved=True).select_related('category', 'user')
-        u_match = re.search(r'(?:under|below|less than|budget of|max(?:imum)?|upto)\s+(?:rs\.?|npr)?\s*(\d+)', low)
-        max_p = float(u_match.group(1)) if u_match else None
-        if max_p:
-            qs = qs.filter(price__lte=max_p)
+        # 6. Greetings & General Chat Check
+        greetings = ['hi', 'hello', 'hey', 'greetings', 'namaste', 'good morning', 'good afternoon', 'good evening', 'who are you', 'what can you do', 'help']
+        is_greeting = any(low == g or low.startswith(g + ' ') or low.endswith(' ' + g) for g in greetings)
 
-        cat_match = next((c for c in Category.objects.all() if c.name.lower() in low), None)
-        if cat_match:
-            qs = qs.filter(category=cat_match)
+        # 7. Database Product Lookup for Card Attachments (Only if user is searching for products!)
+        prod_dicts = []
+        if not is_greeting and len(low) >= 3:
+            qs = Product.objects.filter(status=True, is_approved=True).select_related('category', 'user')
+            u_match = re.search(r'(?:under|below|less than|budget of|max(?:imum)?|upto)\s+(?:rs\.?|npr)?\s*(\d+)', low)
+            max_p = float(u_match.group(1)) if u_match else None
+            if max_p:
+                qs = qs.filter(price__lte=max_p)
 
-        clean_q = re.sub(r'\b(find|search|show|me|get|give|looking|for|a|an|the|some|good|best|cheap|cheapest|items|products|under|below|less|than|rs|npr|please|can|you|is|there|any)\b', ' ', low)
-        if max_p: clean_q = clean_q.replace(str(int(max_p)), ' ')
-        if cat_match: clean_q = clean_q.name.lower()
-        clean_q = re.sub(r'\s+', ' ', clean_q).strip()
+            cat_match = next((c for c in Category.objects.all() if c.name.lower() in low and len(c.name) > 3), None)
+            if cat_match:
+                qs = qs.filter(category=cat_match)
 
-        if clean_q and len(clean_q) >= 2:
-            f_qs = qs.filter(Q(name__icontains=clean_q) | Q(description__icontains=clean_q))
-            qs = f_qs if f_qs.exists() else qs
+            clean_q = re.sub(r'\b(find|search|show|me|get|give|looking|for|a|an|the|some|good|best|cheap|cheapest|items|products|under|below|less|than|rs|npr|please|can|you|is|there|any)\b', ' ', low)
+            if max_p: clean_q = clean_q.replace(str(int(max_p)), ' ')
+            clean_q = re.sub(r'\s+', ' ', clean_q).strip()
 
-        results = list(qs[:6])
-        prod_dicts = [AgenticCommerceBot._prod_dict(p) for p in results] if (clean_q or max_p or cat_match) else []
+            if clean_q and len(clean_q) >= 2:
+                f_qs = qs.filter(Q(name__icontains=clean_q) | Q(description__icontains=clean_q))
+                if f_qs.exists():
+                    prod_dicts = [AgenticCommerceBot._prod_dict(p) for p in f_qs[:6]]
+            elif max_p or cat_match:
+                prod_dicts = [AgenticCommerceBot._prod_dict(p) for p in qs[:6]]
 
-        # 7. Generate Response using Gemini 1.5 Flash with Full Site Context
+        # 8. Generate Response using Gemini 1.5 Flash with Full Site Context
         site_context = AgenticCommerceBot._get_full_site_context(request)
         ai_reply = AgenticCommerceBot._gemini_generate(msg, site_context)
 
@@ -227,18 +231,23 @@ CAMPUS LOGISTICS & ESSENTIALS:
             })
             return res
 
-        # 8. Intelligent Fallback if Gemini API is unreachable
-        if prod_dicts:
+        # 9. Intelligent Fallback if Gemini API key is missing or unreachable
+        if is_greeting:
+            res.update({
+                'reply': "Hello! 👋 I am your **Islington AI Assistant**. I can help you search campus items, check out 24-hour live auctions, post wanted board requests, or manage your shopping cart. What are you looking for today?",
+                'quick_replies': ['Explore Store', 'Active Auctions', 'My Cart']
+            })
+        elif prod_dicts:
             first_n = prod_dicts[0]['name']
             res.update({
-                'reply': f"Found **{len(prod_dicts)} item(s)** matching your request:",
+                'reply': f"Found **{len(prod_dicts)} item(s)** matching your search:",
                 'action_type': 'product_list',
                 'products': prod_dicts,
                 'quick_replies': [f"Add {first_n[:18]} to cart", 'View Cart', 'Checkout']
             })
         else:
             res.update({
-                'reply': "Hello! I am your **Islington AI Assistant**. I can help you find campus items, check out live auctions, post wanted board requests, or manage your shopping cart. What can I do for you?",
+                'reply': "I couldn't find any specific products matching that in our store, but feel free to ask me anything about campus trade, wanted requests, or orders!",
                 'quick_replies': ['Explore Store', 'Active Auctions', 'My Cart']
             })
 
