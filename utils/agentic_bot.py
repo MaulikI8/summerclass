@@ -146,20 +146,28 @@ class AgenticCommerceBot:
             return res
 
         # 6. Wanted Board (Query / Post)
-        if any(w in low for w in ['wanted', 'looking for', 'need book', 'need kit', 'item request']):
-            if any(w in low for w in ['post', 'create', 'add']) and len(low) > 8:
+        if any(w in low for w in ['wanted', 'looking for', 'need ', 'item request']):
+            if any(w in low for w in ['post', 'create', 'add', 'need', 'looking']) and len(low) > 8:
                 if not user:
                     res.update({'reply': "Please **Sign In** to post a request on the Campus Wanted Board."})
                     return res
-                b_match = re.search(r'(?:budget|rs\.?|for)\s*(\d+)', msg, re.I)
+
+                # Extract budget amount anywhere in string
+                b_match = re.search(r'(?:budget|rs\.?|npr|for|of|price|cost|under)\s*(?:of\s*)?(?:rs\.?|npr)?\s*(\d+(?:\.\d+)?)', msg, re.I)
                 b_amt = float(b_match.group(1)) if b_match else 0.0
-                t_clean = re.sub(r'^(?:post|create|add)?\s*(?:a\s+)?(?:wanted\s+)?(?:request\s+)?(?:for\s+)?', '', msg, flags=re.I)
-                t_clean = re.sub(r'(?:with\s+)?(?:budget\s+)?(?:of\s+)?(?:rs\.?|for)?\s*\d+.*$', '', t_clean, flags=re.I).strip()
-                if len(t_clean) >= 3:
-                    ItemRequest.objects.create(user=user, title=t_clean, budget=b_amt, urgency='today', preferred_location='Kumari Hall', description='Posted via AI')
+
+                # Clean title cleanly
+                t_clean = msg
+                t_clean = re.sub(r'^(?:post|create|add|need|looking for)?\s*(?:a\s+)?(?:wanted\s+)?(?:request\s+)?(?:for\s+)?(?:of\s+)?', '', t_clean, flags=re.I)
+                t_clean = re.sub(r'(?:with\s+)?(?:a\s+)?(?:budget|rs\.?|npr|for|of|price|cost|under)\s*(?:of\s*)?(?:rs\.?|npr)?\s*\d+.*$', '', t_clean, flags=re.I).strip()
+                t_clean = re.sub(r'\s+', ' ', t_clean).strip()
+
+                if len(t_clean) >= 2:
+                    ItemRequest.objects.create(user=user, title=t_clean.title(), budget=b_amt, urgency='today', preferred_location='Kumari Hall', description='Posted via AI Assistant')
                     Notification.notify_all(f"📢 Wanted: {t_clean[:25]}", f"{user.username} needs this! Rs. {b_amt:.2f}", 'item_wanted', 'fa-bullhorn', '/#wantedBoardSection', exclude_user=user)
-                    res.update({'reply': f"Posted request for **{t_clean}** (Budget: Rs. {b_amt:.2f}) to the Wanted Board! Peers have been notified."})
+                    res.update({'reply': f"Posted request for **{t_clean.title()}** with budget **Rs. {b_amt:.2f}** to the Campus Wanted Board! Peers have been notified."})
                     return res
+
             reqs = list(ItemRequest.objects.filter(is_fulfilled=False).select_related('user')[:4])
             lines = ["Recent **Campus Wanted Requests**:"] + [f"• **{r.title}** (Rs. {r.budget:.2f}) • Pickup: *{r.preferred_location}*" for r in reqs] if reqs else ["No open wanted requests right now."]
             res.update({'reply': "\n\n".join(lines)})
