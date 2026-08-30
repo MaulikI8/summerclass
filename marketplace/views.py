@@ -244,20 +244,31 @@ def checkout(request):
         return redirect('cart:cart_detail')
 
     if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        phone = request.POST.get('phone')
-        address = request.POST.get('address')
-        city = request.POST.get('city')
-        notes = request.POST.get('notes')
+        name = request.POST.get('buyer_name') or request.POST.get('name')
+        if not name:
+            name = (request.user.get_full_name() or request.user.username) if (request.user and request.user.is_authenticated) else 'Islington Student'
+
+        phone = request.POST.get('buyer_phone') or request.POST.get('phone') or '9800000000'
+        email = request.POST.get('buyer_email') or request.POST.get('email')
+        if not email:
+            email = request.user.email if (request.user and request.user.is_authenticated and request.user.email) else 'student@islington.edu.np'
+
+        del_type = request.POST.get('delivery_type')
+        if del_type == 'home_delivery':
+            location = request.POST.get('home_address') or 'Kathmandu Home Delivery'
+        else:
+            location = request.POST.get('campus_block') or 'Kumari Hall'
+
+        m_time = request.POST.get('meetup_time') or 'Morning (10:00 AM - 12:00 PM)'
+        notes = request.POST.get('notes') or ''
 
         order = Order.objects.create(
-            user=request.user if request.user.is_authenticated else None,
+            user=request.user if (request.user and request.user.is_authenticated) else None,
             buyer_name=name,
-            buyer_email=email,
             buyer_phone=phone,
-            shipping_address=address,
-            city=city,
+            buyer_email=email,
+            meetup_location=location,
+            meetup_time=m_time,
             notes=notes,
             payment_status='Pending Khalti Authorization',
             order_status='pending'
@@ -271,6 +282,7 @@ def checkout(request):
             OrderItem.objects.create(
                 order=order,
                 product=item.product,
+                product_name=item.product.name,
                 price=item.product.price,
                 quantity=item.quantity
             )
