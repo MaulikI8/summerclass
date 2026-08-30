@@ -488,9 +488,11 @@
 
     <section class="header-main py-2">
       <div class="container">
-        <!-- Row 1: Brand + Action Icons -->
-        <div class="d-flex align-items-center justify-content-between gap-2 mb-2 mb-lg-0">
-          <div class="d-flex align-items-center gap-2">
+        <!-- Unified Header Flex Container -->
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap flex-lg-nowrap">
+          
+          <!-- Brand Logo -->
+          <div class="d-flex align-items-center me-lg-2">
             <a href="{% url 'home' %}" class="brand-wrap text-decoration-none d-flex align-items-center gap-2" aria-label="Islington Marketplace Homepage">
               {% if site_setting.logo %}<img class="logo" src="{{ site_setting.logo.url }}" alt="Islington Logo"/>{% else %}
               <div class="brand-icon-wrap"><i class="fas fa-shopping-bag"></i></div>
@@ -499,7 +501,30 @@
             </a>
           </div>
 
-          <div class="d-flex align-items-center gap-1 gap-sm-2">
+          <!-- Search + Categories + Nav Links -->
+          <div class="d-flex align-items-center gap-2 flex-grow-1 w-100 w-lg-auto order-3 order-lg-2 mt-2 mt-lg-0" style="max-width: 760px;">
+            <div class="flex-grow-1 position-relative">
+              <form action="{% url 'products' %}" method="GET" class="search-wrapper" autocomplete="off" role="search">
+                <input type="text" name="q" id="globalSearchInput" class="form-control form-control-sm rounded-pill" placeholder="Search textbooks, tech, gear..." value="{{ query|default:'' }}" aria-label="Search items"/>
+                <button class="search-btn" type="submit" aria-label="Submit search"><i class="fas fa-search"></i></button>
+              </form>
+              <div id="searchSuggestBox" class="search-suggest-dropdown"></div>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-primary btn-sm dropdown-toggle rounded-pill px-3 text-nowrap" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Browse categories menu"><i class="fas fa-bars me-1"></i> Categories</button>
+              <div class="dropdown-menu shadow border-0 p-2" style="border-radius:12px;min-width:200px;">
+                <a class="dropdown-item py-1 fw-bold text-primary" href="{% url 'products' %}">All Products</a>
+                <hr class="my-1"/>
+                {% for cat in categories %}<a class="dropdown-item py-1 text-secondary" href="{% url 'products' %}?category={{ cat.name }}">{{ cat.name }}</a>{% endfor %}
+              </div>
+            </div>
+            <a href="{% url 'products' %}" class="btn btn-nav-link d-none d-md-inline">Store</a>
+            <a href="{% url 'blog' %}" class="btn btn-nav-link d-none d-md-inline">Blogs</a>
+            <a href="{% url 'blog_create' %}" class="btn btn-outline-primary btn-sm rounded-pill d-none d-lg-inline text-nowrap"><i class="fas fa-pen me-1"></i> Write</a>
+          </div>
+
+          <!-- User Actions / Icons -->
+          <div class="d-flex align-items-center gap-1 gap-sm-2 order-2 order-lg-3 ms-lg-2">
             {% if user.is_authenticated %}
             <div class="dropdown">
               <a href="#" class="widget-header d-flex align-items-center gap-1 text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User account menu">
@@ -551,28 +576,7 @@
               <span class="badge bg-primary widget-badge" id="cartCountBadge">{{ cart_count|default:0 }}</span>
             </a>
           </div>
-        </div>
 
-        <!-- Row 2: Search + Categories + Nav (stacks below brand on mobile) -->
-        <div class="d-flex align-items-center gap-2">
-          <div class="flex-grow-1 position-relative">
-            <form action="{% url 'products' %}" method="GET" class="search-wrapper" autocomplete="off" role="search">
-              <input type="text" name="q" id="globalSearchInput" class="form-control form-control-sm rounded-pill" placeholder="Search textbooks, tech, gear..." value="{{ query|default:'' }}" aria-label="Search items"/>
-              <button class="search-btn" type="submit" aria-label="Submit search"><i class="fas fa-search"></i></button>
-            </form>
-            <div id="searchSuggestBox" class="search-suggest-dropdown"></div>
-          </div>
-          <div class="dropdown">
-            <button class="btn btn-primary btn-sm dropdown-toggle rounded-pill px-3 text-nowrap" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Browse categories menu"><i class="fas fa-bars me-1"></i> Categories</button>
-            <div class="dropdown-menu shadow border-0 p-2" style="border-radius:12px;min-width:200px;">
-              <a class="dropdown-item py-1 fw-bold text-primary" href="{% url 'products' %}">All Products</a>
-              <hr class="my-1"/>
-              {% for cat in categories %}<a class="dropdown-item py-1 text-secondary" href="{% url 'products' %}?category={{ cat.name }}">{{ cat.name }}</a>{% endfor %}
-            </div>
-          </div>
-          <a href="{% url 'products' %}" class="btn btn-nav-link d-none d-md-inline">Store</a>
-          <a href="{% url 'blog' %}" class="btn btn-nav-link d-none d-md-inline">Blogs</a>
-          <a href="{% url 'blog_create' %}" class="btn btn-outline-primary btn-sm rounded-pill d-none d-lg-inline"><i class="fas fa-pen me-1"></i> Write</a>
         </div>
       </div>
     </section>
