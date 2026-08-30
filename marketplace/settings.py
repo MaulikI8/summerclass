@@ -98,6 +98,6 @@ EMAIL_SENDER_NAME = os.environ.get('EMAIL_SENDER_NAME', 'Islington Marketplace')
 
 # --- Khalti Payment Gateway Settings ---
 # Configured via environment variable KHALTI_SECRET_KEY in Render Dashboard
-KHALTI_SECRET_KEY = os.environ.get('KHALTI_SECRET_KEY', '')
+KHALTI_SECRET_KEY = os.environ.get('KHALTI_SECRET_KEY', 'Key test_secret_key_e3158c56e30b427aa49a93ecb0593467')
 KHALTI_INITIATE_URL = os.environ.get('KHALTI_INITIATE_URL', 'https://dev.khalti.com/api/v2/epayment/initiate/')
 KHALTI_LOOKUP_URL = os.environ.get('KHALTI_LOOKUP_URL', 'https://dev.khalti.com/api/v2/epayment/lookup/')
