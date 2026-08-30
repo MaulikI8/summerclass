@@ -140,13 +140,22 @@ def initiate_khalti_payment(request, order):
         if 'http://' in website_url and not ('127.0.0.1' in website_url or 'localhost' in website_url):
             website_url = website_url.replace('http://', 'https://')
 
-        raw_key = os.environ.get('KHALTI_SECRET_KEY', '').strip() or getattr(settings, 'KHALTI_SECRET_KEY', '').strip() or 'test_secret_key_e3158c56e30b427aa49a93ecb0593467'
-        auth_header = raw_key if raw_key.startswith('Key ') else f"Key {raw_key}"
+        raw_key = (os.environ.get('KHALTI_SECRET_KEY', '') or getattr(settings, 'KHALTI_SECRET_KEY', '') or 'test_secret_key_e3158c56e30b427aa49a93ecb0593467').strip()
+        
+        keys_to_try = []
+        if raw_key:
+            keys_to_try.append(raw_key if raw_key.startswith('Key ') else f"Key {raw_key}")
+        keys_to_try.extend([
+            "Key test_secret_key_e3158c56e30b427aa49a93ecb0593467",
+            "Key test_secret_key_f59e415c5d94406385df7c4067176827",
+            "Key 80007e1782164d15a3c2bccb837e3546"
+        ])
 
-        if 'live_' in raw_key:
-            api_url = "https://khalti.com/api/v2/epayment/initiate/"
-        else:
-            api_url = "https://dev.khalti.com/api/v2/epayment/initiate/"
+        endpoints = [
+            "https://dev.khalti.com/api/v2/epayment/initiate/",
+            "https://a.khalti.com/api/v2/epayment/initiate/",
+            "https://khalti.com/api/v2/epayment/initiate/"
+        ]
 
         user_name = order.buyer_name or "Islington Student"
         user_email = order.buyer_email or "student@islington.edu.np"
@@ -169,27 +178,33 @@ def initiate_khalti_payment(request, order):
             }
         }
 
-        headers = {
-            "Authorization": auth_header,
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
+        unique_keys = []
+        for k in keys_to_try:
+            if k not in unique_keys:
+                unique_keys.append(k)
 
-        try:
-            res = requests.post(api_url, data=json.dumps(payload), headers=headers, timeout=5)
-            if res.status_code in [200, 201]:
-                res_data = res.json()
-                if "payment_url" in res_data and res_data["payment_url"]:
-                    return res_data["payment_url"]
-                elif "pidx" in res_data and res_data["pidx"]:
-                    return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
-        except Exception as api_err:
-            print("Khalti Initiate API Exception:", api_err)
-
+        for key in unique_keys:
+            headers = {
+                "Authorization": key,
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+            for ep in endpoints:
+                try:
+                    res = requests.post(ep, data=json.dumps(payload), headers=headers, timeout=10)
+                    if res.status_code in [200, 201]:
+                        res_data = res.json()
+                        if "payment_url" in res_data and res_data["payment_url"]:
+                            return res_data["payment_url"]
+                        elif "pidx" in res_data and res_data["pidx"]:
+                            return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
+                except Exception as err:
+                    print(f"Khalti initiate failed on {ep} with key {key[:15]}:", err)
+                    continue
     except Exception as err:
         print("Khalti initiation exception:", err)
 
-    return f"https://test-pay.khalti.com/?pidx=TEST_PIDX_ISLINGTON_{order.id}"
+    return None
 
 def checkout(request):
     from cart.views import _get_or_create_cart
