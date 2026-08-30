@@ -247,6 +247,8 @@ def checkout(request):
             m_time = (request.POST.get('meetup_time') or '').strip() or 'Morning (10:00 AM - 12:00 PM)'
             notes = (request.POST.get('notes') or '').strip()
 
+            pay_method = request.POST.get('payment_method', 'khalti')
+
             order = Order.objects.create(
                 user=request.user if (request.user and request.user.is_authenticated) else None,
                 buyer_name=name,
@@ -255,8 +257,9 @@ def checkout(request):
                 meetup_location=location,
                 meetup_time=m_time,
                 notes=notes,
-                payment_status='Pending Khalti Authorization',
-                order_status='pending'
+                payment_method='Cash on Delivery' if pay_method == 'cod' else 'Khalti Digital Wallet',
+                payment_status='Cash on Delivery (Pending)' if pay_method == 'cod' else 'Pending Khalti Authorization',
+                order_status='confirmed' if pay_method == 'cod' else 'pending'
             )
 
             total = 0.0
@@ -277,12 +280,31 @@ def checkout(request):
             order.total_amount = total
             order.save()
 
-            khalti_url = initiate_khalti_payment(request, order)
-            if khalti_url:
-                return redirect(khalti_url)
+            site_url = request.build_absolute_uri('/')[:-1]
+            if pay_method == 'cod':
+                # Cash on Delivery handling
+                for item in order.items.all():
+                    if item.product:
+                        item.product.stock = max(0, item.product.stock - item.quantity)
+                        if item.product.stock == 0:
+                            item.product.status = False
+                        item.product.save()
+                        if item.product.user and item.product.user != request.user:
+                            Notification.notify(item.product.user, f'New COD Order #{order.id} for {item.product.name}!', f'{order.buyer_name} ordered {item.quantity}x (Cash on Delivery).', 'order_placed', 'fa-receipt', '/profile/?tab=orders')
+                            EmailMicroservice.send_seller_new_order_email(item.product.user, item.product, order, item.quantity, site_url=site_url)
 
-            messages.error(request, "Unable to initiate Khalti payment gateway. Please verify your internet connection and try again.")
-            return redirect('checkout')
+                cart.items.all().delete()
+                EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
+                messages.success(request, f"Order #{order.id} placed successfully with Cash on Delivery!")
+                return redirect('order_success', order_id=order.id)
+            else:
+                # Khalti Payment Gateway handling
+                khalti_url = initiate_khalti_payment(request, order)
+                if khalti_url:
+                    return redirect(khalti_url)
+
+                messages.error(request, "Unable to initiate Khalti payment gateway. Please verify your internet connection and try again.")
+                return redirect('checkout')
         except Exception as err:
             print("Checkout Order Processing Exception:", err)
             messages.error(request, f"Error processing checkout: {err}")

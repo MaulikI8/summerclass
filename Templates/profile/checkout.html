@@ -34,26 +34,57 @@
           </div>
 
           <h6 class="fw-bold small text-muted text-uppercase mb-2">3. Payment Method</h6>
-          <div class="p-3 border rounded-3 bg-surface mb-4">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <div class="d-flex align-items-center gap-2">
-                <input type="radio" name="payment_method" value="khalti_sandbox" checked class="form-check-input" />
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1" style="background:#5C2D91;font-size:0.8rem;"><i class="fas fa-wallet me-1"></i> Khalti Gateway</span>
-                <strong class="small">Khalti Online Digital Wallet</strong>
+          <div class="d-flex flex-column gap-2 mb-4">
+            <!-- Khalti Gateway Option -->
+            <label class="p-3 border rounded-3 bg-surface d-block position-relative cursor-pointer">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <div class="d-flex align-items-center gap-2">
+                  <input type="radio" name="payment_method" value="khalti" checked class="form-check-input" onchange="togglePayBtn('khalti')"/>
+                  <span class="badge rounded-pill text-white fw-bold px-3 py-1" style="background:#5C2D91;font-size:0.8rem;"><i class="fas fa-wallet me-1"></i> Khalti Gateway</span>
+                  <strong class="small text-dark">Khalti Online Digital Wallet</strong>
+                </div>
+                <span class="badge bg-warning text-dark rounded-pill px-2 py-0.5 small fw-bold">Test Sandbox</span>
               </div>
-              <span class="badge bg-warning text-dark rounded-pill px-2 py-0.5 small fw-bold">Test Sandbox Mode</span>
-            </div>
-            <p class="text-muted small mb-0 ms-4" style="font-size:0.8rem;">
-              Proceeding will launch the Khalti Payment Simulator where you can authorize the payment using test credentials.
-            </p>
+              <p class="text-muted small mb-0 ms-4" style="font-size:0.78rem;">
+                Instant online authorization via Khalti mobile app / test credentials.
+              </p>
+            </label>
+
+            <!-- Cash on Delivery Option -->
+            <label class="p-3 border rounded-3 bg-surface d-block position-relative cursor-pointer">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <div class="d-flex align-items-center gap-2">
+                  <input type="radio" name="payment_method" value="cod" class="form-check-input" onchange="togglePayBtn('cod')"/>
+                  <span class="badge bg-success text-white rounded-pill fw-bold px-3 py-1" style="font-size:0.8rem;"><i class="fas fa-hand-holding-usd me-1"></i> Cash on Delivery</span>
+                  <strong class="small text-dark">Pay Cash Upon Meetup / Delivery</strong>
+                </div>
+                <span class="badge bg-success-subtle text-success rounded-pill px-2 py-0.5 small fw-bold">Campus Preferred</span>
+              </div>
+              <p class="text-muted small mb-0 ms-4" style="font-size:0.78rem;">
+                Pay cash directly to the student seller when receiving your items at campus pickup.
+              </p>
+            </label>
           </div>
 
-          <button type="submit" class="btn rounded-pill w-100 py-2.5 fw-bold text-white shadow-sm" style="background:#5C2D91;">
+          <button type="submit" id="checkoutSubmitBtn" class="btn rounded-pill w-100 py-2.5 fw-bold text-white shadow-sm" style="background:#5C2D91;transition:all 0.2s;">
             <i class="fas fa-arrow-right me-1"></i> Proceed to Khalti Test Payment &bull; Rs. {{ total|floatformat:2 }}
           </button>
         </form>
       </div>
     </div>
+
+<script>
+function togglePayBtn(type) {
+  var btn = document.getElementById('checkoutSubmitBtn');
+  if (type === 'cod') {
+    btn.style.background = '#10B981';
+    btn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Place Order with Cash on Delivery &bull; Rs. {{ total|floatformat:2 }}';
+  } else {
+    btn.style.background = '#5C2D91';
+    btn.innerHTML = '<i class="fas fa-arrow-right me-1"></i> Proceed to Khalti Test Payment &bull; Rs. {{ total|floatformat:2 }}';
+  }
+}
+</script>
 
     <div class="col-lg-4">
       <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
