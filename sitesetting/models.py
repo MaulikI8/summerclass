@@ -34,22 +34,29 @@ class Banner(models.Model):
         ordering = ['order', '-created_at']
 
     def save(self, *args, **kwargs):
-        if self.featured_product:
-            if not self.title:
-                self.title = self.featured_product.name
-            if not self.subtitle:
-                desc = self.featured_product.description or "Verified student listing available for campus pickup."
-                self.subtitle = desc[:200]
-            if not self.primary_btn_url or self.primary_btn_url == "/products/":
-                self.primary_btn_url = f"/products/{self.featured_product.id}/"
-            if not self.badge_text or self.badge_text == "Featured Campus Item":
-                self.badge_text = f"Featured • Rs. {self.featured_product.price:.2f}"
-            if not self.banner_image and self.featured_product.product_image:
-                self.banner_image = self.featured_product.product_image
+        try:
+            if self.featured_product:
+                if not self.title:
+                    self.title = self.featured_product.name or ''
+                if not self.subtitle:
+                    desc = self.featured_product.description or "Verified student listing available for campus pickup."
+                    self.subtitle = str(desc)[:200]
+                if not self.primary_btn_url or self.primary_btn_url == "/products/":
+                    self.primary_btn_url = f"/products/{self.featured_product.id}/"
+                if not self.badge_text or self.badge_text == "Featured Campus Item":
+                    price = f"{self.featured_product.price:.2f}" if getattr(self.featured_product, 'price', None) is not None else "0.00"
+                    self.badge_text = f"Featured • Rs. {price}"
+                if not self.banner_image and getattr(self.featured_product, 'product_image', None):
+                    try:
+                        self.banner_image = self.featured_product.product_image
+                    except Exception:
+                        pass
+        except Exception:
+            pass
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.title or (self.featured_product.name if self.featured_product else f"Banner #{self.id}")
+        return self.title or (self.featured_product.name if (self.featured_product and self.featured_product.name) else f"Banner #{self.pk or 'New'}")
 
 class Notification(models.Model):
     recipient, sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications'), models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_notifications')

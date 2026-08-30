@@ -16,8 +16,15 @@ class BannerAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if 'featured_product' in self.fields:
-            self.fields['featured_product'].queryset = Product.objects.filter(is_approved=True).select_related('category').order_by('-created_at')
-            self.fields['featured_product'].label_from_instance = lambda obj: f"{obj.name} — Rs. {obj.price:.2f} ({obj.category.name})"
+            try:
+                self.fields['featured_product'].queryset = Product.objects.filter(is_approved=True).select_related('category').order_by('-created_at')
+                def make_label(obj):
+                    cat_name = obj.category.name if getattr(obj, 'category', None) else 'General'
+                    price = f"{obj.price:.2f}" if getattr(obj, 'price', None) is not None else "0.00"
+                    return f"{obj.name or 'Item'} — Rs. {price} ({cat_name})"
+                self.fields['featured_product'].label_from_instance = make_label
+            except Exception:
+                pass
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
@@ -33,13 +40,27 @@ class BannerAdmin(admin.ModelAdmin):
     )
 
     def featured_item_preview(self, o):
-        return format_html('<strong>{}</strong> (Rs. {:.2f})', o.featured_product.name, o.featured_product.price) if o.featured_product else "—"
+        try:
+            if o.featured_product:
+                name = o.featured_product.name or "Item"
+                price = f"{o.featured_product.price:.2f}" if getattr(o.featured_product, 'price', None) is not None else "0.00"
+                return format_html('<strong>{}</strong> (Rs. {})', name, price)
+        except Exception:
+            pass
+        return "-"
+
     featured_item_preview.short_description = "Selected Posting"
 
     def image_preview(self, o):
         try:
-            img_url = o.banner_image.url if o.banner_image else (o.featured_product.product_image.url if o.featured_product and o.featured_product.product_image else None)
-            if img_url: return format_html('<img src="{}" height="38" style="border-radius:6px;object-fit:cover;" />', img_url)
-        except Exception: pass
-        return "—"
+            img_url = None
+            if o.banner_image and hasattr(o.banner_image, 'url'):
+                img_url = o.banner_image.url
+            elif o.featured_product and o.featured_product.product_image and hasattr(o.featured_product.product_image, 'url'):
+                img_url = o.featured_product.product_image.url
+            if img_url:
+                return format_html('<img src="{}" height="38" style="border-radius:6px;object-fit:cover;" />', img_url)
+        except Exception:
+            pass
+        return "-"
     image_preview.short_description = "Banner Preview"
