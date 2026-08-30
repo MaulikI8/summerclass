@@ -188,6 +188,14 @@ def initiate_khalti_payment(request, order):
     if not khalti_secret.startswith('Key '):
         khalti_secret = f"Key {khalti_secret}"
 
+    user_name = order.buyer_name
+    if not user_name:
+        user_name = request.user.username if (request.user and request.user.is_authenticated) else "Islington Student"
+
+    user_email = order.buyer_email
+    if not user_email:
+        user_email = request.user.email if (request.user and request.user.is_authenticated and request.user.email) else "student@islington.edu.np"
+
     payload = {
         "return_url": return_url,
         "website_url": website_url,
@@ -195,8 +203,8 @@ def initiate_khalti_payment(request, order):
         "purchase_order_id": str(order.id),
         "purchase_order_name": f"Islington Marketplace Order #{order.id}",
         "customer_info": {
-            "name": order.buyer_name or request.user.username,
-            "email": order.buyer_email or request.user.email or "student@islington.edu.np",
+            "name": user_name,
+            "email": user_email,
             "phone": order.buyer_phone or "9800000000"
         }
     }
