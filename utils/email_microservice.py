@@ -45,28 +45,28 @@ class EmailMicroservice:
             m.attach(MIMEText(html, 'html', 'utf-8'))
             return m
 
-        # Strategy 1: Fast SSL SMTP to Gmail (Port 465, timeout=6s)
+        # Strategy 1: Fast TLS SMTP to Gmail (Port 587, timeout=4s)
         try:
             m = build_message()
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=6) as s:
-                s.login(user, pwd)
-                s.send_message(m, from_addr=user, to_addrs=r)
-            logger.info(f"Instant SSL email sent to {r}")
-            return True
-        except Exception as e:
-            logger.warning(f"SMTP_SSL 465 failed ({e}), trying TLS 587 fallback...")
-
-        # Strategy 2: Fast TLS SMTP to Gmail (Port 587, timeout=6s)
-        try:
-            m = build_message()
-            with smtplib.SMTP('smtp.gmail.com', 587, timeout=6) as s:
+            with smtplib.SMTP('smtp.gmail.com', 587, timeout=4) as s:
                 s.starttls()
                 s.login(user, pwd)
                 s.send_message(m, from_addr=user, to_addrs=r)
             logger.info(f"Instant TLS email sent to {r}")
             return True
         except Exception as e:
-            logger.warning(f"SMTP TLS 587 failed ({e}), trying Django EmailMultiAlternatives fallback...")
+            logger.warning(f"SMTP TLS 587 failed ({e}), trying SSL 465 fallback...")
+
+        # Strategy 2: SSL SMTP to Gmail (Port 465, timeout=4s)
+        try:
+            m = build_message()
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=4) as s:
+                s.login(user, pwd)
+                s.send_message(m, from_addr=user, to_addrs=r)
+            logger.info(f"Instant SSL email sent to {r}")
+            return True
+        except Exception as e:
+            logger.warning(f"SMTP_SSL 465 failed ({e}), trying Django EmailMultiAlternatives fallback...")
 
         # Strategy 3: Django core mail backend fallback
         try:
