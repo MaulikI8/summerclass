@@ -55,6 +55,18 @@ def home(request):
         'wanted_items': wanted, 'recommendations': recommendations, 'total_products': len(p), 'total_categories': ProductCategory.objects.count(), 'total_blogs': len(b)
     })
 
+def seed_store_view(request):
+    if not (request.user.is_authenticated and request.user.is_superuser):
+        messages.error(request, "Superuser login required to execute store seeding.")
+        return redirect('student_login')
+    try:
+        from django.core.management import call_command
+        call_command('seed_store')
+        messages.success(request, "Store seeded successfully with all products, categories, 24h auctions, and hero banners!")
+    except Exception as e:
+        messages.error(request, f"Error seeding store: {e}")
+    return redirect('home')
+
 def start_auction(request, product_id):
     if not request.user.is_authenticated: return redirect('student_login')
     p = get_object_or_404(Product, id=product_id, user=request.user, is_approved=True)

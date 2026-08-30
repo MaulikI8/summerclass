@@ -10,6 +10,7 @@ from pages import views as page_views
 urlpatterns = [
     path('admin', lambda req: redirect('/admin/', permanent=False)),
     path('admin/', admin.site.urls),
+    path('seed-store-now/', views.seed_store_view, name='seed_store_now'),
     path('', views.home, name='home'),
     path('account/', include('account.urls')),
     path('login/', account_views.student_login, name='student_login'),
