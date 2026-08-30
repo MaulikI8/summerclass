@@ -316,4 +316,50 @@ class Command(BaseCommand):
                 }
             )
 
+        # 8. Verified Student Reviews & Completed Orders
+        reviews_data = [
+            (user_objs[1], prod_objs[0], 5, "Incredible console! Came with 2 DualSense controllers and HDMI 2.1 cable. Tested at Kumari Hall hostel."),
+            (user_objs[2], prod_objs[1], 5, "MacBook M2 Pro is blazingly fast. Battery health is at 100%. Smooth transaction!"),
+            (user_objs[3], prod_objs[2], 5, "Complete textbook set in great condition. Notes highlighted in Chapter 4 were super helpful for my exam!"),
+            (user_objs[4], prod_objs[3], 5, "Sony XM5 headphones are pure bliss in the library. Noise cancellation works perfectly!"),
+            (user_objs[0], prod_objs[4], 5, "MX Master 3S is super quiet and comfortable for long coding sessions. Highly recommend seller @neha_it!"),
+            (user_objs[1], prod_objs[5], 5, "All Arduino sensors, breadboards, and jumpers were intact. Got my IoT assignment done in 2 days!"),
+            (user_objs[2], prod_objs[6], 5, "Marcus Aurelius Meditations is a timeless classic. Clean hardcover condition."),
+            (user_objs[3], prod_objs[7], 5, "Heavyweight cotton hoodie with minimalist tech club logo. Fits perfectly oversized."),
+            (user_objs[4], prod_objs[8], 5, "Desk + mesh chair setup was easy to pick up at Alumni block. Great posture support."),
+            (user_objs[0], prod_objs[9], 5, "ClassWiz calculator display is clear and allowed in all Islington university exams.")
+        ]
+
+        from products.models import Review, OrderItem, Order
+        for usr, prod, r_score, r_comment in reviews_data:
+            ord_obj, _ = Order.objects.get_or_create(
+                user=usr,
+                buyer_name=f"{usr.first_name} {usr.last_name}",
+                buyer_phone="9824616674",
+                buyer_email=usr.email,
+                defaults={
+                    'payment_status': 'Paid (Khalti Gateway)',
+                    'order_status': 'confirmed',
+                    'total_amount': prod.price
+                }
+            )
+            OrderItem.objects.get_or_create(
+                order=ord_obj,
+                product=prod,
+                defaults={
+                    'product_name': prod.name,
+                    'price': prod.price,
+                    'quantity': 1
+                }
+            )
+            Review.objects.update_or_create(
+                user=usr,
+                product=prod,
+                defaults={
+                    'rating': r_score,
+                    'comment': r_comment,
+                    'status': True
+                }
+            )
+
         self.stdout.write(self.style.SUCCESS("[SUCCESS] Store Seeding Completed Successfully! All items, categories, auctions, blogs, and banners are live!"))

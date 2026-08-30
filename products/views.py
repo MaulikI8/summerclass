@@ -165,6 +165,17 @@ def product_detail(request, id):
     except Exception:
         pass
 
+    has_purchased = False
+    try:
+        if request.user.is_authenticated:
+            from .models import OrderItem
+            has_purchased = OrderItem.objects.filter(
+                order__user=request.user,
+                product=p
+            ).exclude(order__order_status='cancelled').exists()
+    except Exception:
+        has_purchased = False
+
     return render(request, 'products/product_detail.html', {
         'product': p,
         'related_products': related_products,
@@ -172,12 +183,24 @@ def product_detail(request, id):
         'is_wishlisted': is_wishlisted,
         'in_cart': in_cart,
         'reviews': reviews,
-        'user_review': user_review
+        'user_review': user_review,
+        'has_purchased': has_purchased
     })
 
 @login_required
 def submit_review(request, id):
     p = get_object_or_404(Product, pk=id, status=True, is_approved=True)
+
+    from .models import OrderItem
+    has_purchased = OrderItem.objects.filter(
+        order__user=request.user,
+        product=p
+    ).exclude(order__order_status='cancelled').exists()
+
+    if not has_purchased and not request.user.is_superuser:
+        messages.error(request, "Verified Purchase Required: You can only leave a rating & review after purchasing this item.")
+        return redirect('product_detail', id=id)
+
     if request.method == 'POST':
         rating = int(request.POST.get('rating', 5))
         rating = max(1, min(5, rating))
@@ -186,7 +209,7 @@ def submit_review(request, id):
             user=request.user, product=p,
             defaults={'rating': rating, 'comment': comment, 'status': True}
         )
-        messages.success(request, "Thank you for your rating & review!")
+        messages.success(request, "Thank you! Your verified buyer review has been submitted.")
     return redirect('product_detail', id=id)
 
 

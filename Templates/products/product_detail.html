@@ -127,10 +127,19 @@
               <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold small mb-2 d-inline-block">{{ product.category.name }}</span>
               <h1 class="h3 fw-bold text-dark mb-1 lh-sm">{{ product.name }}</h1>
               <div class="d-flex align-items-center gap-2 mb-3">
+                {% if product.count_reviews > 0 %}
                 <div class="text-warning small">
                   <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
                 </div>
-                <span class="small text-muted fw-semibold">4.8 (12 reviews)</span>
+                <a href="#reviewsSection" class="small text-muted text-decoration-none fw-semibold">
+                  <strong>{{ product.average_rating }}</strong> ({{ product.count_reviews }} verified student review{{ product.count_reviews|pluralize }})
+                </a>
+                {% else %}
+                <div class="text-muted small">
+                  <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
+                </div>
+                <span class="small text-muted fw-semibold">No reviews yet</span>
+                {% endif %}
               </div>
             </div>
             <button type="button" class="btn btn-outline-danger rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width:42px;height:42px;" onclick="toggleWishlist('{{ product.id }}', this)" aria-label="Add {{ product.name }} to wishlist">
@@ -384,27 +393,48 @@
     </div>
 
     {% if user.is_authenticated %}
-    <div class="card border rounded-4 p-3 mb-4 bg-surface shadow-xs">
-      <h6 class="fw-bold mb-2">{% if user_review %}Update Your Rating{% else %}Write a Review{% endif %}</h6>
-      <form action="{% url 'submit_review' product.id %}" method="POST">
-        {% csrf_token %}
-        <div class="mb-2 d-flex align-items-center gap-3">
-          <label class="small fw-bold mb-0">Rating:</label>
-          <div class="d-flex gap-2">
-            {% for i in "12345" %}
-            <label class="cursor-pointer">
-              <input type="radio" name="rating" value="{{ i }}" {% if user_review and user_review.rating|add:0 == i|add:0 or not user_review and i == "5" %}checked{% endif %} class="d-none peer"/>
-              <i class="fas fa-star text-warning me-1" style="font-size:1.2rem;cursor:pointer;"></i>{{ i }}★
-            </label>
-            {% endfor %}
+      {% if has_purchased or user.is_superuser %}
+      <div class="card border rounded-4 p-3 mb-4 bg-surface shadow-xs">
+        <h6 class="fw-bold mb-2">{% if user_review %}Update Your Rating{% else %}Write a Review{% endif %} <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 ms-2 small fw-bold"><i class="fas fa-check-circle me-1"></i> Verified Buyer</span></h6>
+        <form action="{% url 'submit_review' product.id %}" method="POST">
+          {% csrf_token %}
+          <div class="mb-2 d-flex align-items-center gap-3">
+            <label class="small fw-bold mb-0">Rating:</label>
+            <div class="d-flex gap-2">
+              {% for i in "12345" %}
+              <label class="cursor-pointer">
+                <input type="radio" name="rating" value="{{ i }}" {% if user_review and user_review.rating|add:0 == i|add:0 or not user_review and i == "5" %}checked{% endif %} class="d-none peer"/>
+                <i class="fas fa-star text-warning me-1" style="font-size:1.2rem;cursor:pointer;"></i>{{ i }}★
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="mb-2">
+            <textarea name="comment" rows="2" class="form-control form-control-sm rounded-3" placeholder="Share your feedback about this item or seller...">{% if user_review %}{{ user_review.comment }}{% endif %}</textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">Submit Review</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="p-3 bg-light rounded-4 border mb-4 d-flex align-items-center gap-3">
+        <i class="fas fa-shopping-bag text-primary fs-4"></i>
+        <div>
+          <strong class="d-block small text-dark">Verified Purchase Required</strong>
+          <span class="small text-muted">You can leave a rating &amp; review once you buy this product.</span>
+        </div>
+      </div>
+      {% endif %}
+    {% else %}
+      <div class="p-3 bg-light rounded-4 border mb-4 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+          <i class="fas fa-lock text-secondary fs-4"></i>
+          <div>
+            <strong class="d-block small text-dark">Have you bought this item?</strong>
+            <span class="small text-muted">Sign in to leave a review after purchasing.</span>
           </div>
         </div>
-        <div class="mb-2">
-          <textarea name="comment" rows="2" class="form-control form-control-sm rounded-3" placeholder="Share your feedback about this item or seller...">{% if user_review %}{{ user_review.comment }}{% endif %}</textarea>
-        </div>
-        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">Submit Review</button>
-      </form>
-    </div>
+        <a href="{% url 'student_login' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold">Sign In</a>
+      </div>
     {% endif %}
 
     <div class="d-flex flex-column gap-3">

@@ -30,6 +30,18 @@ class Product(models.Model):
         from django.urls import reverse
         return reverse('product_detail', args=[self.id])
 
+    @property
+    def average_rating(self):
+        reviews = self.reviews.filter(status=True)
+        if not reviews.exists():
+            return 0.0
+        total = sum(r.rating for r in reviews)
+        return round(total / reviews.count(), 1)
+
+    @property
+    def count_reviews(self):
+        return self.reviews.filter(status=True).count()
+
     def save(self, *args, **kwargs):
         if not self.slug: self.slug = f"{slugify(self.name)}-{int(time.time())}"
         super().save(*args, **kwargs)
