@@ -142,7 +142,7 @@ def initiate_khalti_payment(request, order):
         if 'http://' in website_url and not ('127.0.0.1' in website_url or 'localhost' in website_url):
             website_url = website_url.replace('http://', 'https://')
 
-        raw_key = (os.environ.get('KHALTI_SECRET_KEY', '') or getattr(settings, 'KHALTI_SECRET_KEY', '') or 'key 05bf95cc57244045b8df5fad06748dab').strip()
+        raw_key = (os.environ.get('KHALTI_SECRET_KEY', '') or getattr(settings, 'KHALTI_SECRET_KEY', '') or 'Key test_secret_key_e3158c56e30b427aa49a93ecb0593467').strip()
         auth_header = raw_key if (raw_key.startswith('Key ') or raw_key.startswith('key ')) else f"Key {raw_key}"
 
         user_name = order.buyer_name or "Islington Student"
@@ -166,25 +166,33 @@ def initiate_khalti_payment(request, order):
             }
         }
 
-        keys_to_try = [auth_header, "key 05bf95cc57244045b8df5fad06748dab", "Key test_secret_key_e3158c56e30b427aa49a93ecb0593467"]
-        endpoints = ["https://dev.khalti.com/api/v2/epayment/initiate/", "https://khalti.com/api/v2/epayment/initiate/"]
+        candidate_endpoints = [
+            ("https://dev.khalti.com/api/v2/epayment/initiate/", "Key test_secret_key_e3158c56e30b427aa49a93ecb0593467"),
+            ("https://dev.khalti.com/api/v2/epayment/initiate/", auth_header),
+            ("https://a.khalti.com/api/v2/epayment/initiate/", auth_header),
+            ("https://khalti.com/api/v2/epayment/initiate/", auth_header)
+        ]
 
-        for k in keys_to_try:
-            for ep in endpoints:
-                try:
-                    res = requests.post(ep, data=json.dumps(payload), headers={"Authorization": k, "Content-Type": "application/json"}, timeout=2, verify=False)
-                    if res.status_code in (200, 201):
-                        res_data = res.json()
-                        if res_data.get("payment_url"):
-                            return res_data["payment_url"]
-                        elif res_data.get("pidx"):
-                            return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
-                except Exception:
-                    continue
+        for ep, k in candidate_endpoints:
+            try:
+                headers = {"Authorization": k, "Content-Type": "application/json"}
+                res = requests.post(ep, data=json.dumps(payload), headers=headers, timeout=8, verify=False)
+                if res.status_code in (200, 201):
+                    res_data = res.json()
+                    if res_data.get("payment_url"):
+                        return res_data["payment_url"]
+                    elif res_data.get("pidx"):
+                        return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
+                else:
+                    print(f"Khalti status {res.status_code} on {ep}:", res.text)
+            except Exception as e:
+                print(f"Khalti endpoint {ep} error:", e)
+                continue
+
     except Exception as err:
         print("Khalti initiation exception:", err)
 
-    return "https://test-pay.khalti.com/?pidx=bZQLD9wRVWo4CdESSfuSsB"
+    return None
 
 def checkout(request):
     from cart.views import _get_or_create_cart
@@ -252,10 +260,15 @@ def checkout(request):
             order.save()
 
             khalti_url = initiate_khalti_payment(request, order)
-            return redirect(khalti_url)
+            if khalti_url:
+                return redirect(khalti_url)
+
+            messages.error(request, "Connecting to Khalti payment servers... Please click Proceed to Khalti Test Payment again.")
+            return redirect('checkout')
         except Exception as err:
             print("Checkout Order Processing Exception:", err)
-            return redirect("https://test-pay.khalti.com/?pidx=bZQLD9wRVWo4CdESSfuSsB")
+            messages.error(request, f"Error processing checkout: {err}")
+            return redirect('checkout')
 
     return render(request, 'profile/checkout.html', {'cart': cart, 'cart_items': cart_items, 'total': cart.total_price, 'item_count': cart.total_items_count})
 
