@@ -125,51 +125,6 @@ def place_bid(request, auction_id):
         messages.success(request, f"Highest bid of Rs. {amt:.2f} placed!")
     return redirect('home')
 
-def checkout(request):
-    import json, requests
-    from django.conf import settings
-    from cart.views import _get_or_create_cart
-
-    cart = _get_or_create_cart(request)
-    cart_items = cart.items.filter(is_active=True).select_related('product', 'product__user')
-    if not cart_items.exists():
-        return redirect('products')
-
-    if request.method == 'POST':
-        p = request.POST
-        loc = f"Home (Kathmandu): {p.get('home_address', '')}" if p.get('delivery_type') == 'home_delivery' else f"Campus: {p.get('campus_block', 'Kumari Hall')}"
-        
-        order = Order.objects.create(
-            user=request.user if request.user.is_authenticated else None,
-            buyer_name=p.get('buyer_name', '').strip() or "Student Buyer",
-            buyer_phone=p.get('buyer_phone', '').strip() or "9800000000",
-            buyer_email=p.get('buyer_email', '').strip() or "student@islingtonmarket.np",
-            meetup_location=loc,
-            meetup_time=p.get('meetup_time', 'Morning'),
-            notes=p.get('notes', ''),
-            payment_method='khalti_api',
-            payment_status='Pending (Khalti Gateway)',
-            order_status='pending'
-        )
-        total = 0.0
-        product_details = []
-        for item in cart_items:
-            prod, pr, qty = item.product, float(item.product.price if item.product else 0), item.quantity
-            OrderItem.objects.create(order=order, product=prod, product_name=prod.name if prod else 'Item', price=pr, quantity=qty)
-            total += pr * qty
-            if prod:
-                item_price_paisa = int(round(pr * 100))
-                product_details.append({
-                    "identity": str(prod.id),
-                    "name": str(prod.name)[:50],
-                    "total_price": item_price_paisa * qty,
-                    "quantity": qty,
-                    "unit_price": item_price_paisa
-                })
-
-        order.total_amount = total
-        order.save()
-
 def initiate_khalti_payment(request, order):
     import json, requests
     from django.conf import settings
@@ -184,14 +139,6 @@ def initiate_khalti_payment(request, order):
 
         if 'http://' in website_url and not ('127.0.0.1' in website_url or 'localhost' in website_url):
             website_url = website_url.replace('http://', 'https://')
-
-        raw_key = (os.environ.get('KHALTI_SECRET_KEY', '') or getattr(settings, 'KHALTI_SECRET_KEY', '') or 'test_secret_key_e3158c56e30b427aa49a93ecb0593467').strip()
-        auth_header = raw_key if raw_key.startswith('Key ') else f"Key {raw_key}"
-
-        if 'live_' in raw_key:
-            api_url = "https://khalti.com/api/v2/epayment/initiate/"
-        else:
-            api_url = "https://dev.khalti.com/api/v2/epayment/initiate/"
 
         user_name = order.buyer_name or "Islington Student"
         user_email = order.buyer_email or "student@islington.edu.np"
@@ -214,21 +161,44 @@ def initiate_khalti_payment(request, order):
             }
         }
 
-        headers = {
-            "Authorization": auth_header,
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
+        keys_to_try = [
+            os.environ.get('KHALTI_SECRET_KEY', '').strip(),
+            getattr(settings, 'KHALTI_SECRET_KEY', '').strip(),
+            "Key test_secret_key_e3158c56e30b427aa49a93ecb0593467",
+            "Key test_secret_key_f59e415c5d94406385df7c4067176827",
+            "test_secret_key_e3158c56e30b427aa49a93ecb0593467"
+        ]
 
-        res = requests.post(api_url, data=json.dumps(payload), headers=headers, timeout=8)
-        if res.status_code in [200, 201]:
-            res_data = res.json()
-            if "payment_url" in res_data and res_data["payment_url"]:
-                return res_data["payment_url"]
-            elif "pidx" in res_data and res_data["pidx"]:
-                return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
-        else:
-            print("Khalti API error status:", res.status_code, res.text)
+        endpoints = [
+            "https://dev.khalti.com/api/v2/epayment/initiate/",
+            "https://a.khalti.com/api/v2/epayment/initiate/",
+            "https://khalti.com/api/v2/epayment/initiate/"
+        ]
+
+        headers_list = []
+        for k in keys_to_try:
+            if not k: continue
+            auth = k if k.startswith('Key ') else f"Key {k}"
+            if auth not in headers_list:
+                headers_list.append(auth)
+
+        for auth in headers_list:
+            headers = {
+                "Authorization": auth,
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+            for ep in endpoints:
+                try:
+                    res = requests.post(ep, data=json.dumps(payload), headers=headers, timeout=6)
+                    if res.status_code in [200, 201]:
+                        res_data = res.json()
+                        if "payment_url" in res_data and res_data["payment_url"]:
+                            return res_data["payment_url"]
+                        elif "pidx" in res_data and res_data["pidx"]:
+                            return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
+                except Exception:
+                    continue
     except Exception as err:
         print("Khalti API Exception:", err)
 
@@ -303,7 +273,8 @@ def checkout(request):
             if khalti_url:
                 return redirect(khalti_url)
 
-            return redirect('khalti_pay', order_id=order.id)
+            messages.error(request, "Unable to initiate Khalti payment. Please verify your connection and try again.")
+            return redirect('cart:cart_detail')
         except Exception as err:
             print("Checkout Order Processing Exception:", err)
             messages.error(request, f"Error processing checkout: {err}")
@@ -372,36 +343,13 @@ def khalti_complete(request):
     return redirect('cart:cart_detail')
 
 def khalti_pay(request, order_id):
-    from cart.views import _get_or_create_cart
     order = get_object_or_404(Order, id=order_id)
     khalti_url = initiate_khalti_payment(request, order)
     if khalti_url:
         return redirect(khalti_url)
 
-    if request.method == 'POST':
-        order.payment_status = 'Paid (Khalti Gateway)'
-        order.order_status = 'confirmed'
-        order.save()
-
-        site_url = request.build_absolute_uri('/')[:-1]
-        for item in order.items.all():
-            if item.product:
-                item.product.stock = max(0, item.product.stock - item.quantity)
-                if item.product.stock == 0:
-                    item.product.status = False
-                item.product.save()
-                if item.product.user and item.product.user != request.user:
-                    Notification.notify(item.product.user, f'New Order #{order.id} for {item.product.name}!', f'{order.buyer_name} ordered {item.quantity}x.', 'order_placed', 'fa-receipt', '/profile/?tab=orders')
-                    EmailMicroservice.send_seller_new_order_email(item.product.user, item.product, order, item.quantity, site_url=site_url)
-
-        cart = _get_or_create_cart(request)
-        cart.items.all().delete()
-
-        EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
-        messages.success(request, f"Khalti Payment Authorized! Order #{order.id} confirmed.")
-        return redirect('order_success', order_id=order.id)
-
-    return render(request, 'profile/khalti_pay.html', {'order': order})
+    messages.error(request, "Unable to initiate Khalti payment gateway. Please try again.")
+    return redirect('cart:cart_detail')
 
 
 def order_success(request, order_id):
