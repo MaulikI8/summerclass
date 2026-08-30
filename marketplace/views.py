@@ -279,58 +279,71 @@ def khalti_complete(request):
     from django.conf import settings
     from cart.views import _get_or_create_cart
 
-    pidx = request.GET.get('pidx')
-    order_id = request.GET.get('purchase_order_id') or request.GET.get('order_id')
-    status = request.GET.get('status')
+    try:
+        pidx = request.GET.get('pidx')
+        order_id_raw = request.GET.get('purchase_order_id') or request.GET.get('order_id')
+        status = request.GET.get('status')
 
-    order = get_object_or_404(Order, id=order_id) if order_id else Order.objects.filter(payment_status__icontains='Pending').order_by('-created_at').first()
+        order_id = None
+        if order_id_raw:
+            clean_digits = ''.join(c for c in str(order_id_raw) if c.isdigit())
+            if clean_digits:
+                order_id = int(clean_digits)
 
-    if not order:
-        return redirect('home')
+        order = Order.objects.filter(id=order_id).first() if order_id else Order.objects.filter(payment_status__icontains='Pending').order_by('-created_at').first()
 
-    # Per Khalti spec: Verification via Lookup API /epayment/lookup/
-    verified_status = None
-    if pidx:
-        try:
-            khalti_secret = getattr(settings, 'KHALTI_SECRET_KEY', '') or os.environ.get('KHALTI_SECRET_KEY', '') or 'Key 80007e1782164d15a3c2bccb837e3546'
-            if not khalti_secret.startswith('Key '):
-                khalti_secret = f"Key {khalti_secret}"
-            headers = {"Authorization": khalti_secret, "Content-Type": "application/json"}
-            res = requests.post("https://dev.khalti.com/api/v2/epayment/lookup/", data=json.dumps({"pidx": pidx}), headers=headers, timeout=8)
-            res_data = res.json()
-            verified_status = res_data.get("status")
-        except Exception:
-            pass
+        if not order:
+            messages.error(request, "Order record not found.")
+            return redirect('home')
 
-    # Strictly check if transaction status is 'Completed' per Khalti spec
-    if verified_status == 'Completed' or status == 'Completed':
-        order.payment_status = 'Paid (Khalti API Gateway)'
-        order.order_status = 'confirmed'
-        order.save()
+        # Per Khalti spec: Verification via Lookup API /epayment/lookup/
+        verified_status = None
+        if pidx:
+            try:
+                khalti_secret = getattr(settings, 'KHALTI_SECRET_KEY', '') or os.environ.get('KHALTI_SECRET_KEY', '') or 'Key test_secret_key_e3158c56e30b427aa49a93ecb0593467'
+                if not (khalti_secret.startswith('Key ') or khalti_secret.startswith('key ')):
+                    khalti_secret = f"Key {khalti_secret}"
+                headers = {"Authorization": khalti_secret, "Content-Type": "application/json"}
+                res = requests.post("https://dev.khalti.com/api/v2/epayment/lookup/", data=json.dumps({"pidx": pidx}), headers=headers, timeout=8, verify=False)
+                if res.status_code == 200:
+                    res_data = res.json()
+                    verified_status = res_data.get("status")
+            except Exception as e:
+                print("Khalti lookup verification exception:", e)
 
-        # Decrement stock for ordered items
-        site_url = request.build_absolute_uri('/')[:-1]
-        for item in order.items.all():
-            if item.product:
-                item.product.stock = max(0, item.product.stock - item.quantity)
-                if item.product.stock == 0:
-                    item.product.status = False
-                item.product.save()
-                if item.product.user and item.product.user != request.user:
-                    Notification.notify(item.product.user, f'New Order #{order.id} for {item.product.name}!', f'{order.buyer_name} ordered {item.quantity}x.', 'order_placed', 'fa-receipt', '/profile/?tab=orders')
-                    EmailMicroservice.send_seller_new_order_email(item.product.user, item.product, order, item.quantity, site_url=site_url)
+        # Strictly check if transaction status is 'Completed' per Khalti spec
+        if verified_status == 'Completed' or status == 'Completed':
+            order.payment_status = 'Paid (Khalti API Gateway)'
+            order.order_status = 'confirmed'
+            order.save()
 
-        # Clear cart
-        cart = _get_or_create_cart(request)
-        cart.items.all().delete()
+            # Decrement stock for ordered items
+            site_url = request.build_absolute_uri('/')[:-1]
+            for item in order.items.all():
+                if item.product:
+                    item.product.stock = max(0, item.product.stock - item.quantity)
+                    if item.product.stock == 0:
+                        item.product.status = False
+                    item.product.save()
+                    if item.product.user and item.product.user != request.user:
+                        Notification.notify(item.product.user, f'New Order #{order.id} for {item.product.name}!', f'{order.buyer_name} ordered {item.quantity}x.', 'order_placed', 'fa-receipt', '/profile/?tab=orders')
+                        EmailMicroservice.send_seller_new_order_email(item.product.user, item.product, order, item.quantity, site_url=site_url)
 
-        EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
-        messages.success(request, f"Khalti Online Payment Verified! Order #{order.id} confirmed.")
-        return redirect('order_success', order_id=order.id)
-    elif status == 'User canceled' or verified_status == 'User canceled':
-        messages.warning(request, "Payment was canceled by user on Khalti.")
-    else:
-        messages.error(request, "Khalti payment was incomplete or unverified.")
+            # Clear cart
+            cart = _get_or_create_cart(request)
+            cart.items.all().delete()
+
+            EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
+            messages.success(request, f"Khalti Online Payment Verified! Order #{order.id} confirmed.")
+            return redirect('order_success', order_id=order.id)
+        elif status == 'User canceled' or verified_status == 'User canceled':
+            messages.warning(request, "Payment was canceled by user on Khalti.")
+        else:
+            messages.error(request, "Khalti payment was incomplete or unverified.")
+
+    except Exception as err:
+        print("Khalti completion handling exception:", err)
+        messages.error(request, f"Khalti callback processing error: {err}")
 
     return redirect('cart:cart_detail')
 
