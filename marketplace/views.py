@@ -59,12 +59,18 @@ def seed_store_view(request):
     if not (request.user.is_authenticated and request.user.is_superuser):
         messages.error(request, "Superuser login required to execute store seeding.")
         return redirect('student_login')
-    try:
-        from django.core.management import call_command
-        call_command('seed_store')
-        messages.success(request, "Store seeded successfully with all products, categories, 24h auctions, and hero banners!")
-    except Exception as e:
-        messages.error(request, f"Error seeding store: {e}")
+    
+    import threading
+    from django.core.management import call_command
+
+    def run_seeder():
+        try:
+            call_command('seed_store')
+        except Exception as err:
+            print("Background seeder error:", err)
+
+    threading.Thread(target=run_seeder, daemon=True).start()
+    messages.success(request, "Store seeding started in background! Refresh in 5 seconds to see all products, categories & banners live.")
     return redirect('home')
 
 def start_auction(request, product_id):
