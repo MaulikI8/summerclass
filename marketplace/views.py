@@ -191,7 +191,7 @@ def initiate_khalti_payment(request, order):
             }
             for ep in endpoints:
                 try:
-                    res = requests.post(ep, data=json.dumps(payload), headers=headers, timeout=10)
+                    res = requests.post(ep, data=json.dumps(payload), headers=headers, timeout=8, verify=False)
                     if res.status_code in [200, 201]:
                         res_data = res.json()
                         if "payment_url" in res_data and res_data["payment_url"]:
@@ -224,7 +224,7 @@ def checkout(request):
                 else:
                     name = "Islington Student"
 
-            phone = (request.POST.get('buyer_phone') or request.POST.get('phone') or '').strip() or '9800000000'
+            phone = (request.POST.get('buyer_phone') or request.POST.get('phone') or '').strip() or '9824616674'
             email = (request.POST.get('buyer_email') or request.POST.get('email') or '').strip()
             if not email:
                 if request.user and request.user.is_authenticated and request.user.email:
@@ -271,12 +271,7 @@ def checkout(request):
             order.total_amount = total
             order.save()
 
-            khalti_url = initiate_khalti_payment(request, order)
-            if khalti_url:
-                return redirect(khalti_url)
-
-            messages.error(request, "Unable to initiate Khalti payment. Please verify your connection and try again.")
-            return redirect('cart:cart_detail')
+            return redirect('khalti_pay', order_id=order.id)
         except Exception as err:
             print("Checkout Order Processing Exception:", err)
             messages.error(request, f"Error processing checkout: {err}")
