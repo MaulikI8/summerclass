@@ -73,26 +73,57 @@ CAMPUS LOGISTICS & ESSENTIALS:
     def _gemini_generate(prompt: str, site_context: str) -> str:
         """Queries Google Gemini 1.5 Flash to generate intelligent responses for ANY prompt."""
         api_key = os.environ.get('GEMINI_API_KEY', '').strip()
-        if not api_key or not GEMINI_AVAILABLE:
+        if not api_key:
             return None
 
+        # Strategy 1: Direct HTTP REST call to Gemini 1.5 Flash API
+        import json, urllib.request, ssl
         try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            system_instruction = (
-                "You are the official AI Agent & Shopping Assistant for Islington Student Marketplace, "
-                "a student-to-student e-commerce platform for Islington College in Kathmandu, Nepal. "
-                "Your goal is to understand ANY prompt from the user—whether it is a greeting, general chat, "
-                "product search, price query, advice on selling, study tips, campus logistics, or order assistance. "
-                "Always be helpful, friendly, concise, polite, and output beautifully formatted Markdown text. "
-                "Use the following real-time marketplace database context to answer accurately:\n"
-                f"{site_context}"
-            )
-            response = model.generate_content([system_instruction, f"User Prompt: {prompt}"])
-            if response and response.text:
-                return response.text.strip()
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+            payload = {
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [
+                            {
+                                "text": (
+                                    "You are the official AI Agent & Reasoning Assistant for Islington Student Marketplace, "
+                                    "a student-to-student e-commerce platform for Islington College in Kathmandu, Nepal. "
+                                    "Your goal is to provide insightful, well-reasoned, friendly, and helpful responses to ANY user prompt—"
+                                    "including product recommendations, pricing analysis, selling advice, campus logistics, study tips, and general conversation. "
+                                    "Always explain your reasoning clearly and output clean Markdown text. "
+                                    f"Use the following real-time marketplace database context to answer accurately:\n{site_context}\n\n"
+                                    f"User Prompt: {prompt}"
+                                )
+                            }
+                        ]
+                    }
+                ]
+            }
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+            with urllib.request.urlopen(req, timeout=8, context=ctx) as resp:
+                res_data = json.loads(resp.read().decode('utf-8'))
+                candidates = res_data.get('candidates', [])
+                if candidates:
+                    parts = candidates[0].get('content', {}).get('parts', [])
+                    if parts:
+                        return parts[0].get('text', '').strip()
         except Exception as e:
-            print("Gemini API Generation Error:", e)
+            print("Gemini REST API Error:", e)
+
+        # Strategy 2: google-generativeai SDK fallback
+        if GEMINI_AVAILABLE:
+            try:
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                response = model.generate_content([f"{site_context}\n\nUser Prompt: {prompt}"])
+                if response and response.text:
+                    return response.text.strip()
+            except Exception as e:
+                print("Gemini SDK Fallback Error:", e)
 
         return None
 
