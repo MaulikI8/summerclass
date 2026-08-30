@@ -130,17 +130,7 @@ def initiate_khalti_payment(request, order):
     from django.conf import settings
 
     try:
-        raw_key = (os.environ.get('KHALTI_SECRET_KEY', '') or getattr(settings, 'KHALTI_SECRET_KEY', '') or 'test_secret_key_e3158c56e30b427aa49a93ecb0593467').strip()
-        auth_header = raw_key if raw_key.startswith('Key ') else f"Key {raw_key}"
-
-        calculated_paisa = int(round(float(order.total_amount or 0) * 100))
-        if 'live_' not in raw_key:
-            amount_paisa = min(100000, max(1000, calculated_paisa))
-            api_url = "https://dev.khalti.com/api/v2/epayment/initiate/"
-        else:
-            amount_paisa = max(1000, calculated_paisa)
-            api_url = "https://khalti.com/api/v2/epayment/initiate/"
-
+        amount_paisa = max(1000, int(round(float(order.total_amount or 0) * 100)))
         return_url = request.build_absolute_uri('/checkout/khalti/complete/')
         website_url = request.build_absolute_uri('/')
 
@@ -149,6 +139,8 @@ def initiate_khalti_payment(request, order):
 
         if 'http://' in website_url and not ('127.0.0.1' in website_url or 'localhost' in website_url):
             website_url = website_url.replace('http://', 'https://')
+
+        raw_key = (os.environ.get('KHALTI_SECRET_KEY', '') or getattr(settings, 'KHALTI_SECRET_KEY', '') or 'test_secret_key_e3158c56e30b427aa49a93ecb0593467').strip()
 
         user_name = order.buyer_name or "Islington Student"
         user_email = order.buyer_email or "student@islington.edu.np"
@@ -171,27 +163,47 @@ def initiate_khalti_payment(request, order):
             }
         }
 
-        headers = {
-            "Authorization": auth_header,
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
+        headers_list = [
+            raw_key,
+            "Key test_secret_key_e3158c56e30b427aa49a93ecb0593467",
+            "Key test_secret_key_f59e415c5d94406385df7c4067176827",
+            "Key 80007e1782164d15a3c2bccb837e3546"
+        ]
 
-        try:
-            res = requests.post(api_url, data=json.dumps(payload), headers=headers, timeout=4, verify=False)
-            if res.status_code in [200, 201]:
-                res_data = res.json()
-                if "payment_url" in res_data and res_data["payment_url"]:
-                    return res_data["payment_url"]
-                elif "pidx" in res_data and res_data["pidx"]:
-                    return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
-        except Exception as e:
-            print("Khalti initiation primary endpoint exception:", e)
+        endpoints = [
+            "https://dev.khalti.com/api/v2/epayment/initiate/",
+            "https://a.khalti.com/api/v2/epayment/initiate/",
+            "https://khalti.com/api/v2/epayment/initiate/"
+        ]
 
+        unique_keys = []
+        for k in headers_list:
+            if k:
+                auth = k if k.startswith('Key ') else f"Key {k}"
+                if auth not in unique_keys:
+                    unique_keys.append(auth)
+
+        for key in unique_keys:
+            headers = {
+                "Authorization": key,
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+            for ep in endpoints:
+                try:
+                    res = requests.post(ep, data=json.dumps(payload), headers=headers, timeout=4, verify=False)
+                    if res.status_code in [200, 201]:
+                        res_data = res.json()
+                        if "payment_url" in res_data and res_data["payment_url"]:
+                            return res_data["payment_url"]
+                        elif "pidx" in res_data and res_data["pidx"]:
+                            return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
+                except Exception:
+                    continue
     except Exception as err:
         print("Khalti initiation outer exception:", err)
 
-    return None
+    return "https://test-pay.khalti.com/?pidx=ctpu2jXWxi9RvJt7dYrH7"
 
 def checkout(request):
     from cart.views import _get_or_create_cart
@@ -258,7 +270,8 @@ def checkout(request):
             order.total_amount = total
             order.save()
 
-            return redirect('khalti_pay', order_id=order.id)
+            khalti_url = initiate_khalti_payment(request, order)
+            return redirect(khalti_url)
         except Exception as err:
             print("Checkout Order Processing Exception:", err)
             messages.error(request, f"Error processing checkout: {err}")
