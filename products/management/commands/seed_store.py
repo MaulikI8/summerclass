@@ -1,3 +1,5 @@
+import urllib.request
+from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from datetime import timedelta
 from django.utils import timezone
@@ -5,6 +7,14 @@ from django.contrib.auth.models import User
 from products.models import Category, Product, Auction, Bid, ItemRequest
 from sitesetting.models import Banner
 from blog.models import Post as BlogPost, Category as BlogCategory
+
+def fetch_img_file(url):
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            return ContentFile(resp.read())
+    except Exception:
+        return None
 
 class Command(BaseCommand):
     help = 'Seeds the database with rich student products, categories, 24h auctions, campus wanted items, and hero banners.'
@@ -25,6 +35,10 @@ class Command(BaseCommand):
         cat_objs = {}
         for name, img_url in categories_data:
             cat, created = Category.objects.get_or_create(name=name)
+            if not cat.category_image:
+                cf = fetch_img_file(img_url)
+                if cf:
+                    cat.category_image.save(f"cat_{cat.id}.jpg", cf, save=True)
             cat_objs[name] = cat
 
         Category.objects.filter(name__in=['electronic', 'Test Category']).delete()
@@ -57,6 +71,7 @@ class Command(BaseCommand):
                 "stock": 1,
                 "description": "Sony PlayStation 5 in pristine condition. Includes 2 original DualSense controllers and HDMI 2.1 cable. Barely used during semester break.",
                 "user": user_objs[0],
+                "img": "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&auto=format&fit=crop"
             },
             {
                 "name": "MacBook Pro 14-inch M2 Pro (16GB RAM / 512GB SSD)",
@@ -65,6 +80,7 @@ class Command(BaseCommand):
                 "stock": 1,
                 "description": "Apple M2 Pro chip with 10-core CPU and 16-core GPU. Perfect for Mobile App Dev & AI assignments. Battery cycle count only 42.",
                 "user": user_objs[1],
+                "img": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&auto=format&fit=crop"
             },
             {
                 "name": "BSc (Hons) Computing Year 2 Complete Textbook Set",
@@ -73,6 +89,7 @@ class Command(BaseCommand):
                 "stock": 2,
                 "description": "Includes Java Software Solutions (9th Ed), Data Structures & Algorithms, and Computer Networking Top-Down Approach. Clean pages with highlighted notes.",
                 "user": user_objs[2],
+                "img": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop"
             },
             {
                 "name": "Sony WH-1000XM5 Wireless Noise Cancelling Headphones",
@@ -81,6 +98,7 @@ class Command(BaseCommand):
                 "stock": 1,
                 "description": "Industry leading noise cancellation headphones. Great for studying in quiet library blocks. Includes original carrying case and 3.5mm jack.",
                 "user": user_objs[3],
+                "img": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop"
             },
             {
                 "name": "Logitech MX Master 3S Wireless Performance Mouse",
@@ -89,6 +107,7 @@ class Command(BaseCommand):
                 "stock": 3,
                 "description": "Ultra-quiet clicks, 8K DPI sensor on glass tracking. Ergonomic design ideal for long coding sessions and UI design assignments.",
                 "user": user_objs[4],
+                "img": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop"
             },
             {
                 "name": "Arduino Uno R3 Ultimate Project Starter Electronics Kit",
@@ -97,6 +116,7 @@ class Command(BaseCommand):
                 "stock": 4,
                 "description": "Complete IoT & Embedded Systems lab kit. Includes breadboard, jumper wires, sensors, LCD screen, step motors, and resistors.",
                 "user": user_objs[0],
+                "img": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop"
             },
             {
                 "name": "Meditations by Marcus Aurelius (Penguin Classics Hardcover)",
@@ -105,6 +125,7 @@ class Command(BaseCommand):
                 "stock": 5,
                 "description": "Classic stoic philosophy book translated by Gregory Hays. Excellent read for personal development and critical thinking.",
                 "user": user_objs[1],
+                "img": "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&auto=format&fit=crop"
             },
             {
                 "name": "Oversized Islington Campus Tech Club Hoodie (Black / Large)",
@@ -113,6 +134,7 @@ class Command(BaseCommand):
                 "stock": 2,
                 "description": "Heavyweight 380 GSM fleece cotton hoodie. Soft inner lining with minimal futuristic tech typography print.",
                 "user": user_objs[2],
+                "img": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop"
             },
             {
                 "name": "IKEA Minimalist Study Desk & Ergonomic Mesh Chair Combo",
@@ -121,6 +143,7 @@ class Command(BaseCommand):
                 "stock": 1,
                 "description": "Clean white computer table (120x60cm) + height-adjustable lumbar mesh office chair. Perfect student room setup for hostel/apartment.",
                 "user": user_objs[3],
+                "img": "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600&auto=format&fit=crop"
             },
             {
                 "name": "Casio FX-991EX ClassWiz Non-Programmable Scientific Calculator",
@@ -129,6 +152,7 @@ class Command(BaseCommand):
                 "stock": 3,
                 "description": "High-resolution natural textbook display calculator. Allowed in all Islington university examinations.",
                 "user": user_objs[4],
+                "img": "https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600&auto=format&fit=crop"
             },
             {
                 "name": "Anker PowerCore 20,000mAh 22.5W Fast Charging Power Bank",
@@ -137,6 +161,7 @@ class Command(BaseCommand):
                 "stock": 2,
                 "description": "Dual USB-A and Type-C PowerIQ fast charger. Charges smartphones 4-5 times over during long lectures.",
                 "user": user_objs[0],
+                "img": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop"
             },
             {
                 "name": "Dell UltraSharp 27-inch 4K USB-C Monitor (U2723QE)",
@@ -145,6 +170,7 @@ class Command(BaseCommand):
                 "stock": 1,
                 "description": "IPS Black technology with 2000:1 contrast ratio and 90W USB-C power delivery for laptops. Zero backlight bleed.",
                 "user": user_objs[1],
+                "img": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&auto=format&fit=crop"
             }
         ]
 
@@ -168,6 +194,10 @@ class Command(BaseCommand):
             p.description = item["description"]
             p.status = True
             p.is_approved = True
+            if not p.product_image:
+                cf = fetch_img_file(item["img"])
+                if cf:
+                    p.product_image.save(f"prod_{p.id}.jpg", cf, save=False)
             p.save()
             prod_objs.append(p)
 

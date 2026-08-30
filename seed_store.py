@@ -1,6 +1,7 @@
-import os, django, random
+import os, django, random, urllib.request
 from datetime import timedelta
 from django.utils import timezone
+from django.core.files.base import ContentFile
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'marketplace.settings')
 django.setup()
@@ -9,6 +10,14 @@ from django.contrib.auth.models import User
 from products.models import Category, Product, Auction, Bid, ItemRequest
 from sitesetting.models import Banner, SiteSetting
 from blog.models import Post as BlogPost, Category as BlogCategory
+
+def fetch_img_file(url):
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            return ContentFile(resp.read())
+    except Exception:
+        return None
 
 def seed_database():
     print("Starting Store Seeding for Islington Marketplace...")
@@ -26,6 +35,10 @@ def seed_database():
     cat_objs = {}
     for name, img_url in categories_data:
         cat, created = Category.objects.get_or_create(name=name)
+        if not cat.category_image:
+            cf = fetch_img_file(img_url)
+            if cf:
+                cat.category_image.save(f"cat_{cat.id}.jpg", cf, save=True)
         cat_objs[name] = cat
         print(f"  Category: {cat.name}")
 
@@ -153,7 +166,7 @@ def seed_database():
             "stock": 2,
             "description": "Dual USB-A and Type-C PowerIQ fast charger. Charges smartphones 4-5 times over during long lectures.",
             "user": user_objs[0],
-            "img": "https://images.unsplash.com/photo-1609592424074-90ac38634839?w=600&auto=format&fit=crop"
+            "img": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop"
         },
         {
             "name": "Dell UltraSharp 27-inch 4K USB-C Monitor (U2723QE)",
@@ -187,6 +200,10 @@ def seed_database():
         p.description = item["description"]
         p.status = True
         p.is_approved = True
+        if not p.product_image:
+            cf = fetch_img_file(item["img"])
+            if cf:
+                p.product_image.save(f"prod_{p.id}.jpg", cf, save=False)
         p.save()
         prod_objs.append(p)
         print(f"  Product: {p.name} (Rs. {p.price})")
