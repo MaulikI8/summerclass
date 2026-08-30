@@ -582,7 +582,24 @@
     </section>
   </header>
 
-  <main id="mainContent">{% block content %}{% endblock %}</main>
+  <main id="mainContent">
+    <div class="container mt-3" id="globalToastContainer">
+      {% if messages %}
+      <div class="d-flex flex-column gap-2 mb-3">
+        {% for m in messages %}
+        <div class="alert alert-{% if m.tags == 'error' or 'Unable' in m.message or 'Error' in m.message or 'incomplete' in m.message %}danger{% elif m.tags == 'warning' %}warning{% else %}success{% endif %} alert-dismissible fade show rounded-3 py-2.5 px-3 small shadow-sm d-flex align-items-center justify-content-between auto-toast-alert" role="alert" style="margin-bottom:0.25rem;">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas {% if m.tags == 'error' or 'Unable' in m.message or 'Error' in m.message or 'incomplete' in m.message %}fa-exclamation-circle text-danger{% elif m.tags == 'warning' %}fa-exclamation-triangle text-warning{% else %}fa-check-circle text-success{% endif %}"></i>
+            <span>{{ m }}</span>
+          </div>
+          <button type="button" class="btn-close ms-2 py-0 px-1" data-bs-dismiss="alert" aria-label="Close" style="font-size:0.75rem;padding:0.5rem;" onclick="this.parentElement.remove()"></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% block content %}{% endblock %}
+  </main>
 
   <footer class="section-footer mt-5 border-top bg-white">
     <div class="container py-4">
@@ -845,6 +862,23 @@
       autoRemoveWhiteBackgrounds();
       setTimeout(autoRemoveWhiteBackgrounds, 600);
       setTimeout(autoRemoveWhiteBackgrounds, 1500);
+
+      // Auto-dismiss Django toast alerts after 4.5 seconds
+      var alerts = document.querySelectorAll('.auto-toast-alert');
+      alerts.forEach(function(alert) {
+        setTimeout(function() {
+          alert.style.transition = 'opacity 0.5s ease, transform 0.5s ease, margin 0.5s ease';
+          alert.style.opacity = '0';
+          alert.style.transform = 'translateY(-10px)';
+          setTimeout(function() {
+            alert.remove();
+            var container = document.getElementById('globalToastContainer');
+            if (container && container.querySelectorAll('.auto-toast-alert').length === 0) {
+              container.style.display = 'none';
+            }
+          }, 500);
+        }, 4500);
+      });
     });
   </script>
 </body>

@@ -150,8 +150,6 @@
 </style>
 
 <div class="container py-4">
-  {% if messages %}{% for m in messages %}<div class="alert alert-{% if m.tags == 'error' %}danger{% else %}success{% endif %} rounded-3 py-2 small mb-3">{{ m }}</div>{% endfor %}{% endif %}
-
   <div class="row g-3">
     <div class="col-lg-3 col-md-4">
       <div class="card border-0 shadow-sm rounded-4 p-3 bg-white dash-side">
