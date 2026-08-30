@@ -32,11 +32,13 @@ def student_login(request):
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")
             return redirect('user_profile')
         
-        inactive = User.objects.filter(username=username).first()
+        inactive = User.objects.filter(username=username).first() or User.objects.filter(email=username).first()
         if inactive and inactive.check_password(pwd):
             uid = urlsafe_base64_encode(force_bytes(inactive.pk))
             token = default_token_generator.make_token(inactive)
             activation_url = request.build_absolute_uri(reverse('activate_account', kwargs={'uidb64': uid, 'token': token}))
+            if 'http://' in activation_url and not ('127.0.0.1' in activation_url or 'localhost' in activation_url):
+                activation_url = activation_url.replace('http://', 'https://')
             EmailMicroservice.send_activation_email(inactive, activation_url)
             messages.info(request, f"Your account is not activated yet. A new activation link has been sent to {inactive.email}.")
             return redirect('student_login')
@@ -58,8 +60,13 @@ def student_register(request):
             uid = urlsafe_base64_encode(force_bytes(usr.pk))
             token = default_token_generator.make_token(usr)
             activation_url = request.build_absolute_uri(reverse('activate_account', kwargs={'uidb64': uid, 'token': token}))
-            EmailMicroservice.send_activation_email(usr, activation_url)
-            messages.success(request, f"Registration successful! We sent an activation link to {usr.email}. Please check your inbox to activate your account.")
+            if 'http://' in activation_url and not ('127.0.0.1' in activation_url or 'localhost' in activation_url):
+                activation_url = activation_url.replace('http://', 'https://')
+            sent = EmailMicroservice.send_activation_email(usr, activation_url)
+            if sent:
+                messages.success(request, f"Registration successful! We sent an activation link to {usr.email}. Please check your inbox (or spam folder) to activate your account.")
+            else:
+                messages.warning(request, f"Registration recorded! If you do not see an activation email in {usr.email}, try signing in to resend the link.")
             return redirect('student_login')
     return render(request, 'profile/register.html')
 

@@ -18,6 +18,7 @@ if '*' not in ALLOWED_HOSTS: ALLOWED_HOSTS.extend(['.onrender.com', 'localhost',
 
 CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com', 'https://maulikjoshi.com.np', 'https://*.maulikjoshi.com.np', 'http://127.0.0.1', 'http://localhost']
 if os.environ.get('RENDER_EXTERNAL_URL'): CSRF_TRUSTED_ORIGINS.append(os.environ.get('RENDER_EXTERNAL_URL'))
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 try:
     import cloudinary_storage

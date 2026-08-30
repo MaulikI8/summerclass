@@ -117,6 +117,8 @@ class EmailMicroservice:
     @classmethod
     def send_activation_email(cls, u, activation_url):
         if not u or not u.email: return False
+        if 'http://' in activation_url and not ('127.0.0.1' in activation_url or 'localhost' in activation_url):
+            activation_url = activation_url.replace('http://', 'https://')
         name = u.first_name or u.username
         text = f"Hello {name},\n\nThank you for registering at Islington Marketplace! Please use the following link to activate your student account:\n\n{activation_url}\n\nIslington Marketplace Team"
         b = f"""<p>Hello <strong>{name}</strong>,</p>
@@ -125,7 +127,7 @@ class EmailMicroservice:
             <a href="{activation_url}" style="background:#4F46E5;color:#ffffff;padding:12px 28px;border-radius:30px;text-decoration:none;font-weight:bold;display:inline-block;">Activate My Account &rarr;</a>
         </div>
         <p style="font-size:12px;color:#64748b;">If the button above does not work, copy and paste this link into your browser:<br/><a href="{activation_url}" style="color:#4F46E5;">{activation_url}</a></p>"""
-        return cls.send_async(u.email, "Activate Your Islington Marketplace Account", cls._wrap("Account Verification", "Email Verification Link", b), text_body=text)
+        return cls.send_sync(u.email, "Activate Your Islington Marketplace Account", cls._wrap("Account Verification", "Email Verification Link", b), text_body=text)
 
     @classmethod
     def send_order_confirmation_email(cls, order, site_url=""):
