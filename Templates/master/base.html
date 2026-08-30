@@ -123,6 +123,122 @@
         background-color: #080c14 !important;
         border-color: #1e293b !important;
     }
+
+    /* --- BULLETPROOF ANIMATED THEME TOGGLE SWITCH --- */
+    .theme-switch {
+        position: relative !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        width: 56px !important;
+        height: 28px !important;
+        margin: 0 4px !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        vertical-align: middle !important;
+    }
+    .theme-switch input[type="checkbox"] {
+        display: none !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        visibility: hidden !important;
+        position: absolute !important;
+    }
+    .theme-switch .theme-slider {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background-color: #cbd5e1 !important;
+        border: 1.5px solid #94a3b8 !important;
+        border-radius: 30px !important;
+        transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 0 6px !important;
+        box-sizing: border-box !important;
+    }
+    .theme-switch .icon-sun {
+        font-size: 11px !important;
+        color: #d97706 !important;
+        z-index: 1 !important;
+        line-height: 1 !important;
+        transition: opacity 0.3s ease !important;
+    }
+    .theme-switch .icon-moon {
+        font-size: 11px !important;
+        color: #818cf8 !important;
+        z-index: 1 !important;
+        line-height: 1 !important;
+        transition: opacity 0.3s ease !important;
+    }
+    .theme-switch .theme-thumb {
+        position: absolute !important;
+        top: 2px !important;
+        left: 2px !important;
+        width: 21px !important;
+        height: 21px !important;
+        border-radius: 50% !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) !important;
+        transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.35s ease !important;
+        z-index: 2 !important;
+    }
+    /* Checked State (Dark Mode) */
+    .theme-switch input[type="checkbox"]:checked + .theme-slider {
+        background-color: #1e1b4b !important;
+        border-color: #4338ca !important;
+    }
+    .theme-switch input[type="checkbox"]:checked + .theme-slider .theme-thumb {
+        transform: translateX(25px) !important;
+        background-color: #6366f1 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 10px rgba(99, 102, 241, 0.7) !important;
+    }
+    .theme-switch input[type="checkbox"]:checked + .theme-slider .icon-sun {
+        opacity: 0.3 !important;
+    }
+    .theme-switch input[type="checkbox"]:not(:checked) + .theme-slider .icon-moon {
+        opacity: 0.3 !important;
+    }
+    .theme-switch:hover .theme-thumb {
+        scale: 1.1 !important;
+    }
+
+    /* --- HEADER BUTTON & SEARCH BAR DARK MODE FIXES --- */
+    html[data-theme="dark"] .btn-nav-link,
+    html[data-bs-theme="dark"] .btn-nav-link {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        color: #f8fafc !important;
+        border: 1px solid #334155 !important;
+    }
+    html[data-theme="dark"] .btn-nav-link:hover,
+    html[data-bs-theme="dark"] .btn-nav-link:hover {
+        background-color: #4F46E5 !important;
+        color: #ffffff !important;
+    }
+
+    html[data-theme="dark"] .widget-icon-btn,
+    html[data-bs-theme="dark"] .widget-icon-btn {
+        background-color: #1a2035 !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-theme="dark"] .search-wrapper .form-control,
+    html[data-theme="dark"] #globalSearchInput,
+    html[data-bs-theme="dark"] .search-wrapper .form-control,
+    html[data-bs-theme="dark"] #globalSearchInput {
+        background-color: #1a2035 !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-theme="dark"] #globalSearchInput::placeholder,
+    html[data-bs-theme="dark"] #globalSearchInput::placeholder {
+        color: #94a3b8 !important;
+    }
   </style>
 </head>
 <body class="site-body">
