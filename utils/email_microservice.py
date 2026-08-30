@@ -197,3 +197,21 @@ class EmailMicroservice:
         b = f"""<p>Student <strong>{seller.username}</strong> submitted a new listing: <strong>{product.name}</strong> (Rs. {product.price:.2f}).</p>"""
         emails = list(User.objects.filter(is_superuser=True).exclude(email='').values_list('email', flat=True)) or ['maulikj663@gmail.com']
         return cls.send_async(emails, f"Review Required: {product.name}", cls._wrap("Moderation Notice", "Admin Action", b))
+
+    @classmethod
+    def send_new_auction_broadcast(cls, auction, link=""):
+        b = f"""<p>A new 24-hour live auction for <strong>{auction.title}</strong> has started at starting bid <strong>Rs. {auction.start_bid:.2f}</strong>!</p>"""
+        emails = list(User.objects.exclude(email='').values_list('email', flat=True))
+        return cls.send_async(emails, f"🔥 Live Auction: {auction.title}", cls._wrap("Live Auction", "Campus Auction", b))
+
+    @classmethod
+    def send_outbid_notification(cls, user, auction, new_bid_amount, link=""):
+        if not user or not user.email: return False
+        b = f"""<p>Hello <strong>{user.first_name or user.username}</strong>,</p><p>You have been outbid on <strong>{auction.title}</strong>! The new highest bid is <strong>Rs. {new_bid_amount:.2f}</strong>.</p>"""
+        return cls.send_async(user.email, f"Outbid Alert: {auction.title}", cls._wrap("Outbid Alert", "Auction Update", b))
+
+    @classmethod
+    def send_auction_won_notification(cls, winner, seller, auction):
+        if not winner or not winner.email: return False
+        b = f"""<p>Congratulations <strong>{winner.first_name or winner.username}</strong>!</p><p>Your winning bid of <strong>Rs. {auction.current_bid:.2f}</strong> for <strong>{auction.title}</strong> was accepted by {seller.username}.</p>"""
+        return cls.send_async(winner.email, f"🎉 Auction Won: {auction.title}", cls._wrap("Auction Won", "Winning Bid", b))

@@ -105,24 +105,40 @@ def accept_auction_bid(request, auction_id):
     return redirect('home')
 
 def place_bid(request, auction_id):
-    if not request.user.is_authenticated: return redirect('student_login')
-    a = get_object_or_404(Auction, id=auction_id, is_active=True)
-    if a.product.user == request.user:
-        messages.error(request, "Cannot bid on your own listing.")
-        return redirect('home')
-    if request.method == 'POST':
-        amt = float(request.POST.get('bid_amount', 0))
-        if amt <= a.current_bid:
-            messages.error(request, f"Bid must exceed current Rs. {a.current_bid:.2f}")
+    if not request.user.is_authenticated:
+        messages.warning(request, "Please Sign In to place a bid.")
+        return redirect('student_login')
+    try:
+        a = get_object_or_404(Auction, id=auction_id, is_active=True)
+        if a.product and a.product.user == request.user:
+            messages.error(request, "Cannot bid on your own listing.")
             return redirect('home')
-        old_bidder = a.highest_bidder
-        Bid.objects.create(auction=a, user=request.user, amount=amt)
-        a.current_bid, a.highest_bidder = amt, request.user
-        a.save()
-        if old_bidder and old_bidder != request.user:
-            EmailMicroservice.send_outbid_notification(old_bidder, a, amt, request.build_absolute_uri('/#liveBiddingSection'))
-            Notification.notify(old_bidder, f"Outbid on {a.product.name}!", f"New highest bid: Rs. {amt:.2f}.", 'auction_outbid', 'fa-arrow-up', '/#liveBiddingSection')
-        messages.success(request, f"Highest bid of Rs. {amt:.2f} placed!")
+        if request.method == 'POST':
+            raw_amt = request.POST.get('bid_amount', 0)
+            try:
+                amt = float(raw_amt)
+            except (ValueError, TypeError):
+                messages.error(request, "Please enter a valid bid amount.")
+                return redirect('home')
+
+            if amt <= a.current_bid:
+                messages.error(request, f"Bid must exceed current Rs. {a.current_bid:.2f}")
+                return redirect('home')
+            old_bidder = a.highest_bidder
+            Bid.objects.create(auction=a, user=request.user, amount=amt)
+            a.current_bid, a.highest_bidder = amt, request.user
+            a.save()
+            if old_bidder and old_bidder != request.user:
+                try:
+                    EmailMicroservice.send_outbid_notification(old_bidder, a, amt, request.build_absolute_uri('/#liveBiddingSection'))
+                except Exception as e:
+                    print("Outbid email exception:", e)
+                Notification.notify(old_bidder, f"Outbid on {a.product.name}!", f"New highest bid: Rs. {amt:.2f}.", 'auction_outbid', 'fa-arrow-up', '/#liveBiddingSection')
+            messages.success(request, f"Highest bid of Rs. {amt:.2f} placed!")
+    except Exception as err:
+        print("Place bid error:", err)
+        messages.error(request, f"Could not process bid: {err}")
+
     return redirect('home')
 
 def initiate_khalti_payment(request, order):
