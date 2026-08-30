@@ -14,6 +14,7 @@ urlpatterns = [
     path('account/', include('account.urls')),
     path('login/', account_views.student_login, name='student_login'),
     path('register/', account_views.student_register, name='student_register'),
+    path('activate/<str:uidb64>/<str:token>/', account_views.activate_account, name='activate_account'),
     path('verify-otp/', account_views.verify_otp, name='verify_otp'),
     path('resend-otp/', account_views.resend_otp, name='resend_otp'),
     path('verify-email/<str:token>/', account_views.verify_email, name='verify_email'),

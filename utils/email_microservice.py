@@ -53,6 +53,17 @@ class EmailMicroservice:
         cls.send_async(u.email, f"Your Verification Code: {code}", cls._wrap("Account Verification", "Security OTP", b))
 
     @classmethod
+    def send_activation_email(cls, u, activation_url):
+        if not u or not u.email: return
+        b = f"""<p>Hello <strong>{u.first_name or u.username}</strong>,</p>
+        <p>Thank you for registering at Islington Marketplace! Please click the button below to activate your student account:</p>
+        <div style="text-align:center;margin:24px 0;">
+            <a href="{activation_url}" style="background:#4F46E5;color:#ffffff;padding:12px 28px;border-radius:30px;text-decoration:none;font-weight:bold;display:inline-block;">Activate My Account &rarr;</a>
+        </div>
+        <p style="font-size:12px;color:#64748b;">If the button above does not work, copy and paste this link into your browser:<br/><a href="{activation_url}" style="color:#4F46E5;">{activation_url}</a></p>"""
+        cls.send_async(u.email, "Activate Your Islington Marketplace Account", cls._wrap("Account Verification", "Email Verification Link", b))
+
+    @classmethod
     def send_order_confirmation_email(cls, order, site_url=""):
         if not order.buyer_email: return
         items = "".join([f"<li>{i.quantity}x {i.product_name} — Rs. {i.price:.2f}</li>" for i in order.items.all()])

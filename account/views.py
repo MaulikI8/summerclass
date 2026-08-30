@@ -3,6 +3,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.urls import reverse
+
 from products.models import Product, Category, Order, OrderItem, TradeOffer, Wishlist
 from blog.models import Post as BlogPost
 from sitesetting.models import Notification, EmailOTP
@@ -26,15 +31,16 @@ def student_login(request):
                 pass
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")
             return redirect('user_profile')
+        
         inactive = User.objects.filter(username=username).first()
         if inactive and inactive.check_password(pwd):
-            otp = f"{random.randint(100000, 999999):06d}"
-            EmailOTP.objects.filter(user=inactive, is_used=False).update(is_used=True)
-            EmailOTP.objects.create(user=inactive, otp_code=otp, purpose='login_activation')
-            EmailMicroservice.send_otp_email(inactive, otp)
-            request.session['pending_otp_user_id'] = inactive.id
-            messages.info(request, f"Activation code sent to {inactive.email}.")
-            return redirect('verify_otp')
+            uid = urlsafe_base64_encode(force_bytes(inactive.pk))
+            token = default_token_generator.make_token(inactive)
+            activation_url = request.build_absolute_uri(reverse('activate_account', kwargs={'uidb64': uid, 'token': token}))
+            EmailMicroservice.send_activation_email(inactive, activation_url)
+            messages.info(request, f"Your account is not activated yet. A new activation link has been sent to {inactive.email}.")
+            return redirect('student_login')
+
         messages.error(request, "Invalid credentials.")
     return render(request, 'profile/login.html', {'saved_username': username})
 
@@ -49,44 +55,37 @@ def student_register(request):
             messages.error(request, "Username or email already in use.")
         else:
             usr = User.objects.create_user(username=u, email=em, password=pw, first_name=p.get('first_name', ''), last_name=p.get('last_name', ''), is_active=False)
-            otp = f"{random.randint(100000, 999999):06d}"
-            EmailOTP.objects.create(user=usr, otp_code=otp, purpose='registration')
-            EmailMicroservice.send_otp_email(usr, otp)
-            request.session['pending_otp_user_id'] = usr.id
-            messages.success(request, f"Verification code sent to {usr.email}.")
-            return redirect('verify_otp')
+            uid = urlsafe_base64_encode(force_bytes(usr.pk))
+            token = default_token_generator.make_token(usr)
+            activation_url = request.build_absolute_uri(reverse('activate_account', kwargs={'uidb64': uid, 'token': token}))
+            EmailMicroservice.send_activation_email(usr, activation_url)
+            messages.success(request, f"Registration successful! We sent an activation link to {usr.email}. Please check your inbox to activate your account.")
+            return redirect('student_login')
     return render(request, 'profile/register.html')
 
+def activate_account(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        usr = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        usr = None
+
+    if usr is not None and default_token_generator.check_token(usr, token):
+        usr.is_active = True
+        usr.save()
+        login(request, usr)
+        Notification.notify(usr, f'Welcome {usr.username}!', 'Account activated via email link! Start exploring marketplace.', 'welcome', 'fa-check-circle', '/profile/')
+        messages.success(request, f"Account activated successfully! Welcome to Islington Marketplace, {usr.first_name or usr.username}.")
+        return redirect('user_profile')
+    else:
+        messages.error(request, "Activation link is invalid or has expired.")
+        return redirect('student_login')
+
 def verify_otp(request):
-    uid = request.session.get('pending_otp_user_id')
-    if not uid: return redirect('student_login')
-    usr = get_object_or_404(User, id=uid)
-    if request.method == 'POST':
-        code = request.POST.get('otp_code', '').strip().replace(' ', '')
-        otp_obj = EmailOTP.objects.filter(user=usr, otp_code=code, is_used=False).order_by('-created_at').first()
-        if otp_obj and otp_obj.is_valid():
-            otp_obj.is_used = True
-            otp_obj.save()
-            usr.is_active = True
-            usr.save()
-            login(request, usr)
-            request.session.pop('pending_otp_user_id', None)
-            Notification.notify(usr, f'Welcome {usr.username}!', 'Account verified! Start shopping & selling.', 'welcome', 'fa-check-circle', '/profile/')
-            messages.success(request, f"Welcome {usr.username}! Verified successfully.")
-            return redirect('user_profile')
-        messages.error(request, "Invalid or expired OTP.")
-    return render(request, 'profile/verify_otp.html', {'pending_user': usr})
+    return redirect('student_login')
 
 def resend_otp(request):
-    uid = request.session.get('pending_otp_user_id')
-    if not uid: return redirect('student_login')
-    usr = get_object_or_404(User, id=uid)
-    EmailOTP.objects.filter(user=usr, is_used=False).update(is_used=True)
-    otp = f"{random.randint(100000, 999999):06d}"
-    EmailOTP.objects.create(user=usr, otp_code=otp, purpose='registration')
-    EmailMicroservice.send_otp_email(usr, otp)
-    messages.success(request, f"New OTP sent to {usr.email}.")
-    return redirect('verify_otp')
+    return redirect('student_login')
 
 def verify_email(request, token):
     return redirect('student_login')
