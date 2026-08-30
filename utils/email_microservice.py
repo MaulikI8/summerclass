@@ -132,18 +132,53 @@ class EmailMicroservice:
     @classmethod
     def send_order_confirmation_email(cls, order, site_url=""):
         if not order.buyer_email: return False
-        items = "".join([f"<li>{i.quantity}x {i.product_name} — Rs. {i.price:.2f}</li>" for i in order.items.all()])
-        b = f"""<p>Hello <strong>{order.buyer_name}</strong>,</p><p>Your order #{order.id} is confirmed!</p>
-        <ul>{items}</ul><p><strong>Total: Rs. {order.total_amount:.2f}</strong></p><p>📍 Location: {order.meetup_location}</p>"""
-        return cls.send_async(order.buyer_email, f"Order Confirmed #{order.id}", cls._wrap(f"Order #{order.id} Confirmed", "Order Receipt", b))
+        items_html = "".join([
+            f"<tr style='border-bottom:1px solid #f1f5f9;'>"
+            f"<td style='padding:10px 0;color:#334155;font-weight:600;'>{i.quantity}x {i.product_name}</td>"
+            f"<td style='padding:10px 0;text-align:right;color:#0f172a;font-weight:700;'>Rs. {i.price:.2f}</td>"
+            f"</tr>" for i in order.items.all()
+        ])
+        b = f"""
+        <p style="font-size:15px;color:#334155;margin-bottom:16px;">Hello <strong>{order.buyer_name}</strong>,</p>
+        <p style="font-size:14px;color:#334155;">Your payment has been authorized via <strong>Khalti Digital Gateway</strong> and your order <strong>#{order.id}</strong> is confirmed!</p>
+        
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin:20px 0;">
+            <h4 style="margin:0 0 12px;color:#1e3a8a;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;">Order Summary</h4>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                <tbody>{items_html}</tbody>
+            </table>
+            <div style="margin-top:12px;padding-top:12px;border-top:2px solid #e2e8f0;display:flex;justify-content:space-between;">
+                <span style="font-size:15px;font-weight:700;color:#1e293b;">Total Amount Paid:</span>
+                <span style="font-size:16px;font-weight:800;color:#5c2d91;">Rs. {order.total_amount:.2f}</span>
+            </div>
+        </div>
+
+        <div style="background:#faf5ff;border-left:4px solid #5c2d91;padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:20px;">
+            <p style="margin:0 0 4px;font-size:13px;color:#5c2d91;font-weight:700;">📍 Pickup Location: {order.meetup_location}</p>
+            <p style="margin:0;font-size:13px;color:#6b21a8;">⏰ Preferred Time: {order.meetup_time}</p>
+        </div>
+
+        <p style="font-size:12px;color:#64748b;margin-top:24px;text-align:center;">Thank you for supporting campus commerce at Islington Student Marketplace!</p>
+        """
+        return cls.send_async(order.buyer_email, f"✅ Order Confirmed #{order.id} • Islington Marketplace", cls._wrap(f"Order #{order.id} Confirmed", "Khalti Payment Successful", b))
 
     @classmethod
     def send_seller_new_order_email(cls, seller, product, order, qty=1, site_url=""):
         if not seller or not seller.email: return False
-        b = f"""<p>Hello <strong>{seller.first_name or seller.username}</strong>,</p>
-        <p><strong>{order.buyer_name}</strong> purchased <strong>{qty}x {product.name}</strong>!</p>
-        <p>Buyer Phone: {order.buyer_phone} | Location: {order.meetup_location}</p>"""
-        return cls.send_async(seller.email, f"New Order for {product.name}!", cls._wrap("New Sale Alert", "Student Sale", b))
+        b = f"""
+        <p style="font-size:15px;color:#334155;margin-bottom:16px;">Hello <strong>{seller.first_name or seller.username}</strong>,</p>
+        <p style="font-size:14px;color:#334155;">Great news! <strong>{order.buyer_name}</strong> just purchased <strong>{qty}x {product.name}</strong> on Islington Marketplace!</p>
+        
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin:20px 0;">
+            <h4 style="margin:0 0 8px;color:#166534;font-size:14px;">Buyer Details &amp; Pickup Logistics</h4>
+            <p style="margin:4px 0;font-size:13px;color:#15803d;">👤 <strong>Buyer Name:</strong> {order.buyer_name}</p>
+            <p style="margin:4px 0;font-size:13px;color:#15803d;">📞 <strong>Buyer Phone:</strong> {order.buyer_phone}</p>
+            <p style="margin:4px 0;font-size:13px;color:#15803d;">📧 <strong>Buyer Email:</strong> {order.buyer_email}</p>
+            <p style="margin:4px 0;font-size:13px;color:#15803d;">📍 <strong>Meetup Spot:</strong> {order.meetup_location}</p>
+            <p style="margin:4px 0;font-size:13px;color:#15803d;">⏰ <strong>Meetup Time:</strong> {order.meetup_time}</p>
+        </div>
+        """
+        return cls.send_async(seller.email, f"🎉 New Sale: {product.name}!", cls._wrap("New Sale Alert", "Student Marketplace Sale", b))
 
     @classmethod
     def send_product_approved_email(cls, seller, product, site_url=""):
