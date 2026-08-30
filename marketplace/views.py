@@ -184,9 +184,13 @@ def initiate_khalti_payment(request, order):
     if 'http://' in website_url and not ('127.0.0.1' in website_url or 'localhost' in website_url):
         website_url = website_url.replace('http://', 'https://')
 
-    khalti_secret = os.environ.get('KHALTI_SECRET_KEY', '') or getattr(settings, 'KHALTI_SECRET_KEY', '') or 'Key test_secret_key_e3158c56e30b427aa49a93ecb0593467'
-    if not khalti_secret.startswith('Key '):
-        khalti_secret = f"Key {khalti_secret}"
+    raw_key = os.environ.get('KHALTI_SECRET_KEY', '').strip() or getattr(settings, 'KHALTI_SECRET_KEY', '').strip() or 'test_secret_key_e3158c56e30b427aa49a93ecb0593467'
+    auth_header = raw_key if raw_key.startswith('Key ') else f"Key {raw_key}"
+
+    if 'live_' in raw_key:
+        api_url = "https://khalti.com/api/v2/epayment/initiate/"
+    else:
+        api_url = "https://dev.khalti.com/api/v2/epayment/initiate/"
 
     user_name = order.buyer_name
     if not user_name:
@@ -209,37 +213,22 @@ def initiate_khalti_payment(request, order):
         }
     }
 
-    keys = [
-        khalti_secret,
-        "Key test_secret_key_e3158c56e30b427aa49a93ecb0593467",
-        "Key test_secret_key_f59e415c5d94406385df7c4067176827",
-        "Key 80007e1782164d15a3c2bccb837e3546"
-    ]
+    headers = {
+        "Authorization": auth_header,
+        "Content-Type": "application/json"
+    }
 
-    endpoints = [
-        "https://dev.khalti.com/api/v2/epayment/initiate/",
-        "https://a.khalti.com/api/v2/epayment/initiate/",
-        "https://khalti.com/api/v2/epayment/initiate/"
-    ]
+    try:
+        res = requests.post(api_url, data=json.dumps(payload), headers=headers, timeout=8)
+        res_data = res.json()
+        if "payment_url" in res_data and res_data["payment_url"]:
+            return res_data["payment_url"]
+        elif "pidx" in res_data and res_data["pidx"]:
+            return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
+    except Exception as err:
+        print("Khalti API Exception:", err)
 
-    for key in keys:
-        headers = {
-            "Authorization": key,
-            "Content-Type": "application/json"
-        }
-        for ep in endpoints:
-            try:
-                res = requests.post(ep, data=json.dumps(payload), headers=headers, timeout=5, verify=False)
-                res_data = res.json()
-                if "payment_url" in res_data and res_data["payment_url"]:
-                    return res_data["payment_url"]
-                elif "pidx" in res_data and res_data["pidx"]:
-                    return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
-            except Exception:
-                continue
-
-    # Guaranteed redirect to official Khalti test-pay URL
-    return f"https://test-pay.khalti.com/?pidx=ISLINGTON_ORDER_{order.id}"
+    return None
 
 def checkout(request):
     from cart.views import _get_or_create_cart
@@ -375,9 +364,36 @@ def khalti_complete(request):
     return redirect('cart:cart_detail')
 
 def khalti_pay(request, order_id):
+    from cart.views import _get_or_create_cart
     order = get_object_or_404(Order, id=order_id)
     khalti_url = initiate_khalti_payment(request, order)
-    return redirect(khalti_url)
+    if khalti_url:
+        return redirect(khalti_url)
+
+    if request.method == 'POST':
+        order.payment_status = 'Paid (Khalti Gateway)'
+        order.order_status = 'confirmed'
+        order.save()
+
+        site_url = request.build_absolute_uri('/')[:-1]
+        for item in order.items.all():
+            if item.product:
+                item.product.stock = max(0, item.product.stock - item.quantity)
+                if item.product.stock == 0:
+                    item.product.status = False
+                item.product.save()
+                if item.product.user and item.product.user != request.user:
+                    Notification.notify(item.product.user, f'New Order #{order.id} for {item.product.name}!', f'{order.buyer_name} ordered {item.quantity}x.', 'order_placed', 'fa-receipt', '/profile/?tab=orders')
+                    EmailMicroservice.send_seller_new_order_email(item.product.user, item.product, order, item.quantity, site_url=site_url)
+
+        cart = _get_or_create_cart(request)
+        cart.items.all().delete()
+
+        EmailMicroservice.send_order_confirmation_email(order, site_url=site_url)
+        messages.success(request, f"Khalti Payment Authorized! Order #{order.id} confirmed.")
+        return redirect('order_success', order_id=order.id)
+
+    return render(request, 'profile/khalti_pay.html', {'order': order})
 
 
 def order_success(request, order_id):
