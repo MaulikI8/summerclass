@@ -415,6 +415,24 @@ if(s.length>1)t=setInterval(function(){g(c+1)},6000);
       {% endfor %}
     </div>
 
+    <!-- View All Products CTA Section -->
+    {% if products|length >= 4 %}
+    <div class="text-center mt-5 pt-3" id="viewAllProductsCTA">
+      <div class="p-4 rounded-4 shadow-sm border text-center position-relative overflow-hidden" style="background: linear-gradient(135deg, #eef2ff 0%, #ffffff 100%);">
+        <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3 shadow-sm" style="width:52px;height:52px;font-size:1.25rem;">
+          <i class="fas fa-boxes-stacked"></i>
+        </div>
+        <h4 class="fw-bold text-dark mb-2">Explore Our Full Campus Marketplace</h4>
+        <p class="text-muted small max-w-md mx-auto mb-4" style="max-width: 520px;">
+          Showing top campus listings. Browse all <strong>{{ products|length }}+ verified items</strong>, filter by budget, category, and student sellers.
+        </p>
+        <a href="{% url 'products' %}" class="btn btn-primary btn-lg rounded-pill px-5 py-2.5 fw-bold shadow" style="font-size:0.95rem;">
+          View All Products <i class="fas fa-arrow-right ms-2"></i>
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
     <div id="filterEmptyMessage" class="text-center py-5 d-none bg-surface rounded-3 border mt-4 shadow-sm">
       <i class="fa fa-search text-muted display-4 d-block mb-3"></i>
       <h5 class="fw-bold">No products found</h5>
