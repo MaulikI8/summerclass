@@ -203,7 +203,7 @@ def initiate_khalti_payment(request, order):
     except Exception as err:
         print("Khalti initiation outer exception:", err)
 
-    return "https://test-pay.khalti.com/?pidx=ctpu2jXWxi9RvJt7dYrH7"
+    return None
 
 def checkout(request):
     from cart.views import _get_or_create_cart
