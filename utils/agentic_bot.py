@@ -71,55 +71,52 @@ CAMPUS LOGISTICS & ESSENTIALS:
 
     @staticmethod
     def _gemini_generate(prompt: str, site_context: str) -> str:
-        """Queries Google Gemini 1.5 Flash to generate intelligent responses for ANY prompt."""
+        """Queries Google Gemini API (gemini-2.5-flash) for intelligent reasoned responses."""
         api_key = os.environ.get('GEMINI_API_KEY', '').strip()
         if not api_key:
             return None
 
-        # Strategy 1: Direct HTTP REST call to Gemini 1.5 Flash API
-        import json, urllib.request, ssl
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-            payload = {
-                "contents": [
-                    {
-                        "role": "user",
-                        "parts": [
-                            {
-                                "text": (
-                                    "You are the official AI Agent & Reasoning Assistant for Islington Student Marketplace, "
-                                    "a student-to-student e-commerce platform for Islington College in Kathmandu, Nepal. "
-                                    "Your goal is to provide insightful, well-reasoned, friendly, and helpful responses to ANY user prompt—"
-                                    "including product recommendations, pricing analysis, selling advice, campus logistics, study tips, and general conversation. "
-                                    "Always explain your reasoning clearly and output clean Markdown text. "
-                                    f"Use the following real-time marketplace database context to answer accurately:\n{site_context}\n\n"
-                                    f"User Prompt: {prompt}"
-                                )
-                            }
-                        ]
-                    }
-                ]
-            }
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-            with urllib.request.urlopen(req, timeout=8, context=ctx) as resp:
-                res_data = json.loads(resp.read().decode('utf-8'))
-                candidates = res_data.get('candidates', [])
-                if candidates:
-                    parts = candidates[0].get('content', {}).get('parts', [])
-                    if parts:
-                        return parts[0].get('text', '').strip()
-        except Exception as e:
-            print("Gemini REST API Error:", e)
+        import requests
+        models_to_try = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite']
+        
+        system_prompt = (
+            "You are the official AI Agent & Reasoning Assistant for Islington Student Marketplace, "
+            "a student-to-student e-commerce platform for Islington College in Kathmandu, Nepal. "
+            "Your goal is to provide insightful, well-reasoned, friendly, and helpful responses to ANY user prompt—"
+            "including product recommendations, pricing analysis, selling advice, campus logistics, study tips, and general conversation. "
+            "Always explain your reasoning clearly and output clean Markdown text. "
+            f"Use the following real-time marketplace database context to answer accurately:\n{site_context}\n\n"
+            f"User Prompt: {prompt}"
+        )
 
-        # Strategy 2: google-generativeai SDK fallback
+        for model_name in models_to_try:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+                payload = {
+                    "contents": [
+                        {
+                            "role": "user",
+                            "parts": [{"text": system_prompt}]
+                        }
+                    ]
+                }
+                res = requests.post(url, json=payload, timeout=12, verify=False)
+                if res.status_code == 200:
+                    data = res.json()
+                    candidates = data.get('candidates', [])
+                    if candidates:
+                        parts = candidates[0].get('content', {}).get('parts', [])
+                        if parts:
+                            return parts[0].get('text', '').strip()
+            except Exception as e:
+                print(f"Gemini API Error with {model_name}:", e)
+
+        # Fallback to SDK if available
         if GEMINI_AVAILABLE:
             try:
                 genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content([f"{site_context}\n\nUser Prompt: {prompt}"])
+                model = genai.GenerativeModel('gemini-2.5-flash')
+                response = model.generate_content([system_prompt])
                 if response and response.text:
                     return response.text.strip()
             except Exception as e:
