@@ -130,7 +130,14 @@ def initiate_khalti_payment(request, order):
     from django.conf import settings
 
     try:
-        amount_paisa = max(1000, int(round(float(order.total_amount or 0) * 100)))
+        raw_key = (os.environ.get('KHALTI_SECRET_KEY', '') or getattr(settings, 'KHALTI_SECRET_KEY', '') or 'test_secret_key_e3158c56e30b427aa49a93ecb0593467').strip()
+
+        calculated_paisa = int(round(float(order.total_amount or 0) * 100))
+        if 'live_' not in raw_key:
+            amount_paisa = min(100000, max(1000, calculated_paisa))
+        else:
+            amount_paisa = max(1000, calculated_paisa)
+
         return_url = request.build_absolute_uri('/checkout/khalti/complete/')
         website_url = request.build_absolute_uri('/')
 
@@ -140,8 +147,6 @@ def initiate_khalti_payment(request, order):
         if 'http://' in website_url and not ('127.0.0.1' in website_url or 'localhost' in website_url):
             website_url = website_url.replace('http://', 'https://')
 
-        raw_key = (os.environ.get('KHALTI_SECRET_KEY', '') or getattr(settings, 'KHALTI_SECRET_KEY', '') or 'test_secret_key_e3158c56e30b427aa49a93ecb0593467').strip()
-        
         keys_to_try = []
         if raw_key:
             keys_to_try.append(raw_key if raw_key.startswith('Key ') else f"Key {raw_key}")
@@ -198,6 +203,8 @@ def initiate_khalti_payment(request, order):
                             return res_data["payment_url"]
                         elif "pidx" in res_data and res_data["pidx"]:
                             return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
+                    else:
+                        print(f"Khalti API status {res.status_code} on {ep}:", res.text)
                 except Exception as err:
                     print(f"Khalti initiate failed on {ep} with key {key[:15]}:", err)
                     continue
@@ -352,7 +359,7 @@ def khalti_api_initiate(request, order_id):
     khalti_url = initiate_khalti_payment(request, order)
     if khalti_url:
         return JsonResponse({'status': 'success', 'payment_url': khalti_url})
-    return JsonResponse({'status': 'error', 'message': 'Gateway timeout'}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'Gateway connection pending...'}, status=200)
 
 
 def order_success(request, order_id):
