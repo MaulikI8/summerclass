@@ -174,57 +174,61 @@ def initiate_khalti_payment(request, order):
     import json, requests
     from django.conf import settings
 
-    amount_paisa = max(1000, int(round(order.total_amount * 100)))
-    return_url = request.build_absolute_uri('/checkout/khalti/complete/')
-    website_url = request.build_absolute_uri('/')
-
-    if 'http://' in return_url and not ('127.0.0.1' in return_url or 'localhost' in return_url):
-        return_url = return_url.replace('http://', 'https://')
-
-    if 'http://' in website_url and not ('127.0.0.1' in website_url or 'localhost' in website_url):
-        website_url = website_url.replace('http://', 'https://')
-
-    raw_key = os.environ.get('KHALTI_SECRET_KEY', '').strip() or getattr(settings, 'KHALTI_SECRET_KEY', '').strip() or 'test_secret_key_e3158c56e30b427aa49a93ecb0593467'
-    auth_header = raw_key if raw_key.startswith('Key ') else f"Key {raw_key}"
-
-    if 'live_' in raw_key:
-        api_url = "https://khalti.com/api/v2/epayment/initiate/"
-    else:
-        api_url = "https://dev.khalti.com/api/v2/epayment/initiate/"
-
-    user_name = order.buyer_name
-    if not user_name:
-        user_name = request.user.username if (request.user and request.user.is_authenticated) else "Islington Student"
-
-    user_email = order.buyer_email
-    if not user_email:
-        user_email = request.user.email if (request.user and request.user.is_authenticated and request.user.email) else "student@islington.edu.np"
-
-    payload = {
-        "return_url": return_url,
-        "website_url": website_url,
-        "amount": amount_paisa,
-        "purchase_order_id": str(order.id),
-        "purchase_order_name": f"Islington Marketplace Order #{order.id}",
-        "customer_info": {
-            "name": user_name,
-            "email": user_email,
-            "phone": order.buyer_phone or "9800000000"
-        }
-    }
-
-    headers = {
-        "Authorization": auth_header,
-        "Content-Type": "application/json"
-    }
-
     try:
+        amount_paisa = max(1000, int(round(float(order.total_amount or 0) * 100)))
+        return_url = request.build_absolute_uri('/checkout/khalti/complete/')
+        website_url = request.build_absolute_uri('/')
+
+        if 'http://' in return_url and not ('127.0.0.1' in return_url or 'localhost' in return_url):
+            return_url = return_url.replace('http://', 'https://')
+
+        if 'http://' in website_url and not ('127.0.0.1' in website_url or 'localhost' in website_url):
+            website_url = website_url.replace('http://', 'https://')
+
+        raw_key = (os.environ.get('KHALTI_SECRET_KEY', '') or getattr(settings, 'KHALTI_SECRET_KEY', '') or 'test_secret_key_e3158c56e30b427aa49a93ecb0593467').strip()
+        auth_header = raw_key if raw_key.startswith('Key ') else f"Key {raw_key}"
+
+        if 'live_' in raw_key:
+            api_url = "https://khalti.com/api/v2/epayment/initiate/"
+        else:
+            api_url = "https://dev.khalti.com/api/v2/epayment/initiate/"
+
+        user_name = order.buyer_name or "Islington Student"
+        user_email = order.buyer_email or "student@islington.edu.np"
+        user_phone = order.buyer_phone or "9800000000"
+        
+        clean_phone = ''.join(c for c in str(user_phone) if c.isdigit())
+        if len(clean_phone) != 10 or not clean_phone.startswith(('98', '97')):
+            clean_phone = "9800000000"
+
+        payload = {
+            "return_url": return_url,
+            "website_url": website_url,
+            "amount": amount_paisa,
+            "purchase_order_id": f"ORDER_{order.id}",
+            "purchase_order_name": f"Islington Order #{order.id}",
+            "customer_info": {
+                "name": str(user_name)[:50],
+                "email": str(user_email),
+                "phone": clean_phone
+            }
+        }
+
+        headers = {
+            "Authorization": auth_header,
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+
         res = requests.post(api_url, data=json.dumps(payload), headers=headers, timeout=8)
-        res_data = res.json()
-        if "payment_url" in res_data and res_data["payment_url"]:
-            return res_data["payment_url"]
-        elif "pidx" in res_data and res_data["pidx"]:
-            return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
+        if res.status_code in [200, 201]:
+            res_data = res.json()
+            if "payment_url" in res_data and res_data["payment_url"]:
+                return res_data["payment_url"]
+            elif "pidx" in res_data and res_data["pidx"]:
+                return f"https://test-pay.khalti.com/?pidx={res_data['pidx']}"
+        else:
+            print("Khalti API error status:", res.status_code, res.text)
     except Exception as err:
         print("Khalti API Exception:", err)
 
@@ -233,73 +237,77 @@ def initiate_khalti_payment(request, order):
 def checkout(request):
     from cart.views import _get_or_create_cart
     cart = _get_or_create_cart(request)
-    cart_items = cart.items.all()
+    cart_items = [item for item in cart.items.all() if item.product]
 
     if not cart_items:
         messages.warning(request, "Your cart is currently empty.")
         return redirect('cart:cart_detail')
 
     if request.method == 'POST':
-        name = request.POST.get('buyer_name') or request.POST.get('name')
-        if not name:
-            name = (request.user.get_full_name() or request.user.username) if (request.user and request.user.is_authenticated) else 'Islington Student'
+        try:
+            name = (request.POST.get('buyer_name') or request.POST.get('name') or '').strip()
+            if not name:
+                if request.user and request.user.is_authenticated:
+                    name = request.user.get_full_name() or request.user.username or "Islington Student"
+                else:
+                    name = "Islington Student"
 
-        phone = request.POST.get('buyer_phone') or request.POST.get('phone') or '9800000000'
-        email = request.POST.get('buyer_email') or request.POST.get('email')
-        if not email:
-            email = request.user.email if (request.user and request.user.is_authenticated and request.user.email) else 'student@islington.edu.np'
+            phone = (request.POST.get('buyer_phone') or request.POST.get('phone') or '').strip() or '9800000000'
+            email = (request.POST.get('buyer_email') or request.POST.get('email') or '').strip()
+            if not email:
+                if request.user and request.user.is_authenticated and request.user.email:
+                    email = request.user.email
+                else:
+                    email = "student@islington.edu.np"
 
-        del_type = request.POST.get('delivery_type')
-        if del_type == 'home_delivery':
-            location = request.POST.get('home_address') or 'Kathmandu Home Delivery'
-        else:
-            location = request.POST.get('campus_block') or 'Kumari Hall'
+            del_type = request.POST.get('delivery_type')
+            if del_type == 'home_delivery':
+                location = (request.POST.get('home_address') or '').strip() or 'Kathmandu Home Delivery'
+            else:
+                location = (request.POST.get('campus_block') or '').strip() or 'Kumari Hall'
 
-        m_time = request.POST.get('meetup_time') or 'Morning (10:00 AM - 12:00 PM)'
-        notes = request.POST.get('notes') or ''
+            m_time = (request.POST.get('meetup_time') or '').strip() or 'Morning (10:00 AM - 12:00 PM)'
+            notes = (request.POST.get('notes') or '').strip()
 
-        order = Order.objects.create(
-            user=request.user if (request.user and request.user.is_authenticated) else None,
-            buyer_name=name,
-            buyer_phone=phone,
-            buyer_email=email,
-            meetup_location=location,
-            meetup_time=m_time,
-            notes=notes,
-            payment_status='Pending Khalti Authorization',
-            order_status='pending'
-        )
-
-        total = 0
-        product_details = []
-        for item in cart_items:
-            subtotal = item.product.price * item.quantity
-            total += subtotal
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                product_name=item.product.name,
-                price=item.product.price,
-                quantity=item.quantity
+            order = Order.objects.create(
+                user=request.user if (request.user and request.user.is_authenticated) else None,
+                buyer_name=name,
+                buyer_phone=phone,
+                buyer_email=email,
+                meetup_location=location,
+                meetup_time=m_time,
+                notes=notes,
+                payment_status='Pending Khalti Authorization',
+                order_status='pending'
             )
-            product_details.append({
-                "identity": str(item.product.id),
-                "name": item.product.name[:50],
-                "total_price": int(round(subtotal * 100)),
-                "quantity": item.quantity,
-                "unit_price": int(round(item.product.price * 100))
-            })
 
-        order.total_amount = total
-        order.save()
+            total = 0.0
+            for item in cart_items:
+                if not item.product:
+                    continue
+                p_price = float(item.product.price or 0.0)
+                subtotal = p_price * item.quantity
+                total += subtotal
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    product_name=item.product.name,
+                    price=p_price,
+                    quantity=item.quantity
+                )
 
-        # Initiate Official Khalti ePayment API v2 Payment URL (/epayment/initiate/)
-        khalti_url = initiate_khalti_payment(request, order)
-        if khalti_url:
-            return redirect(khalti_url)
+            order.total_amount = total
+            order.save()
 
-        # Fallback if API is offline
-        return redirect('khalti_pay', order_id=order.id)
+            khalti_url = initiate_khalti_payment(request, order)
+            if khalti_url:
+                return redirect(khalti_url)
+
+            return redirect('khalti_pay', order_id=order.id)
+        except Exception as err:
+            print("Checkout Order Processing Exception:", err)
+            messages.error(request, f"Error processing checkout: {err}")
+            return redirect('cart:cart_detail')
 
     return render(request, 'profile/checkout.html', {'cart': cart, 'cart_items': cart_items, 'total': cart.total_price, 'item_count': cart.total_items_count})
 
