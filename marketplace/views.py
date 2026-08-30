@@ -350,8 +350,14 @@ def khalti_pay(request, order_id):
     if khalti_url:
         return redirect(khalti_url)
 
-    messages.error(request, "Unable to initiate Khalti payment gateway. Please try again.")
-    return redirect('cart:cart_detail')
+    return render(request, 'profile/khalti_gateway.html', {'order': order})
+
+def khalti_api_initiate(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    khalti_url = initiate_khalti_payment(request, order)
+    if khalti_url:
+        return JsonResponse({'status': 'success', 'payment_url': khalti_url})
+    return JsonResponse({'status': 'error', 'message': 'Gateway timeout'}, status=500)
 
 
 def order_success(request, order_id):

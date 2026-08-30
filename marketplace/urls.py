@@ -23,6 +23,7 @@ urlpatterns = [
     path('profile/', account_views.user_profile, name='user_profile'),
     path('checkout/', views.checkout, name='checkout'),
     path('checkout/khalti/<int:order_id>/', views.khalti_pay, name='khalti_pay'),
+    path('checkout/khalti/initiate-api/<int:order_id>/', views.khalti_api_initiate, name='khalti_api_initiate'),
     path('checkout/khalti/complete/', views.khalti_complete, name='khalti_complete'),
     path('cart/', include('cart.urls')),
     path('checkout/success/<int:order_id>/', views.order_success, name='order_success'),
