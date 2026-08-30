@@ -14,7 +14,7 @@ _EXECUTOR = ThreadPoolExecutor(max_workers=6, thread_name_prefix='email_dispatch
 
 class EmailMicroservice:
     @classmethod
-    def _send(cls, recipients, subject, html):
+    def _send(cls, recipients, subject, html, text_body=None):
         if not recipients:
             return False
         r = [e.strip() for e in (recipients if isinstance(recipients, list) else [recipients]) if e and '@' in str(e)]
@@ -41,7 +41,8 @@ class EmailMicroservice:
             m['X-MSMail-Priority'] = 'High'
             m['Auto-Submitted'] = 'auto-generated'
 
-            m.attach(MIMEText("Please view in an HTML compatible email client.", 'plain', 'utf-8'))
+            plain_content = text_body or "Please view this message in an HTML compatible email client."
+            m.attach(MIMEText(plain_content, 'plain', 'utf-8'))
             m.attach(MIMEText(html, 'html', 'utf-8'))
             return m
 
@@ -70,7 +71,8 @@ class EmailMicroservice:
 
         # Strategy 3: Django core mail backend fallback
         try:
-            msg = EmailMultiAlternatives(subject, "Please view in HTML.", from_hdr, r)
+            plain_content = text_body or "Please view in HTML format."
+            msg = EmailMultiAlternatives(subject, plain_content, from_hdr, r)
             msg.extra_headers = {
                 'X-Priority': '1',
                 'Priority': 'urgent',
@@ -84,16 +86,16 @@ class EmailMicroservice:
             return False
 
     @classmethod
-    def send_sync(cls, to, sub, html):
+    def send_sync(cls, to, sub, html, text_body=None):
         """Sends email synchronously."""
-        return cls._send(to, sub, html)
+        return cls._send(to, sub, html, text_body=text_body)
 
     @classmethod
-    def send_async(cls, to, sub, html):
+    def send_async(cls, to, sub, html, text_body=None):
         """Dispatches email via managed thread pool for sub-second web UI response and instant background sending."""
         if not to:
             return False
-        _EXECUTOR.submit(cls._send, to, sub, html)
+        _EXECUTOR.submit(cls._send, to, sub, html, text_body=text_body)
         return True
 
     @staticmethod
@@ -106,21 +108,24 @@ class EmailMicroservice:
     @classmethod
     def send_otp_email(cls, u, code):
         if not u or not u.email: return False
+        text = f"Hello {u.first_name or u.username},\n\nYour 6-digit Islington Marketplace verification code is: {code}\n\nThis code expires in 10 minutes."
         b = f"""<p>Hello <strong>{u.first_name or u.username}</strong>,</p><p>Your 6-digit verification code is:</p>
         <div style="background:#f8fafc;border:2px dashed #3b82f6;border-radius:10px;padding:16px;text-align:center;margin:16px 0;"><span style="font-size:32px;font-weight:800;letter-spacing:8px;color:#1d4ed8;font-family:monospace;">{code}</span></div>
         <p style="font-size:12px;color:#64748b;">Expires in 10 minutes.</p>"""
-        return cls.send_async(u.email, f"Your Verification Code: {code}", cls._wrap("Account Verification", "Security OTP", b))
+        return cls.send_async(u.email, f"Your Verification Code: {code}", cls._wrap("Account Verification", "Security OTP", b), text_body=text)
 
     @classmethod
     def send_activation_email(cls, u, activation_url):
         if not u or not u.email: return False
-        b = f"""<p>Hello <strong>{u.first_name or u.username}</strong>,</p>
+        name = u.first_name or u.username
+        text = f"Hello {name},\n\nThank you for registering at Islington Marketplace! Please use the following link to activate your student account:\n\n{activation_url}\n\nIslington Marketplace Team"
+        b = f"""<p>Hello <strong>{name}</strong>,</p>
         <p>Thank you for registering at Islington Marketplace! Please click the button below to activate your student account:</p>
         <div style="text-align:center;margin:24px 0;">
             <a href="{activation_url}" style="background:#4F46E5;color:#ffffff;padding:12px 28px;border-radius:30px;text-decoration:none;font-weight:bold;display:inline-block;">Activate My Account &rarr;</a>
         </div>
         <p style="font-size:12px;color:#64748b;">If the button above does not work, copy and paste this link into your browser:<br/><a href="{activation_url}" style="color:#4F46E5;">{activation_url}</a></p>"""
-        return cls.send_async(u.email, "Activate Your Islington Marketplace Account", cls._wrap("Account Verification", "Email Verification Link", b))
+        return cls.send_async(u.email, "Activate Your Islington Marketplace Account", cls._wrap("Account Verification", "Email Verification Link", b), text_body=text)
 
     @classmethod
     def send_order_confirmation_email(cls, order, site_url=""):
