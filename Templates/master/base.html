@@ -64,7 +64,6 @@
     html[data-theme="dark"] .bg-light,
     html[data-theme="dark"] .bg-surface,
     html[data-theme="dark"] .card,
-    html[data-theme="dark"] .filter-chip,
     html[data-theme="dark"] .category-showcase-card,
     html[data-theme="dark"] .modal-content,
     html[data-bs-theme="dark"] main,
@@ -78,7 +77,6 @@
     html[data-bs-theme="dark"] .bg-light,
     html[data-bs-theme="dark"] .bg-surface,
     html[data-bs-theme="dark"] .card,
-    html[data-bs-theme="dark"] .filter-chip,
     html[data-bs-theme="dark"] .category-showcase-card,
     html[data-bs-theme="dark"] .modal-content {
         background: #0b0f1a !important;
@@ -92,6 +90,82 @@
     html[data-theme="dark"] .card,
     html[data-bs-theme="dark"] .card {
         background-color: #131827 !important;
+    }
+
+    html[data-theme="dark"] .bg-surface-elevated,
+    html[data-bs-theme="dark"] .bg-surface-elevated {
+        background-color: #1a2035 !important;
+    }
+    .bg-surface-elevated {
+        background-color: #f8fafc;
+    }
+
+    /* --- Scrollbar suppression utility --- */
+    .no-scrollbar {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    /* --- Filter Chip Styles (Light & Dark) --- */
+    .filter-chip {
+        background-color: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        border-radius: 50rem;
+        padding: 0.35rem 0.9rem;
+        font-weight: 500;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+    }
+    .filter-chip:hover {
+        background-color: #e2e8f0;
+        color: #0f172a;
+    }
+    .filter-chip.active {
+        background-color: #4f46e5 !important;
+        color: #ffffff !important;
+        border-color: #4f46e5 !important;
+    }
+
+    html[data-theme="dark"] .filter-chip,
+    html[data-bs-theme="dark"] .filter-chip {
+        background-color: #1a2035 !important;
+        border-color: #2a344d !important;
+        color: #cbd5e1 !important;
+    }
+    html[data-theme="dark"] .filter-chip:hover,
+    html[data-bs-theme="dark"] .filter-chip:hover {
+        background-color: #312e81 !important;
+        color: #a5b4fc !important;
+        border-color: #4338ca !important;
+    }
+
+    /* --- Global Dark Mode overrides for btn-light --- */
+    html[data-theme="dark"] .btn-light,
+    html[data-bs-theme="dark"] .btn-light,
+    html[data-theme="dark"] .btn-surface,
+    html[data-bs-theme="dark"] .btn-surface {
+        background-color: #1a2035 !important;
+        border-color: #2a344d !important;
+        color: #e2e8f0 !important;
+    }
+    html[data-theme="dark"] .btn-light:hover,
+    html[data-bs-theme="dark"] .btn-light:hover,
+    html[data-theme="dark"] .btn-surface:hover,
+    html[data-bs-theme="dark"] .btn-surface:hover {
+        background-color: #312e81 !important;
+        border-color: #4338ca !important;
+        color: #a5b4fc !important;
     }
 
     html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3, 
